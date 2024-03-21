@@ -8,8 +8,7 @@ import Read from "./components/Read.jsx"
 import Update from "./components/Update.jsx"
 import Login from "./components/Login.jsx"
 import Register from "./components/Register.jsx"
-
-
+import "./style.css";
 
 function App(){
   return (

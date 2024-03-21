@@ -6,6 +6,8 @@ import bcrypt from "bcrypt"
 import cookieParser from "cookie-parser"
 import session from "express-session"
 import {check , validationResult} from "express-validator"
+import multer from 'multer'
+import path from "path"
 
 const salt = 10
 const app = express();
@@ -16,6 +18,21 @@ app.use(cors({
     methods: ["POST","GET","PUT","DELETE"],
     credentials: true
 }))
+app.use(express.static("public"))
+
+const storage = multer.diskStorage({
+    destination:(req,file,cb)=>{
+        cb(null,'public/images')
+    },
+    filename: (req,file,cb)=>{
+        cb(null,file.fieldname + "_" + Date.now() + path.extname(file.originalname));
+    }
+})
+
+const upload = multer({
+    storage:storage
+})
+
 app.use(cookieParser())
 app.use(session({
     secret:"secret",
@@ -137,34 +154,47 @@ app.post('/register',(req,res)=>{
 //     })
 // })
 
-app.post("/create",(req,res)=>{
-    const q = "INSERT INTO inventory (`product_name`,`category`,`price`,`quantity`,`total_amount`) VALUES (?)";
+app.post("/create", upload.single("image"), (req, res) => {
+    const q = "INSERT INTO inventory (`product_name`,`category`,`price`,`quantity`,`total_amount`, `images`) VALUES (?)";
     const values = [
         req.body.product_name,
         req.body.category,
         req.body.price,
         req.body.quantity,
         req.body.total_amount,
-    ]
-    db.query(q,[values],(err,result)=>{
-        if (err) {
-            return res.json({Message:"Error inside server"});
-        }
-        return res.json(result);
-    })
-})
+        req.file.filename, // Assuming req.file.filename contains the uploaded image filename
+    ];
 
-app.get("/read/:product_id",(req,res)=>{
+    db.query(q, [values], (err, result) => {
+        if (err) {
+            return res.json({ Message: "Error inside server" });
+        }
+        console.log(result);
+        return res.json(result);
+    });
+});
+
+
+app.get("/read/:product_id", (req, res) => {
     const q = "SELECT * FROM inventory WHERE product_id = ?";
     const id = req.params.product_id;
 
-    db.query(q,[id],(err,result)=>{
+    db.query(q, [id], (err, result) => {
         if (err) {
-            return res.json({Message:"Error inside server"});
+            return res.json({ Message: "Error inside server" });
         }
-        return res.json(result);
-    })
-})
+        if (result.length > 0) {
+            const { images, ...productData } = result[0];
+            const imageBufferData = images.toString('base64');
+            const imageData = `data:image/jpg;base64,${imageBufferData}`;
+            const productWithImageData = { ...productData, image: imageData };
+            return res.json(productWithImageData);
+        } else {
+            return res.json({ Message: "Product not found" });
+        }
+    });
+});
+
 
 app.put('/edit/:product_id',(req,res)=>{
     const q = "UPDATE inventory SET `product_name`=?,`category`=?,`price`=?,`quantity`=?,`total_amount`=? WHERE product_id=?";
