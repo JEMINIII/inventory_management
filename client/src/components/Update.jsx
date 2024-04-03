@@ -18,11 +18,11 @@ const Update = () => {
         console.log(res.data);
         setValues(prevValues => ({
           ...prevValues,
-          product_name:res.data[0].product_name,
-          category:res.data[0].category,
-          price:res.data[0].price,
-          quantity:res.data[0].quantity,
-          total_amount:res.data[0].total_amount
+          product_name:res.data.product_name,
+          category:res.data.category,
+          price:res.data.price,
+          quantity:res.data.quantity,
+          total_amount:res.data.total_amount
         }));
       })
       .catch(err => console.log(err));
@@ -33,7 +33,7 @@ const Update = () => {
     axios.put("http://localhost:8082/edit/" + id, values)
       .then(res => {
         console.log(res.data);
-        // window.location.href = "/"; // Use window.location.href for navigation
+        window.location.href = "/";
       })
       .catch(err => console.log(err));
   };

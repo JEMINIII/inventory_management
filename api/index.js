@@ -1,56 +1,65 @@
-import express from "express"
-import cors from "cors"
-import mysql2 from "mysql2"
-import jwt from "jsonwebtoken"
-import bcrypt from "bcrypt"
-import cookieParser from "cookie-parser"
-import session from "express-session"
-import {check , validationResult} from "express-validator"
-import multer from 'multer'
-import path from "path"
+// db.js
+import mysql from 'mysql2';
 
-const salt = 10
+const db = mysql.createConnection({
+  host: 'localhost',
+  user: 'root',
+  password: 'jemini@#123',
+  database: 'stock_management',
+});
+
+export default db;
+
+// server.js
+import express from 'express';
+import cors from 'cors';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
+import cookieParser from 'cookie-parser';
+import session from 'express-session';
+import { check, validationResult } from 'express-validator';
+import multer from 'multer';
+import path from 'path';
+// import db from './db';
+
+const salt = 10;
 const app = express();
-app.use(express.json())
+app.use(express.json());
 
-app.use(cors({
-    origin:["http://localhost:3000"],
-    methods: ["POST","GET","PUT","DELETE"],
-    credentials: true
-}))
-app.use(express.static("public"))
+app.use(
+  cors({
+    origin: ['http://localhost:3000'],
+    methods: ['POST', 'GET', 'PUT', 'DELETE'],
+    credentials: true,
+  })
+);
+app.use(express.static('public'));
 
 const storage = multer.diskStorage({
-    destination:(req,file,cb)=>{
-        cb(null,'public/images')
-    },
-    filename: (req,file,cb)=>{
-        cb(null,file.fieldname + "_" + Date.now() + path.extname(file.originalname));
-    }
-})
+  destination: (req, file, cb) => {
+    cb(null, 'public/images');
+  },
+  filename: (req, file, cb) => {
+    cb(null, file.fieldname + '_' + Date.now() + path.extname(file.originalname));
+  },
+});
 
 const upload = multer({
-    storage:storage
-})
+  storage: storage,
+});
 
-app.use(cookieParser())
-app.use(session({
-    secret:"secret",
-    resave:false,
-    saveUninitialized:false,
-    cookie:{
-        secure:false,
-        maxAge:1000*60*60*24
-    }
-}))
-
-
-const db = mysql2.createConnection({
-    host : "localhost",
-    user : "root",
-    password : "jemini@#123",
-    database : "stock_management"
-})
+app.use(cookieParser());
+app.use(
+  session({
+    secret: 'secret',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: false,
+      maxAge: 1000 * 60 * 60 * 24,
+    },
+  })
+);
 
 const verifyUser = (req,res,next) =>{
     const {token} = req.cookies
@@ -175,25 +184,32 @@ app.post("/create", upload.single("image"), (req, res) => {
 });
 
 
+
 app.get("/read/:product_id", (req, res) => {
     const q = "SELECT * FROM inventory WHERE product_id = ?";
     const id = req.params.product_id;
 
     db.query(q, [id], (err, result) => {
         if (err) {
-            return res.json({ Message: "Error inside server" });
+            return res.status(500).json({ Message: "Error inside server" });
         }
+        
         if (result.length > 0) {
             const { images, ...productData } = result[0];
-            const imageBufferData = images.toString('base64');
-            const imageData = `data:image/jpg;base64,${imageBufferData}`;
-            const productWithImageData = { ...productData, image: imageData };
-            return res.json(productWithImageData);
+            const imageBufferData = images;
+            // console.log(imageBufferData)
+            // const blobUrl = URL.createObjectURL(new Blob([imageBufferData],{ type: 'image/jpg' }));
+            const blobUrl = `http://localhost:8082/images/${imageBufferData}`;
+            // console.log(blobUrl)
+            const productWithBlobUrl = { ...productData, image: blobUrl };
+            // console.log(productWithBlobUrl)
+            return res.json(productWithBlobUrl);
         } else {
-            return res.json({ Message: "Product not found" });
+            return res.status(404).json({ Message: "Product not found" });
         }
     });
 });
+
 
 
 app.put('/edit/:product_id',(req,res)=>{

@@ -3,7 +3,6 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 import Chart from "chart.js/auto";
 import { Table } from "react-bootstrap";
-// import { useState } from "react";
 import Button from "react-bootstrap/Button";
 import Offcanvas from "react-bootstrap/Offcanvas";
 
@@ -18,8 +17,8 @@ export const Home = () => {
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
-  // const [searchTerm, setSearchTerm] = useState("");
-  // const [categoryFilter, setCategoryFilter] = useState("All");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("All");
 
   axios.defaults.withCredentials = true;
 
@@ -123,39 +122,26 @@ export const Home = () => {
       .catch((err) => console.log(err));
   };
 
-  // const handleSearch = () => {
-  //   const filtered = data.filter((item) =>
-  //     item.product_name.toLowerCase().includes(searchTerm.toLowerCase())
-  //   );
-  //   setFilteredData(filtered);
-  // };
+  const handleSearch = () => {
+    const filtered = data.filter((item) =>
+      item.product_name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredData(filtered);
+  };
 
-  // const handleCategoryFilter = (category) => {
-  //   setCategoryFilter(category);
-  //   if (category === "All") {
-  //     setFilteredData(data);
-  //   } else {
-  //     const filtered = data.filter((item) => item.category === category);
-  //     setFilteredData(filtered);
-  //   }
-  // };
+  const handleCategoryFilter = (category) => {
+    setCategoryFilter(category);
+    if (category === "All") {
+      setFilteredData(data);
+    } else {
+      const filtered = data.filter((item) => item.category === category);
+      setFilteredData(filtered);
+    }
+  };
 
   return (
     <div>
       <nav className="navbar navbar-expand-lg navbar-light bg-light ">
-      <Button onClick={handleShow}>
-      Inventory Management
-      </Button>
-
-      <Offcanvas show={show} onHide={handleClose}>
-        <Offcanvas.Header closeButton>
-          <Offcanvas.Title>Offcanvas</Offcanvas.Title>
-        </Offcanvas.Header>
-        <Offcanvas.Body>
-          Some text as placeholder. In real life you can have the elements you
-          have chosen. Like, text, images, lists, etc.
-        </Offcanvas.Body>
-      </Offcanvas>
         <div className="container d-flex align-items-center gap-5">
           <Link className="navbar-brand " to="/">
             Inventory Management
@@ -260,10 +246,10 @@ export const Home = () => {
                 </Table>
               </div>
             </div>
-            <div className="d-flex bg-light justify-content-center align-items-center">
-              <div className="w-100 bg-white rounded p-3">
+            <div className="d-flex bg-light justify-content-center align-items-center responsive">
+              <div className="w-100 bg-white rounded p-3 responsive">
                 <h2>Dashboard</h2>
-                <div className="d-flex justify-content-center">
+                <div className="d-flex justify-content-center responsive">
                   <div style={{ maxWidth: "700px" }}>
                     <canvas id="myChart" width="700" height="200"></canvas>
                   </div>

@@ -5,19 +5,18 @@ import { Link } from "react-router-dom";
 
 const Read = () => {
   const { id } = useParams();
-  const [stock, setStock] = useState([]);
-  const [data, setData] = useState([]);
+  const [stock, setStock] = useState({});
+  // console.log(stock.image)
+
   useEffect(() => {
     axios.get(`http://localhost:8082/read/${id}`)
       .then(res => {
-        console.log(res.data.image);
         setStock(res.data);
-        if (res.data.length > 0) {
-          setData(res.data);
-        }
       })
       .catch(err => console.log(err));
-  }, [id,data]);
+  }, [id]);
+
+  
 
   return (
     <div className="container mt-5">
@@ -46,14 +45,14 @@ const Read = () => {
           </div>
           <div className="mb-3">
             <strong>Image:</strong>{" "}
-            <img src="data:image/jpg;base64,aW1hZ2VfMTcxMTAxNTM2ODU0MS5qcGc=" style={{ maxWidth: "20%", height: "auto" }} alt="Product" />
+            <img src={stock.image} style={{ maxWidth: "20%", height: "auto" }} alt="Product" />
           </div>
 
           <div className="mt-3">
             <Link to="/" className="btn btn-primary me-2">
               Back
             </Link>
-            <Link to={`/edit/${stock[0]?.product_id}`} className="btn btn-info">
+            <Link to={`/edit/${stock?.product_id}`} className="btn btn-info">
               Edit
             </Link>
           </div>
