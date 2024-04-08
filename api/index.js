@@ -213,21 +213,16 @@ app.get("/read/:product_id", (req, res) => {
 
 
 app.put('/edit/:product_id',(req,res)=>{
-    const q = "UPDATE inventory SET `product_name`=?,`category`=?,`price`=?,`quantity`=?,`total_amount`=? WHERE product_id=?";
-    const {id} = req.params.product_id;
-    db.query(q,[req.body.product_name,
-        req.body.category,
-        req.body.price,
-        req.body.quantity,
-        req.body.total_amount,,id],(err,result) => {
+    const q = "UPDATE inventory SET `product_name`=?, `category`=?, `price`=?, `quantity`=?, `total_amount`=? WHERE product_id=?";
+    const { product_id } = req.params;
+    db.query(q, [req.body.product_name, req.body.category, req.body.price, req.body.quantity, req.body.total_amount, product_id], (err,result) => {
         if (err) {
             return res.json({Message:"Error inside server"});
         }
-        
         return res.json(result);
-        
-    })
-})
+    });
+});
+
 
 app.delete("/delete/:id",(req,res)=>{
     const q = "DELETE FROM inventory WHERE product_id = ?";

@@ -1,0 +1,159 @@
+$lightYellow: #d5dbdd;
+
+.app{
+    display: flex;
+    justify-content: center;
+
+    .container{
+        // width: 1024px;
+        // Login & Register
+
+        .link{
+            text-decoration: none;
+            color: inherit;
+        }
+        .auth{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #e0fcff ;
+        }
+
+        h1{
+            font-size: 20px;
+            // color: #de7d9b;
+            margin-bottom:  20px;
+        }
+
+        form{
+            display: flex;
+            flex-direction: column;
+            padding: 50px;
+            background-color: white;
+            width: 300px;
+            gap:20px;
+            border-radius: 50px;
+
+            input{
+                padding: 10px;
+                border: none;
+                border-bottom: 1px solid gray;
+            }
+
+            button{
+                padding: 10px;
+                border: none;
+                cursor: pointer;
+                color: white;
+                background-color: #de7d9b;
+                border-radius: 50px;
+            }
+            
+            span{
+                font-size: 12px;
+                text-align: center;
+            }
+
+            p{
+                font-size: 12px;
+                color: red;
+                text-align: center;
+            }
+
+            
+
+        }    
+        
+        //NAVBAR
+        .navbar{
+            border-bottom: 1px solid #ccc;
+            .container{
+                padding: 5px 0px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                .logo{
+                    img{
+                        width: 90px;
+                    }
+                }
+                .links{
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                }
+               
+                
+                span{
+                    cursor: pointer;
+                }
+                .logo22{
+                    width: 60px;
+                    height: auto;
+
+                }
+                
+                .dropdown {
+                    position: relative;
+                    display: inline-block;
+                  }
+                  
+                  .dropdown-content {
+                    display: none;
+                    position: absolute;
+                    background-color: #a89ba4;
+                    min-width: 100px;
+                    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+                    z-index: 1;
+                  }
+                  
+                  .dropdown-content a {
+                    color: black;
+                    padding: 12px 16px;
+                    text-decoration: none;
+                    display: block;
+                  }
+                  
+                  .dropdown-content a:hover {
+                    background-color: #ddd;
+                  }
+                  
+                  .dropdown:hover .dropdown-content {
+                    display: block;
+                  }
+                
+            }
+        }
+
+        form{
+            width: auto;
+        }
+        td{
+            height: 70px;
+        }
+        Card{
+            border: #d50a4a;
+
+        }
+        //FOOTER
+        footer{
+            // position: fixed;
+            // margin: 50px;
+            bottom: 0;
+            left: 100px;
+            right: 100px;
+            // height: 180px;
+            // width:1024px ;
+            // padding: 10px;
+            border-top: 1px solid #ccc; 
+            // background: linear-gradient(to right, #fbc6c6, #9198e5, #f2dede, #9198e5, #dcbebe); 
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
+            z-index: 1000
+            }
+    }
+}

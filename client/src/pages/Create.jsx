@@ -61,9 +61,9 @@ export const Create = () => {
     };
 
     return (
-        <div className='d-flex vh-100 bg-light justify-content-center align-items-center'>
-            <div className='vh-100 bg-white rounded p-3' style={{ textAlign: "center", marginBottom: "1rem" }}>
-                <form onSubmit={handleSubmit}>
+        <div className=' bg-light justify-content-center align-items-center'>
+            <div className=' bg-white rounded p-3' style={{ textAlign: "center", marginBottom: "1rem" }}>
+                <form className='form' onSubmit={handleSubmit}>
                     <h2>Add Inventory</h2>
                     <div className='mb-2'>
                         <label htmlFor="ProductName"></label>
