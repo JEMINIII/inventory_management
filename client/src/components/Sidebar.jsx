@@ -8,6 +8,8 @@ import {
     MenuFoldOutlined,
     MenuUnfoldOutlined,
     PieChartOutlined,
+    LeftSquareOutlined,
+    RightSquareOutlined
   } from "@ant-design/icons";
   import { Button, Menu, Card } from "antd";
   const items = [
@@ -104,17 +106,12 @@ const Sidebar = () => {
 
   return (
     <div style={{ display: "flex" }}>
+      
     <div >
-                <Button
-                  type="primary"
-                  onClick={toggleCollapsed}
-                  style={{ marginBottom: 10 }}
-                >
-                  {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-                </Button>
+                
 
                 <Menu
-                  style={{ maxHeight: "calc(73vh - 64px)", overflowY: "auto" }}
+                  style={{ maxHeight: "calc(71vh - 64px)", overflowY: "auto" ,top:30}}
                   defaultSelectedKeys={["1"]}
                 //   defaultOpenKeys={["sub1"]}
                   mode="inline"
@@ -144,6 +141,29 @@ const Sidebar = () => {
                   )}
                 </Menu>
               </div>
+              <Button
+                  // type="primary"
+                  onClick={toggleCollapsed}
+                  style={{
+            // marginBottom: 10,
+            textAlign:'center',
+            // position: "absolute",
+            top:200,
+            // right: menuCollapsed ? 0 : -40,
+            background:"transparent",
+            border:"none",
+            transition: "left 0.3s ease",
+            // borderRadius:'50%',
+            left:-20,
+            zIndex: 1,
+            fontSize: "24px",
+            display: "flex", // Use flexbox
+            alignItems: "center", // Align items vertically
+            justifyContent: "center", 
+          }}
+                >
+                  {menuCollapsed ? <RightSquareOutlined /> : <LeftSquareOutlined />}
+                </Button>
               </div>
   )
 }

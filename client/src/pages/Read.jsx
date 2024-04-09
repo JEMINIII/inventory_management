@@ -19,7 +19,8 @@ const Read = () => {
   
 
   return (
-    <div className="container mt-5">
+    <div className=' bg-light '>
+            <div className=' bg-white rounded p-3' style={{ maxHeight: "calc(64.5vh - 64px)", overflowY: "auto" }}>
       <div className="card">
         <div className="card-header">
           <h2 className="mb-0">Product Details</h2>
@@ -58,6 +59,7 @@ const Read = () => {
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 };

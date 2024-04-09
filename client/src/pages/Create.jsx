@@ -62,7 +62,7 @@ export const Create = () => {
 
     return (
         <div className=' bg-light justify-content-center align-items-center'>
-            <div className=' bg-white rounded p-3' style={{ textAlign: "center", marginBottom: "1rem" }}>
+            <div className=' bg-white rounded p-3' style={{ textAlign: "center", maxHeight: "calc(64.5vh - 64px)", overflowY: "auto" }}>
                 <form className='form' onSubmit={handleSubmit}>
                     <h2>Add Inventory</h2>
                     <div className='mb-2'>

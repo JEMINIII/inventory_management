@@ -21,17 +21,19 @@ const Layout = () => {
   return (
     
     
-    <AntLayout>
-      <Header />
-      <AntLayout style={{ minHeight: "100vh", display: "flex" }}>
-    <Sidebar />
-      <Content style={{ padding: "0 50px", marginTop: 64, flex: 1 }}>
-        <div style={{ background: "#fff", padding: 24, minHeight: 380 }}>
-          <Outlet />
+    <AntLayout style={{background:'#ffffff' }}>
+    <Header />
+    <Content style={{ padding: "0 50px", marginTop: 20,background:'#ffffff' }}>
+      <div style={{ display: "flex",marginBottom:20 }}>
+        <Sidebar />
+        <div style={{ flex: 1, marginLeft: 0}}>
+          <div style={{padding: 24 }}>
+            <Outlet />
+          </div>
         </div>
-      </Content>
-      <Footer style={{ textAlign: "center" }}>Footer</Footer>
-    </AntLayout>
+      </div>
+    </Content>
+    <Footer style={{ textAlign: "center" }}>Footer</Footer>
   </AntLayout>
     
   );

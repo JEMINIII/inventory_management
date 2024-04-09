@@ -169,54 +169,14 @@ export const Home = () => {
       <div className="container mt-4">
         {auth ? (
           <>
-            {/* <div style={{ display: "flex" }}> */}
-              {/* <Sidebar />
-              <div>
-                <Button
-                  type="primary"
-                  onClick={toggleCollapsed}
-                  style={{ marginBottom: 10 }}
-                >
-                  {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-                </Button>
-
-                <Menu
-                  style={{ maxHeight: "calc(73vh - 64px)", overflowY: "auto" }}
-                  defaultSelectedKeys={["1"]}
-                  defaultOpenKeys={["sub1"]}
-                  mode="inline"
-                  theme="light"
-                  inlineCollapsed={menuCollapsed}
-                  onClick={({ key }) => handleMenuClick(key)}
-                >
-                  {items.map((item) =>
-                    item.items ? (
-                      <SubMenu
-                        key={item.key}
-                        icon={item.icon}
-                        title={item.label}
-                      >
-                        {item.items.map((subItem) => (
-                          <Menu.Item key={subItem.key}>
-                            {subItem.label}
-                          </Menu.Item>
-                        ))}
-                      </SubMenu>
-                    ) : (
-                      <Menu.Item key={item.key} icon={item.icon}>
-                        {item.label}
-                        <Link to={item.route}></Link>
-                      </Menu.Item>
-                    )
-                  )}
-                </Menu>
-              </div> */}
               <div
                 style={{
                   display: "flex",
                   flexDirection: "column",
                   marginLeft: 20,
                   width: "100%",
+                  maxHeight: "calc(71vh - 64px)",
+                  overflow:'auto'
                 }}
               >
                 <div
