@@ -12,17 +12,30 @@ import "./style.css";
 import Header from "./components/Header.jsx";
 import Footer from "./components/Footer.jsx"
 import "./style.scss"
-// import Sidebar from "./components/Sidebar.jsx";
+import Sidebar from "./components/Sidebar.jsx";
+import { Layout as AntLayout } from "antd";
+const { Content } = AntLayout;
 
-const Layout = () =>{
+
+const Layout = () => {
   return (
-    <>
+    
+    
+    <AntLayout>
       <Header />
-      <Outlet />
-      <Footer />
-    </>
-  )
-}
+      <AntLayout style={{ minHeight: "100vh", display: "flex" }}>
+    <Sidebar />
+      <Content style={{ padding: "0 50px", marginTop: 64, flex: 1 }}>
+        <div style={{ background: "#fff", padding: 24, minHeight: 380 }}>
+          <Outlet />
+        </div>
+      </Content>
+      <Footer style={{ textAlign: "center" }}>Footer</Footer>
+    </AntLayout>
+  </AntLayout>
+    
+  );
+};
 function App(){
   return (
     <div className="app">

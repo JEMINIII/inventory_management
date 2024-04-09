@@ -5,6 +5,7 @@ import Chart from "chart.js/auto";
 import { Table } from "react-bootstrap";
 // import Button from "react-bootstrap/Button";
 import Offcanvas from "react-bootstrap/Offcanvas";
+import Sidebar from "../components/Sidebar";
 import {
   AppstoreOutlined,
   ContainerOutlined,
@@ -18,7 +19,7 @@ import { Button, Menu, Card } from "antd";
 
 const items = [
   { key: "1", label: "Item List", icon: <PieChartOutlined />, route: "/" },
-  { key: "2", label: "Stock In", icon: <DesktopOutlined />, route: "/stockin" },
+  { key: "2", label: "Stock In", icon: <DesktopOutlined />, route: "/create" },
   {
     key: "3",
     label: "Stock Out",
@@ -102,8 +103,6 @@ export const Home = () => {
   const [show, setShow] = useState(false);
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("All");
   const [collapsed, setCollapsed] = useState(false);
   const [menuCollapsed, setMenuCollapsed] = useState(false);
 
@@ -153,36 +152,25 @@ export const Home = () => {
       .catch((err) => console.log(err));
   };
 
-  const handleSearch = () => {
-    const filtered = data.filter((item) =>
-      item.product_name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    setFilteredData(filtered);
-  };
-
-  const handleCategoryFilter = (category) => {
-    setCategoryFilter(category);
-    if (category === "All") {
-      setFilteredData(data);
-    } else {
-      const filtered = data.filter((item) => item.category === category);
-      setFilteredData(filtered);
-    }
-  };
-
   const toggleCollapsed = () => {
     // setCollapsed(!collapsed);
     setMenuCollapsed(!menuCollapsed);
   };
   const { SubMenu } = Menu;
   const navigate = useNavigate();
+  const [selectedMenuItem, setSelectedMenuItem] = useState(null);
+
+  const handleMenuClick = (key) => {
+    setSelectedMenuItem(key);
+  };
 
   return (
     <div>
       <div className="container mt-4">
         {auth ? (
           <>
-            <div style={{ display: "flex" }}>
+            {/* <div style={{ display: "flex" }}> */}
+              {/* <Sidebar />
               <div>
                 <Button
                   type="primary"
@@ -199,7 +187,7 @@ export const Home = () => {
                   mode="inline"
                   theme="light"
                   inlineCollapsed={menuCollapsed}
-                  // overflowedIndicator={<div style={{ color: 'red' }}>More</div>}
+                  onClick={({ key }) => handleMenuClick(key)}
                 >
                   {items.map((item) =>
                     item.items ? (
@@ -222,7 +210,7 @@ export const Home = () => {
                     )
                   )}
                 </Menu>
-              </div>
+              </div> */}
               <div
                 style={{
                   display: "flex",
@@ -290,7 +278,7 @@ export const Home = () => {
                   <Card style={{ width: "48%" }}>Second Card </Card>
                 </div>
               </div>
-            </div>
+            {/* </div> */}
           </>
         ) : (
           <div>
