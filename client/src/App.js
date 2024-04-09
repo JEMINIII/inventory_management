@@ -23,8 +23,19 @@ const Layout = () => {
     
     <AntLayout style={{background:'#ffffff' }}>
     <Header />
-    <Content style={{ padding: "0 50px", marginTop: 20,background:'#ffffff' }}>
-      <div style={{ display: "flex",marginBottom:20 }}>
+    {/* <Content style={{ padding: "0 50px", marginTop: 20 }}>
+  <div style={{ display: "flex", flexDirection: "column-reverse", marginBottom: 20 }}>
+    <div style={{ flex: 1 }}>
+      <div style={{ padding: 24 }}>
+        <Outlet />
+      </div>
+    </div>
+    <Sidebar />
+  </div>
+</Content> */}
+
+    <Content style={{ padding: "0 50px", marginTop: 20}}>
+      <div style={{ display: "flex",flexDirection:'row',marginBottom:20,overflow:"auto" }}>
         <Sidebar />
         <div style={{ flex: 1, marginLeft: 0}}>
           <div style={{padding: 24 }}>

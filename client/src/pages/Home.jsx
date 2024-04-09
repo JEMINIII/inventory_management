@@ -195,7 +195,7 @@ export const Home = () => {
                 <div
                   style={{ display: "flex", justifyContent: "space-between" }}
                 >
-                  <Card style={{ width: "48%" }}>
+                  <Card className="mb-3" style={{ width: "100%" ,overflow:'auto'}}>
                     <div className="table-responsive">
                       <Table hover responsive>
                         <tbody>
@@ -235,7 +235,7 @@ export const Home = () => {
                       </Table>
                     </div>
                   </Card>
-                  <Card style={{ width: "48%" }}>Second Card </Card>
+                  <Card className="mb-3" style={{ width: "100%" }}>Second Card </Card>
                 </div>
               </div>
             {/* </div> */}
