@@ -6,6 +6,8 @@ import { Table } from "react-bootstrap";
 // import Button from "react-bootstrap/Button";
 import Offcanvas from "react-bootstrap/Offcanvas";
 import Sidebar from "../components/Sidebar";
+import { Input } from "antd";
+import { SearchOutlined } from "@ant-design/icons";
 import {
   AppstoreOutlined,
   ContainerOutlined,
@@ -95,7 +97,7 @@ const items = [
 
 export const Home = () => {
   const [data, setData] = useState([]);
-  const [filteredData, setFilteredData] = useState([]);
+  // const [filteredData, setFilteredData] = useState([]);
   const [auth, setAuth] = useState(false);
   const [message, setMessage] = useState("");
   const [name, setName] = useState("");
@@ -105,6 +107,17 @@ export const Home = () => {
   const handleShow = () => setShow(true);
   const [collapsed, setCollapsed] = useState(false);
   const [menuCollapsed, setMenuCollapsed] = useState(false);
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filteredData, setFilteredData] = useState([]); 
+
+  useEffect(() => {
+    const filtered = data.filter(item =>
+      item.product_name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    setFilteredData(filtered);
+  }, [searchQuery, data]);
+  
 
   axios.defaults.withCredentials = true;
 
@@ -169,73 +182,60 @@ export const Home = () => {
       <div className="container mt-4">
         {auth ? (
           <>
-              <div
-                style={{
+              <div style={{
                   display: "flex",
                   flexDirection: "column",
-                  marginLeft: 20,
                   width: "100%",
-                  maxHeight: "calc(71vh - 64px)",
-                  overflow:'auto'
-                }}
-              >
+                  maxHeight: "calc(80vh - 64px)",
+                }}>
                 <div
                   style={{
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "space-between",
                     marginBottom: 10,
+                    height: "calc(100vh - 64px)"
                   }}
                 >
                   <h2>Item List</h2>
-                  <Button href="/create" type="primary">
+                  
+                  
+                  
+                  <Button href="/create">
                     + Add Item
                   </Button>
                 </div>
+                
                 <div
                   style={{ display: "flex", justifyContent: "space-between" }}
                 >
-                  <Card className="mb-3" style={{ width: "100%" ,overflow:'auto'}}>
+                  
+                  <Card className="mb-3" style={{ width: "100%", border: "none",  height: "calc(77vh - 64px)", overflowY: "auto" }}>
                     <div className="table-responsive">
-                      <Table hover responsive>
-                        <tbody>
-                          {filteredData.map((inventory, index) => (
-                            <tr key={index}>
-                              <td>{inventory.product_name}</td>
-
-                              <td>{inventory.quantity}</td>
-
-                              <td>
-                                <div className="d-flex justify-content-between align-items-center">
-                                  <Link
-                                    to={`/read/${inventory.product_id}`}
-                                    className="btn btn-sm btn-info mr-2"
-                                  >
-                                    Read
-                                  </Link>
-                                  <Link
-                                    to={`/edit/${inventory.product_id}`}
-                                    className="btn btn-sm btn-primary mr-2"
-                                  >
-                                    Edit
-                                  </Link>
-                                  <button
-                                    onClick={() =>
-                                      handleDelete(inventory.product_id)
-                                    }
-                                    className="btn btn-sm btn-danger"
-                                  >
-                                    Delete
-                                  </button>
-                                </div>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </Table>
+                    <table>
+                    <tbody>
+                      {filteredData.map((inventory, index) => (
+                        <tr key={index} onClick={() => navigate(`/read/${inventory.product_id}`)} style={{ cursor: "pointer" }}>
+                          <td>
+                              {inventory.product_name}
+                          </td>
+                          <td>{inventory.quantity}</td>
+                          {/* Add other columns as needed */}
+                        </tr>
+                      ))}
+                    </tbody>
+                </table>
                     </div>
                   </Card>
-                  <Card className="mb-3" style={{ width: "100%" }}>Second Card </Card>
+
+                  <Card className="mb-3" style={{ width: "100%", border: "none", height: "calc(77vh - 64px)", overflowY: "auto", display: "flex", justifyContent: "center", alignItems: "center" }}>
+                    <div style={{ padding: "24px",paddingTop:'103px', color: "#ccc", textAlign: "center" }}>
+                      To view inventory details,<br/> you can group items
+                      by attribute or <br/>select them individually from the list on the left.
+                    </div>
+                  </Card>
+
+
                 </div>
               </div>
             {/* </div> */}

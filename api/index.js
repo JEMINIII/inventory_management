@@ -236,6 +236,34 @@ app.delete("/delete/:id",(req,res)=>{
     })
 })
 
+app.get('/sidebar', async (req, res) => {
+    try {
+        const q = 'SELECT * FROM menu';
+        db.query(q, (err, result) => {
+            if (err) {
+                console.error('Error fetching menu items:', err);
+                return res.status(500).json({ error: 'Failed to fetch menu items' });
+            }
+
+            const formattedMenuItems = result.map(item => ({
+                key: item.key,
+                label: item.label,
+                icon: item.icon,
+                route: item.route
+            }));
+
+            res.json(formattedMenuItems);
+        });
+    } catch (err) {
+        console.error('Error fetching menu items:', err);
+        res.status(500).json({ error: 'Failed to fetch menu items' });
+    }
+});
+
+  
+
+  
+
 
 app.listen(8082,()=>{
     console.log("listening")});

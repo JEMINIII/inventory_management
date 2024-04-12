@@ -20,7 +20,8 @@ const Read = () => {
 
   return (
     <div className=' bg-light '>
-            <div className=' bg-white rounded p-3' style={{ maxHeight: "calc(64.5vh - 64px)", overflowY: "auto" }}>
+            <div className=' bg-white rounded p-3' style={{ maxHeight: "calc(85vh - 25px)",
+          height: "calc(100vh - 64px)", overflowY: "auto" }}>
       <div className="card">
         <div className="card-header">
           <h2 className="mb-0">Product Details</h2>
@@ -53,7 +54,7 @@ const Read = () => {
             <Link to="/" className="btn btn-primary me-2">
               Back
             </Link>
-            <Link to={`/edit/${stock?.product_id}`} className="btn btn-info">
+            <Link to={`/edit/${stock?.product_id}`} className="btn btn-info me-2">
               Edit
             </Link>
           </div>

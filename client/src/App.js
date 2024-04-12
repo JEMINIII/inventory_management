@@ -14,7 +14,9 @@ import Footer from "./components/Footer.jsx"
 import "./style.scss"
 import Sidebar from "./components/Sidebar.jsx";
 import { Layout as AntLayout } from "antd";
+import Member from "./pages/Member.jsx";
 const { Content } = AntLayout;
+
 
 
 const Layout = () => {
@@ -23,36 +25,28 @@ const Layout = () => {
     
     <AntLayout style={{background:'#ffffff' }}>
     <Header />
-    {/* <Content style={{ padding: "0 50px", marginTop: 20 }}>
-  <div style={{ display: "flex", flexDirection: "column-reverse", marginBottom: 20 }}>
-    <div style={{ flex: 1 }}>
-      <div style={{ padding: 24 }}>
-        <Outlet />
-      </div>
-    </div>
-    <Sidebar />
-  </div>
-</Content> */}
-
-    <Content style={{ padding: "0 50px", marginTop: 20}}>
-      <div style={{ display: "flex",flexDirection:'row',marginBottom:20,overflow:"auto" }}>
+    <Footer style={{ textAlign: "center" }}>Footer</Footer>
+    <Content style={{justifyContent:'space-between'}}>
+      <div style={{ display: "flex",flexDirection:'row',marginBottom:20,background:'transparent' }}>
         <Sidebar />
-        <div style={{ flex: 1, marginLeft: 0}}>
-          <div style={{padding: 24 }}>
+        <div style={{paddingLeft:40,paddingRight:40, flex: 1, marginLeft: 0,overflow:"auto"}}>
+          <div>
             <Outlet />
           </div>
+          
         </div>
+        
       </div>
     </Content>
-    <Footer style={{ textAlign: "center" }}>Footer</Footer>
+    
   </AntLayout>
     
   );
 };
 function App(){
   return (
-    <div className="app">
-    <div className="container">
+   
+    <div>
     <BrowserRouter>
     <Routes>
     <Route path="/" element={<Layout/>}>
@@ -60,6 +54,8 @@ function App(){
       <Route path="/create" element={<Create />} />
       <Route path="/read/:id" element={<Read />}/>
       <Route path="/edit/:id" element={<Update />}/>
+      <Route path="/member" element={<Member />}/>
+      
     </Route>
       
       <Route path="/login" element={<Login />}/>
@@ -67,7 +63,7 @@ function App(){
     </Routes>
     </BrowserRouter>
     </div>
-    </div>
+    
   )
 }
 

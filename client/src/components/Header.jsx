@@ -34,7 +34,6 @@ function Header() {
   return (
   
     <div className="navbar">
-      <div className="container">
         <div className="logo">
           <img src={logo22} alt="" />
         </div>
@@ -50,7 +49,7 @@ function Header() {
                     <li className="nav-item">
                       <Link
                         to="/profile"
-                        style={{ backgroundColor: "green" }}
+                        style={{ backgroundColor: "pink" }}
                         className="nav-link"
                       >
                         {name}
@@ -73,7 +72,7 @@ function Header() {
           </span>
         </div>
       </div>
-    </div>
+    
   );
 }
 

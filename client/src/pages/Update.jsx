@@ -40,7 +40,8 @@ const Update = () => {
 
   return (
     <div className=' bg-light justify-content-center align-items-center'>
-            <div className=' bg-white rounded p-3' style={{ textAlign: "center", maxHeight: "calc(64.5vh - 64px)", overflowY: "auto" }}>
+            <div className=' bg-white rounded p-3' style={{ textAlign: "center", maxHeight: "calc(85vh - 25px)",
+          height: "calc(100vh - 64px)", overflowY: "auto" }}>
         <form onSubmit={handleUpdate}>
           <h2>Update Inventory</h2>
           <div className='mb-2'>
