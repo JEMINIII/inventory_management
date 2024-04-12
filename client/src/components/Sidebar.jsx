@@ -1,13 +1,13 @@
 import React,{useState,useEffect} from 'react'
 import { Link, useNavigate } from "react-router-dom";
 import {
-    AppstoreOutlined,
-    ContainerOutlined,
-    DesktopOutlined,
-    MailOutlined,
-    MenuFoldOutlined,
-    MenuUnfoldOutlined,
-    PieChartOutlined,
+    // AppstoreOutlined,
+    // ContainerOutlined,
+    // DesktopOutlined,
+    // MailOutlined,
+    // MenuFoldOutlined,
+    // MenuUnfoldOutlined,
+    // PieChartOutlined,
     RightCircleOutlined,
     LeftCircleOutlined
   } from "@ant-design/icons";
@@ -118,8 +118,8 @@ const Sidebar = () => {
       const navigate = useNavigate();
       const [selectedMenuItem, setSelectedMenuItem] = useState(null);
     
-      const handleMenuClick = (key) => {
-        setSelectedMenuItem(key);
+      const handleMenuClick = (id) => {
+        setSelectedMenuItem(id);
       };
 
 
@@ -140,11 +140,11 @@ const Sidebar = () => {
       
   const nestedMenuItems = {};
 menuItems.forEach(item => {
-  if (item.parent_key === null) {
-    nestedMenuItems[item.key] = { ...item, submenus: [] };
+  if (item.parent_id === null) {
+    nestedMenuItems[item.id] = { ...item, submenus: [] };
   } else {
-    if (nestedMenuItems[item.parent_key]) {
-      nestedMenuItems[item.parent_key].submenus.push(item);
+    if (nestedMenuItems[item.parent_id]) {
+      nestedMenuItems[item.parent_id].submenus.push(item);
     }
   }
 });
@@ -169,16 +169,16 @@ menuItems.forEach(item => {
 
 {menuItems.map((item) =>
   item.submenus ? (
-    <Menu.SubMenu id={item.key} icon={item.icon ? React.createElement(iconComponents[item.icon]) : null} title={item.label}>
+    <Menu.SubMenu id={item.id} icon={item.icon ? React.createElement(iconComponents[item.icon]) : null} title={item.label}>
       {item.submenus.map((submenu) => (
-        <Menu.Item key={submenu.key} icon={submenu.icon ? React.createElement(iconComponents[submenu.icon]) : null}>
+        <Menu.Item id={submenu.id} icon={submenu.icon ? React.createElement(iconComponents[submenu.icon]) : null}>
           {submenu.label}
           <Link to={submenu.route}></Link>
         </Menu.Item>
       ))}
     </Menu.SubMenu>
   ) : (
-    <Menu.Item key={item.key} icon={item.icon ? React.createElement(iconComponents[item.icon]) : null}>
+    <Menu.Item id={item.id} icon={item.icon ? React.createElement(iconComponents[item.icon]) : null}>
       {item.label}
       <Link to={item.route}></Link>
     </Menu.Item>
