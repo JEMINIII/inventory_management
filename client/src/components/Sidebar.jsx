@@ -138,6 +138,16 @@ const Sidebar = () => {
       });
   }, []);
       
+  const nestedMenuItems = {};
+menuItems.forEach(item => {
+  if (item.parent_key === null) {
+    nestedMenuItems[item.key] = { ...item, submenus: [] };
+  } else {
+    if (nestedMenuItems[item.parent_key]) {
+      nestedMenuItems[item.parent_key].submenus.push(item);
+    }
+  }
+});
 
   return (
     <div>
@@ -154,16 +164,25 @@ const Sidebar = () => {
         mode="inline"
         theme="light"
         inlineCollapsed={menuCollapsed}
-        onClick={({ key }) => handleMenuClick(key)}
+        onClick={({ id }) => handleMenuClick(id)}
 >
 
 {menuItems.map((item) =>
-  <Menu.Item key={item.key} icon={item.icon ? React.createElement(iconComponents[item.icon]) : null}>
-  {item.label}
-  <Link to={item.route}></Link>
-</Menu.Item>
-
-
+  item.submenus ? (
+    <Menu.SubMenu id={item.key} icon={item.icon ? React.createElement(iconComponents[item.icon]) : null} title={item.label}>
+      {item.submenus.map((submenu) => (
+        <Menu.Item key={submenu.key} icon={submenu.icon ? React.createElement(iconComponents[submenu.icon]) : null}>
+          {submenu.label}
+          <Link to={submenu.route}></Link>
+        </Menu.Item>
+      ))}
+    </Menu.SubMenu>
+  ) : (
+    <Menu.Item key={item.key} icon={item.icon ? React.createElement(iconComponents[item.icon]) : null}>
+      {item.label}
+      <Link to={item.route}></Link>
+    </Menu.Item>
+  )
 )}
 
 </Menu>

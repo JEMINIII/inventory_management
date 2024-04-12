@@ -246,13 +246,15 @@ app.get('/sidebar', async (req, res) => {
             }
 
             const formattedMenuItems = result.map(item => ({
-                key: item.key,
+                id: item.id,
                 label: item.label,
                 icon: item.icon,
-                route: item.route
+                route: item.route,
+                parent_key:item.parent_key
             }));
 
             res.json(formattedMenuItems);
+            // console.log(formattedMenuItems)
         });
     } catch (err) {
         console.error('Error fetching menu items:', err);
