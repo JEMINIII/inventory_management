@@ -250,7 +250,7 @@ app.get('/sidebar', async (req, res) => {
                 label: item.label,
                 icon: item.icon,
                 route: item.route,
-                parent_key:item.parent_key
+                parent_id:item.parent_id
             }));
 
             res.json(formattedMenuItems);
