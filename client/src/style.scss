@@ -1,4 +1,6 @@
-$lightYellow: #d5dbdd;
+$button: #de7d9b;
+$menu:#cbedfa;
+$menuHover:#39bfec;
 
 
 
@@ -15,7 +17,7 @@ $lightYellow: #d5dbdd;
             border: none;
             cursor: pointer;
             color: rgb(71, 6, 57);
-            background-color: #de7d9b;
+            background-color: $button;
             border-radius: 50px;
         
         }
@@ -122,7 +124,7 @@ $lightYellow: #d5dbdd;
   }
   
   ::-webkit-scrollbar-track {
-    background: #debdbd;
+    background: $menu;
   }
   
   ::-webkit-scrollbar-thumb {
@@ -130,24 +132,24 @@ $lightYellow: #d5dbdd;
   }
   
   ::-webkit-scrollbar-thumb:hover {
-    background: #8da7b9;
+    background: $menuHover;
   }
   
   .menu .ant-menu-item-selected, .menu .ant-menu-submenu-title-selected {
-    background-color: #fd99ac; /* Set the desired background color for the selected item */
+    background-color:$menu; /* Set the desired background color for the selected item */
     color: #000; /* Set the desired text color for the selected item */
   }
 
   a[href="/create"] {
     /* Your styles here */
     color: #fff; /* Text color */
-    background-color: #fd99ac; /* Background color */
+    background-color:$menuHover; /* Background color */
     text-decoration: none; /* Remove underline */
     
   }
   
   a[href="/create"]:hover {
-    background-color: #d95870; /* Hover background color */
+    background-color:$menuHover; /* Hover background color */
     border-color: #fd99ac; /* Hover border color */
   }
 
@@ -168,7 +170,7 @@ $lightYellow: #d5dbdd;
   }
   
   table tr:hover td {
-    background-color: #fedde3; /* Change the background color on hover */
+    background-color: $menu; /* Change the background color on hover */
     cursor: pointer; /* Change the cursor to a pointer on hover */
   }
   :where(.css-dev-only-do-not-override-11xg00t).ant-card .ant-card-body {
@@ -194,27 +196,28 @@ $lightYellow: #d5dbdd;
   
   .btn-primary {
     color: #fff;
-    background-color: #fd99ac;
-    border-color: #fd99ac;
+    background-color: $menuHover;
+    border-color:$menuHover;
   }
   
   .btn-primary:hover {
-    background-color: #fe6a85;
-    border-color: #fe6a85;
+    background-color: $menuHover;
+    border-color: $menuHover;
   }
   .card-header {
-    background-color: #fedde3;
+    background-color:$menu;
     border-bottom: 3px solid rgba(0, 0, 0, 0.125);
   }
   .btn-info {
     color: #fff;
-    background-color: #17a2b8;
-    border-color: #17a2b8;
+    background-color: $menuHover;
+    border-color: $menuHover;
   }
   
   .btn-info:hover {
-    background-color: #138496;
-    border-color: #117a8b;
+    color: #fff;
+    background-color: $menuHover;
+    border-color: green;
   }
   
 

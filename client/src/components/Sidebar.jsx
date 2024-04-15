@@ -161,7 +161,7 @@ const Sidebar = () => {
       <Menu
         className="menu"
         style={{
-          maxHeight: "calc(85vh - 25px)",
+          maxHeight: "calc(83.7vh - 25px)",
           height: "calc(100vh - 64px)", // Set a fixed height
           overflowY: "auto",
           top: 30,
@@ -176,44 +176,44 @@ const Sidebar = () => {
         onOpenChange={handleOpenChange}
       >
         {Object.values(nestedMenuItems).map((menuItem) =>
-        menuItem.submenus.length > 0 ? (
-          <Menu.SubMenu
-            key={menuItem.id}
-            icon={
-              menuItem.icon
-                ? React.createElement(iconComponents[menuItem.icon])
-                : null
-            }
-            title={menuItem.label}
-          >
-            {menuItem.submenus.map((submenu) => (
-              <Menu.Item
-                key={submenu.id}
-                icon={
-                  submenu.icon
-                    ? React.createElement(iconComponents[submenu.icon])
-                    : null
-                }
-              >
-                {submenu.label}
-                <Link to={submenu.route}></Link>
-              </Menu.Item>
-            ))}
-          </Menu.SubMenu>
-        ) : (
-          <Menu.Item
-            key={menuItem.id}
-            icon={
-              menuItem.icon
-                ? React.createElement(iconComponents[menuItem.icon])
-                : null
-            }
-          >
-            {menuItem.label}
-            <Link to={menuItem.route}></Link>
-          </Menu.Item>
-        )
-      )}
+          menuItem.submenus.length > 0 ? (
+            <Menu.SubMenu
+              key={menuItem.id}
+              icon={
+                menuItem.icon
+                  ? React.createElement(iconComponents[menuItem.icon])
+                  : null
+              }
+              title={menuItem.label}
+            >
+              {menuItem.submenus.map((submenu) => (
+                <Menu.Item
+                  key={submenu.id}
+                  icon={
+                    submenu.icon
+                      ? React.createElement(iconComponents[submenu.icon])
+                      : null
+                  }
+                >
+                  {submenu.label}
+                  <Link to={submenu.route}></Link>
+                </Menu.Item>
+              ))}
+            </Menu.SubMenu>
+          ) : (
+            <Menu.Item
+              key={menuItem.id}
+              icon={
+                menuItem.icon
+                  ? React.createElement(iconComponents[menuItem.icon])
+                  : null
+              }
+            >
+              {menuItem.label}
+              <Link to={menuItem.route}></Link>
+            </Menu.Item>
+          )
+        )}
       </Menu>
 
       <Button
