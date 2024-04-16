@@ -1,99 +1,84 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
-import Chart from "chart.js/auto";
-import { Table } from "react-bootstrap";
-// import Button from "react-bootstrap/Button";
-import Offcanvas from "react-bootstrap/Offcanvas";
-import Sidebar from "../components/Sidebar";
-import { Input } from "antd";
-import { SearchOutlined } from "@ant-design/icons";
-import {
-  AppstoreOutlined,
-  ContainerOutlined,
-  DesktopOutlined,
-  MailOutlined,
-  MenuFoldOutlined,
-  MenuUnfoldOutlined,
-  PieChartOutlined,
-} from "@ant-design/icons";
+
 import { Button, Menu, Card } from "antd";
 
-const items = [
-  { key: "1", label: "Item List", icon: <PieChartOutlined />, route: "/" },
-  { key: "2", label: "Stock In", icon: <DesktopOutlined />, route: "/create" },
-  {
-    key: "3",
-    label: "Stock Out",
-    icon: <ContainerOutlined />,
-    route: "/stockout",
-  },
-  { key: "4", label: "Adjust", icon: <ContainerOutlined /> },
-  { key: "5", label: "Transaction", icon: <ContainerOutlined /> },
-  {
-    key: "sub1",
-    label: "Purchase & Sales",
-    icon: <MailOutlined />,
-    items: [
-      { key: "6", label: "Bundles" },
-      { key: "7", label: "Purchases" },
-      { key: "8", label: "Sales" },
-      { key: "9", label: "Salses Analysis" },
-    ],
-  },
-  {
-    key: "sub2",
-    label: "Print Barcode",
-    icon: <MailOutlined />,
-    items: [
-      { key: "10", label: "Item" },
-      { key: "11", label: "Bundle" },
-    ],
-  },
-  {
-    key: "sub3",
-    label: "Other Features",
-    icon: <MailOutlined />,
-    items: [
-      { key: "12", label: "Low Stock Alert" },
-      { key: "13", label: "Past Quantity" },
-      { key: "14", label: "Inventory Link" },
-      { key: "15", label: "Inventory Count" },
-    ],
-  },
-  {
-    key: "sub4",
-    label: "Reports",
-    icon: <AppstoreOutlined />,
-    items: [
-      { key: "16", label: "Summary" },
-      { key: "17", label: "Dashboard" },
-      { key: "18", label: "Analytics" },
-    ],
-  },
-  {
-    key: "sub5",
-    label: "Data Center",
-    icon: <AppstoreOutlined />,
-    items: [
-      { key: "19", label: "Item" },
-      { key: "20", label: "Attribute" },
-      { key: "21", label: "Partners" },
-    ],
-  },
-  {
-    key: "sub6",
-    label: "Settings",
-    icon: <AppstoreOutlined />,
-    items: [
-      { key: "22", label: "User" },
-      { key: "23", label: "Team" },
-      { key: "24", label: "Members" },
-      { key: "25", label: "Integration & API" },
-      { key: "26", label: "Billing" },
-    ],
-  },
-];
+// const items = [
+//   { key: "1", label: "Item List", icon: <PieChartOutlined />, route: "/" },
+//   { key: "2", label: "Stock In", icon: <DesktopOutlined />, route: "/create" },
+//   {
+//     key: "3",
+//     label: "Stock Out",
+//     icon: <ContainerOutlined />,
+//     route: "/stockout",
+//   },
+//   { key: "4", label: "Adjust", icon: <ContainerOutlined /> },
+//   { key: "5", label: "Transaction", icon: <ContainerOutlined /> },
+//   {
+//     key: "sub1",
+//     label: "Purchase & Sales",
+//     icon: <MailOutlined />,
+//     items: [
+//       { key: "6", label: "Bundles" },
+//       { key: "7", label: "Purchases" },
+//       { key: "8", label: "Sales" },
+//       { key: "9", label: "Salses Analysis" },
+//     ],
+//   },
+//   {
+//     key: "sub2",
+//     label: "Print Barcode",
+//     icon: <MailOutlined />,
+//     items: [
+//       { key: "10", label: "Item" },
+//       { key: "11", label: "Bundle" },
+//     ],
+//   },
+//   {
+//     key: "sub3",
+//     label: "Other Features",
+//     icon: <MailOutlined />,
+//     items: [
+//       { key: "12", label: "Low Stock Alert" },
+//       { key: "13", label: "Past Quantity" },
+//       { key: "14", label: "Inventory Link" },
+//       { key: "15", label: "Inventory Count" },
+//     ],
+//   },
+//   {
+//     key: "sub4",
+//     label: "Reports",
+//     icon: <AppstoreOutlined />,
+//     items: [
+//       { key: "16", label: "Summary" },
+//       { key: "17", label: "Dashboard" },
+//       { key: "18", label: "Analytics" },
+//     ],
+//   },
+//   {
+//     key: "sub5",
+//     label: "Data Center",
+//     icon: <AppstoreOutlined />,
+//     items: [
+//       { key: "19", label: "Item" },
+//       { key: "20", label: "Attribute" },
+//       { key: "21", label: "Partners" },
+//     ],
+//   },
+//   {
+//     key: "sub6",
+//     label: "Settings",
+//     icon: <AppstoreOutlined />,
+//     items: [
+//       { key: "22", label: "User" },
+//       { key: "23", label: "Team" },
+//       { key: "24", label: "Members" },
+//       { key: "25", label: "Integration & API" },
+//       { key: "26", label: "Billing" },
+//     ],
+//   },
+// ];
 
 export const Home = () => {
   const [data, setData] = useState([]);
@@ -101,11 +86,11 @@ export const Home = () => {
   const [auth, setAuth] = useState(false);
   const [message, setMessage] = useState("");
   const [name, setName] = useState("");
-  const [chartData, setChartData] = useState(null);
-  const [show, setShow] = useState(false);
-  const handleClose = () => setShow(false);
-  const handleShow = () => setShow(true);
-  const [collapsed, setCollapsed] = useState(false);
+  // const [chartData, setChartData] = useState(null);
+  // const [show, setShow] = useState(false);
+  // const handleClose = () => setShow(false);
+  // const handleShow = () => setShow(true);
+  // const [collapsed, setCollapsed] = useState(false);
   const [menuCollapsed, setMenuCollapsed] = useState(false);
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -123,7 +108,7 @@ export const Home = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:8082")
+      .get("http://localhost:8082/table")
       .then((res) => {
         if (res.data.Status === "success") {
           setAuth(true);

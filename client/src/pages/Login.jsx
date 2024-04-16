@@ -1,5 +1,5 @@
 import axios from "axios";
-import React,{useState} from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 const Login = () => {
@@ -8,34 +8,33 @@ const Login = () => {
     password: "",
   });
   const navigate = useNavigate();
-  axios.defaults.withCredentials=true;
-  const [backendError,setBackendError] = useState([])
+  axios.defaults.withCredentials = true;
+  const [backendError, setBackendError] = useState([]);
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!values.email || !values.password) {
       alert("Please fill in all fields");
-      return
+      return;
     }
     axios
-      .post("http://localhost:8082/login", values)
+      .post("http://localhost:8082/auth/login", values)
       .then((res) => {
         if (res.data.errors) {
-            setBackendError(res.data.errors);
-                }
-        else {
+          setBackendError(res.data.errors);
+        } else {
           setBackendError([]);
-        if (res.data.Status === "success") {
-                  navigate("/");
-                }
-        else {
-                  alert("no record existed");
-                }
-    }})
+          if (res.data.Status === "success") {
+            navigate("/");
+          } else {
+            alert("no record existed");
+          }
+        }
+      })
       .catch((err) => console.log(err));
   };
-  const handleInput = (e)=>{
-    setValues(prev => ({...prev, [e.target.name]:[e.target.value]}))
-  }
+  const handleInput = (e) => {
+    setValues((prev) => ({ ...prev, [e.target.name]: [e.target.value] }));
+  };
 
   return (
     <div className="d-flex justify-content-center align-items-center bg-light vh-100">
@@ -55,11 +54,8 @@ const Login = () => {
             Login
           </h2>
         </div>
-        {
-          backendError && backendError.map(e => (
-            <p className="text-danger">{e.msg}</p>
-          )) 
-        }
+        {backendError &&
+          backendError.map((e) => <p className="text-danger">{e.msg}</p>)}
         <form onSubmit={handleSubmit}>
           <div className="mb-3">
             <label htmlFor="email">

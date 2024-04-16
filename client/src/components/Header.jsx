@@ -10,7 +10,7 @@ function Header() {
 
   useEffect(() => {
     axios
-      .get("http://localhost:8082")
+      .get("http://localhost:8082/table")
       .then((res) => {
         if (res.data.Status === "success") {
           setAuth(true);
@@ -32,47 +32,45 @@ function Header() {
   };
 
   return (
-  
     <div className="navbar">
-        <div className="logo">
-          <img src={logo22} alt="" />
-        </div>
+      <div className="logo">
+        <img src={logo22} alt="" />
+      </div>
 
-        <div className="links">
-          <span className="dropdown">
-            <img className="logo22" src={Logo} alt="" />
-            <div className="dropdown-content">
-              <ul className="navbar-nav ml-auto">
-                {auth ? (
-                  // <div className="d-flex align-items-center gap-5">
-                  <>
-                    <li className="nav-item">
-                      <Link
-                        to="/profile"
-                        style={{ backgroundColor: "pink" }}
-                        className="nav-link"
-                      >
-                        {name}
-                      </Link>
-                    </li>
-                    <li className="nav-item">
-                      <Link onClick={handleLogout}>Logout</Link>
-                    </li>
-                  </>
-                ) : (
+      <div className="links">
+        <span className="dropdown">
+          <img className="logo22" src={Logo} alt="" />
+          <div className="dropdown-content">
+            <ul className="navbar-nav ml-auto">
+              {auth ? (
+                // <div className="d-flex align-items-center gap-5">
+                <>
                   <li className="nav-item">
-                    <Link to="/login" className="nav-link">
-                      Login
+                    <Link
+                      to="/profile"
+                      style={{ backgroundColor: "pink" }}
+                      className="nav-link"
+                    >
+                      {name}
                     </Link>
                   </li>
-                )}
-              </ul>
-              <a href="/">Settings</a>
-            </div>
-          </span>
-        </div>
+                  <li className="nav-item">
+                    <Link onClick={handleLogout}>Logout</Link>
+                  </li>
+                </>
+              ) : (
+                <li className="nav-item">
+                  <Link to="/login" className="nav-link">
+                    Login
+                  </Link>
+                </li>
+              )}
+            </ul>
+            <a href="/">Settings</a>
+          </div>
+        </span>
       </div>
-    
+    </div>
   );
 }
 
