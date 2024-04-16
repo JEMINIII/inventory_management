@@ -1,8 +1,10 @@
-import React from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { useState } from 'react';
-import axios from "axios"
+import React, { useState } from 'react';
 
+import axios from 'axios';
+import {
+  Link,
+  useNavigate,
+} from 'react-router-dom';
 
 const Register = () => {
     const [values,setValues] = useState({
@@ -20,7 +22,7 @@ const Register = () => {
         alert("Please fill in all fields");
         return;
       }
-      axios.post('http://localhost:8082/register',values)
+      axios.post('http://localhost:8082/auth/register',values)
       .then(res=>{
         if(res.data.Status === "success"){
           navigate("/login")

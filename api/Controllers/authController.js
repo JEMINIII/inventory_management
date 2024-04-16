@@ -1,7 +1,7 @@
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-import { validationResult } from "express-validator";
-import db from "../db.js";
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+
+import db from '../db.js';
 
 export const register = (req, res) => {
   // Registration logic
@@ -9,7 +9,7 @@ export const register = (req, res) => {
 
 //   // sourcery skip: avoid-using-var
   var myPlaintextPassword = req.body.password;
-
+  const salt = 10;
   const hash = bcrypt.hash(
     myPlaintextPassword.toString(),
     salt,
