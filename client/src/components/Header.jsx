@@ -10,7 +10,7 @@ function Header() {
 
   useEffect(() => {
     axios
-      .get("http://localhost:8082/table")
+      .get("http://localhost:8082")
       .then((res) => {
         if (res.data.Status === "success") {
           setAuth(true);

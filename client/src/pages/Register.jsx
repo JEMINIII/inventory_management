@@ -20,7 +20,7 @@ const Register = () => {
       return;
     }
     axios
-      .post("http://localhost:8082/auth/register", values)
+      .post("http://localhost:8082/register", values)
       .then((res) => {
         if (res.data.Status === "success") {
           navigate("/login");

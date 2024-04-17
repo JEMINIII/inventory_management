@@ -17,7 +17,7 @@ const Login = () => {
       return;
     }
     axios
-      .post("http://localhost:8082/auth/login", values)
+      .post("http://localhost:8082/login", values)
       .then((res) => {
         if (res.data.errors) {
           setBackendError(res.data.errors);

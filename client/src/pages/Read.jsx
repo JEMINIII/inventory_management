@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 const Read = () => {
   const { id } = useParams();
   const [stock, setStock] = useState({});
+  const [data, setData] = useState([]);
   // console.log(stock.image)
 
   useEffect(() => {
@@ -16,6 +17,18 @@ const Read = () => {
       })
       .catch((err) => console.log(err));
   }, [id]);
+
+  const handleDelete = (id) => {
+    axios
+      .delete("http://localhost:8082/delete/" + id)
+      .then((res) => {
+        const updatedData = data.filter(
+          (inventory) => inventory.product_id !== id
+        );
+        setData(updatedData);
+      })
+      .catch((err) => console.log(err));
+  };
 
   return (
     <div className=" bg-light ">
@@ -69,6 +82,15 @@ const Read = () => {
               >
                 Edit
               </Link>
+              <button
+                onClick={() => {
+                  handleDelete(stock.product_id);
+                  window.location.href = '/'; 
+                }}
+                className="btn btn-sm btn-danger"
+              >
+                Delete
+              </button>
             </div>
           </div>
         </div>
