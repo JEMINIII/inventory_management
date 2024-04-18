@@ -12,9 +12,10 @@ function Header() {
     axios
       .get("http://localhost:8082")
       .then((res) => {
-        if (res.data.Status === "success") {
+        console.log(res.data)
+        if (res.data.success === true) {
           setAuth(true);
-          setName(res.data.name);
+          setName(res.data[0].name);
         } else {
           setAuth(false);
         }

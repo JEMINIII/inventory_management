@@ -1,7 +1,7 @@
 import axios from "axios";
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-
+import Cookies from "js-cookie";
 const Login = () => {
   const [values, setValues] = useState({
     email: "",
@@ -23,14 +23,33 @@ const Login = () => {
           setBackendError(res.data.errors);
         } else {
           setBackendError([]);
-          if (res.data.Status === "success") {
+          // console.log(res.data.success);
+          if (res.data.success === true) {
+            Cookies.set("token", res.data.token, { expires: 1 });
             navigate("/");
           } else {
-            alert("no record existed");
+            alert("no record is exist");
           }
         }
       })
-      .catch((err) => console.log(err));
+      .catch((err) => {
+        if (err.response) {
+          // The request was made and the server responded with a status code
+          // that falls out of the range of 2xx
+          console.log(err.response.data);
+          console.log(err.response.status);
+          console.log(err.response.headers);
+          alert("An error occurred. Please try again later.");
+        } else if (err.request) {
+          // The request was made but no response was received
+          console.log(err.request);
+          alert("No response from the server. Please try again later.");
+        } else {
+          // Something happened in setting up the request that triggered an Error
+          console.log("Error", err.message);
+          alert("An error occurred. Please try again later.");
+        }
+      });
   };
   const handleInput = (e) => {
     setValues((prev) => ({ ...prev, [e.target.name]: [e.target.value] }));

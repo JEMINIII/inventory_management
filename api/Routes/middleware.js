@@ -2,18 +2,30 @@
 import jwt from "jsonwebtoken";
 
 export const verifyUser = (req, res, next) => {
-    const { token } = req.cookies;
-    if (!token) {
-      return res.json({ Error: "You are not authenticated" });
-    } else {
-      jwt.verify(token, "jwt-secret-key", (err, decoded) => {
-        if (err) {
-          return res.json({ Error: "Token is not ok" });
-        } else {
-          req.name = decoded.name;
-          next();
-          
-        }
-      });
+  const { token } = req.cookies;
+  // console.log(req.cookies.token)
+  console.log(token);
+
+
+  if (!token) {
+    return res.status(401).json({ error: "You are not authenticated" });
+  }
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    if (err) {
+      if (err.name === 'TokenExpiredError') {
+        // Handle expired token
+        console.error('JWT Token Expired:', err.expiredAt);
+        return res.status(401).json({ error: 'Token has expired' });
+      } else {
+        // Handle other JWT errors
+        console.error('JWT Verification Error:', err);
+        return res.status(401).json({ error: 'Token is not valid' });
+      }
     }
-  };
+  
+    // Token is valid, proceed with the next middleware
+    req.userId = decoded.userId;
+    next();
+  })
+}

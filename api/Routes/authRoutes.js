@@ -1,10 +1,13 @@
 import express from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { check, validationResult } from "express-validator";
+import { body, check, validationResult } from "express-validator";
 import { db } from "../db.js";
 import { verifyUser } from "../index.js";
 const router = express.Router();
+import dotenv from 'dotenv';
+dotenv.config();
+
 
 router.post(
   "/register",
@@ -56,34 +59,42 @@ router.post(
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
-    console.log(req.body)
-
+    
     // Find user by email
-    const [user] = await db.query("SELECT * FROM users WHERE email = ?", [
-      email,
-    ]);
-    if (rows.length === 0) {
-      return res.json({ Error: "No email exists" });
+    const [user] = await db.query("SELECT * FROM users WHERE email = ?", [email]);
+    if (user.length === 0) {
+      return res.status(401).json({ error: "Incorrect email or password" });
     }
 
     // Check password
-    const passwordMatch = await bcrypt.compare(password, user.password);
-    if (!passwordMatch) {
-      
-      return res.status(401).json({ message: "Invalid email or password" });
-    }
+    bcrypt.compare(password.toString(), user[0].password.toString(), (err, result) => {
+      if (err) {
+        console.error("Error comparing passwords:", err);
+        return res.status(500).json({ error: "Internal server error" });
+      }
 
-    // Generate JWT token
-    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
-      expiresIn: "1h",
+      if (!result) {
+        return res.status(401).json({ error: "Incorrect email or password" });
+      }
+
+      // Generate JWT token
+      const secretOrPrivateKey = process.env.JWT_SECRET;
+      if (!secretOrPrivateKey) {
+        console.error("JWT secret key is not set");
+        return res.status(500).json({ error: "Internal server error" });
+      }
+
+      const token = jwt.sign({ userId: user[0].id }, secretOrPrivateKey, {
+        expiresIn: "1h",
+      });
+
+      return res.status(200).json({ success: true, token });
     });
-    console.log(token)
-   
-    return res.status(200).json({ success: true, token });
   } catch (error) {
     console.error("Error logging in:", error);
     return res.status(500).json({ error: "Internal server error" });
   }
 });
+
 
 export default router;
