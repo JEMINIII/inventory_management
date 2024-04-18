@@ -1,10 +1,11 @@
 // productController.js
-import db from "../db.js";
-const getAllProducts = async (req, res) => {
+import db from '../db.js';
+
+export const getAllProducts =  async (req, res) => {
+  console.log("inside get all products")
     try {
       const q = "SELECT product_id, product_name, price, quantity, total_amount FROM inventory";
-      const result = await db.query(q);
-  
+      const result =  await db.query(q);
       return res.status(200).json({ Status: "success", inventory: result });
     } catch (err) {
       console.error(err.message);

@@ -1,8 +1,18 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { Link, useNavigate } from "react-router-dom";
+import React, {
+  useEffect,
+  useState,
+} from 'react';
 
-import { Button, Menu, Card } from "antd";
+import {
+  Button,
+  Card,
+  Menu,
+} from 'antd';
+import axios from 'axios';
+import {
+  Link,
+  useNavigate,
+} from 'react-router-dom';
 
 // const items = [
 //   { key: "1", label: "Item List", icon: <PieChartOutlined />, route: "/" },
@@ -108,7 +118,7 @@ export const Home = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:8082/table")
+      .get("http://localhost:8082/products/getAlItems")
       .then((res) => {
         if (res.data.Status === "success") {
           setAuth(true);

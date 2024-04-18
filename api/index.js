@@ -1,17 +1,15 @@
-import express from "express";
-import cors from "cors";
-import jwt from "jsonwebtoken";
-import bcrypt from "bcrypt";
-import cookieParser from "cookie-parser";
-import session from "express-session";
-import { check, validationResult } from "express-validator";
-import multer from "multer";
-import path from "path";
-import db from "./db.js";
-import authRoutes from "./Routes/authRoutes.js";
+import cookieParser from 'cookie-parser';
+import cors from 'cors';
+import express from 'express';
+import session from 'express-session';
+import multer from 'multer';
+import path from 'path';
+
+import db from './db.js';
+import authRoutes from './Routes/authRoutes.js';
 // import userRoutes from "./Routes/useRoutes.js";
-import productRoute from "./Routes/productRoutes.js";
-import verifyUser from "./middlewares/authmiddleware.js";
+import productRoute from './Routes/productRoutes.js';
+
 // import { handleRead } from "./Routes/auth.js";
 
 const salt = 10;
