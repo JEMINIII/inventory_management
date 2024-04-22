@@ -19,36 +19,23 @@ const Login = () => {
     axios
       .post("http://localhost:8082/login", values)
       .then((res) => {
+        console.log("Server response:", res.data); // Log the server response
         if (res.data.errors) {
           setBackendError(res.data.errors);
         } else {
           setBackendError([]);
-          // console.log(res.data.success);
-          if (res.data.success === true) {
+          if (res.data.message === "Login successful") {
             Cookies.set("token", res.data.token, { expires: 1 });
             navigate("/");
           } else {
-            alert("no record is exist");
+            console.log("Login unsuccessful:", res.data.message);
+            // Handle unsuccessful login
           }
         }
       })
       .catch((err) => {
-        if (err.response) {
-          // The request was made and the server responded with a status code
-          // that falls out of the range of 2xx
-          console.log(err.response.data);
-          console.log(err.response.status);
-          console.log(err.response.headers);
-          alert("An error occurred. Please try again later.");
-        } else if (err.request) {
-          // The request was made but no response was received
-          console.log(err.request);
-          alert("No response from the server. Please try again later.");
-        } else {
-          // Something happened in setting up the request that triggered an Error
-          console.log("Error", err.message);
-          alert("An error occurred. Please try again later.");
-        }
+        console.error("Error logging in:", err);
+        // Handle error
       });
   };
   const handleInput = (e) => {

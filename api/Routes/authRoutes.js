@@ -59,7 +59,7 @@ router.post(
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
-    
+
     // Find user by email
     const [user] = await db.query("SELECT * FROM users WHERE email = ?", [email]);
     if (user.length === 0) {
@@ -67,34 +67,29 @@ router.post("/login", async (req, res) => {
     }
 
     // Check password
-    bcrypt.compare(password.toString(), user[0].password.toString(), (err, result) => {
-      if (err) {
-        console.error("Error comparing passwords:", err);
-        return res.status(500).json({ error: "Internal server error" });
-      }
+    const passwordMatch = await bcrypt.compare(password, user[0].password);
+    if (!passwordMatch) {
+      return res.status(401).json({ error: "Incorrect email or password" });
+    }
 
-      if (!result) {
-        return res.status(401).json({ error: "Incorrect email or password" });
-      }
+    // Generate JWT token
+    const secretOrPrivateKey = process.env.JWT_SECRET;
+    if (!secretOrPrivateKey) {
+      console.error("JWT secret key is not set");
+      return res.status(500).json({ error: "Internal server error" });
+    }
 
-      // Generate JWT token
-      const secretOrPrivateKey = process.env.JWT_SECRET;
-      if (!secretOrPrivateKey) {
-        console.error("JWT secret key is not set");
-        return res.status(500).json({ error: "Internal server error" });
-      }
-
-      const token = jwt.sign({ userId: user[0].id }, secretOrPrivateKey, {
-        expiresIn: "1h",
-      });
-
-      return res.status(200).json({ success: true, token });
+    const token = jwt.sign({ userId: user[0].id }, secretOrPrivateKey, {
+      expiresIn: "1h",
     });
+
+    return res.status(200).json({ success: true, token });
   } catch (error) {
     console.error("Error logging in:", error);
     return res.status(500).json({ error: "Internal server error" });
   }
 });
+
 
 
 export default router;

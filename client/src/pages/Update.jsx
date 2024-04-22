@@ -13,16 +13,16 @@ const Update = () => {
   });
 
   useEffect(() => {
-    axios.get("http://localhost:8082/read/" + id)
+    axios.get("http://localhost:8082/products/read/" + id)
       .then(res => {
-        console.log(res.data);
+        console.log(res.data.product);
         setValues(prevValues => ({
           ...prevValues,
-          product_name:res.data.product_name,
-          category:res.data.category,
-          price:res.data.price,
-          quantity:res.data.quantity,
-          total_amount:res.data.total_amount
+          product_name:res.data.product.product_name,
+          category:res.data.product.category,
+          price:res.data.product.price,
+          quantity:res.data.product.quantity,
+          total_amount:res.data.product.total_amount
         }));
       })
       .catch(err => console.log(err));
@@ -30,9 +30,9 @@ const Update = () => {
 
   const handleUpdate = (e) => {
     e.preventDefault();
-    axios.put("http://localhost:8082/edit/" + id, values)
+    axios.put("http://localhost:8082/products/edit/" + id, values)
       .then(res => {
-        console.log(res.data);
+        console.log(res.data.product);
         window.location.href = "/";
       })
       .catch(err => console.log(err));

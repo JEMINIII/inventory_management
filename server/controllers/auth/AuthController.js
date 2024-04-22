@@ -2,6 +2,8 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { validationResult } from "express-validator";
 import db from "../../models/db/DbModel.js"
+import dotenv from 'dotenv';
+dotenv.config();
 
 const salt = 10;
 
@@ -32,7 +34,7 @@ export const loginUser = async (req, res) => {
       return res.status(401).json({ error: "Invalid email or password" });
     }
 
-    const match = await bcrypt.compare(password, rows[0].password);
+    const match = await bcrypt.compare(password.toString(), rows[0].password.toString());
 
     if (!match) {
       return res.status(401).json({ error: "Invalid email or password" });

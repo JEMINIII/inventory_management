@@ -5,18 +5,25 @@ import { Link } from "react-router-dom";
 
 const Read = () => {
   const { id } = useParams();
+  console.log(id)
   const [stock, setStock] = useState({});
   const [data, setData] = useState([]);
-  // console.log(stock.image)
+  console.log(stock
+)
 
   useEffect(() => {
     axios
-      .get(`http://localhost:8082/read/${id}`)
+      .get(`http://localhost:8082/products/read/${id}`)
       .then((res) => {
-        setStock(res.data);
+        setStock(res.data.product);
+        console.log(res)
       })
-      .catch((err) => console.log(err));
+      .catch((err) => {
+        console.error("Request failed:", err.message); // Log the error message
+        console.error("Server response:", err.response.data); // Log the server response
+      });
   }, [id]);
+  
 
   const handleDelete = (id) => {
     axios

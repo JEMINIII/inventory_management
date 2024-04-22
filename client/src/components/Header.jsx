@@ -7,21 +7,33 @@ import { Link } from "react-router-dom";
 function Header() {
   const [auth, setAuth] = useState(false);
   const [name, setName] = useState("");
+  
+  
 
   useEffect(() => {
     axios
-      .get("http://localhost:8082")
+      .get("http://localhost:8082/api/users")
       .then((res) => {
-        console.log(res.data)
-        if (res.data.success === true) {
-          setAuth(true);
-          setName(res.data[0].name);
+        console.log(res);
+        if (res.status === 200) {
+          const data = res.data;
+          console.log("Data:", data);
+          if (data.success === true) {
+            setAuth(true);
+            const firstName = data.users[0].name; 
+            console.log("First Name:", firstName); 
+            setName(firstName);
+          } else {
+            setAuth(false);
+          }
         } else {
-          setAuth(false);
+          console.log("Unexpected response status:", res.status);
         }
       })
-      .catch((err) => console.log(err));
+      .catch((err) => console.error("Error fetching products:", err));
   }, []);
+  
+  
 
   const handleLogout = () => {
     axios

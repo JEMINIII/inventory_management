@@ -43,7 +43,7 @@ export const Create = () => {
         formData.append("total_amount", values.total_amount);
         formData.append("image", values.image);
         
-        axios.post("http://localhost:8082/create", formData)
+        axios.post("http://localhost:8082/products", formData)
             .then(res => {
                 console.log(res);
                 setValues({ ...values, product_id: res.data.productId });

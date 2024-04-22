@@ -14,22 +14,29 @@ export const Home = () => {
   useEffect(() => {
     axios.defaults.withCredentials = true;
     axios
-      .get("http://localhost:8082")
+      .get("http://localhost:8082/products")
       .then((res) => {
-        if (res.data.Status === "success") {
+        console.log(res.data)
+        if (res.data.success === true) {
           setAuth(true);
-          const sortedInventory = res.data.inventory.sort((a, b) =>
+          const sortedInventory = res.data.items.sort((a, b) =>
             a.product_name.localeCompare(b.product_name)
           );
           setData(sortedInventory);
           setFilteredData(sortedInventory);
         } else {
           setAuth(false);
-          setMessage(res.data.Error);
+          setMessage(res.data.error);
         }
       })
-      .catch((err) => console.log(err));
+      .catch((err) => {
+        console.log(err.response.data); // Log the error response data
+        console.error(err); // Log the full error object for further investigation
+      });
+      
+      
   }, []);
+
 
   const handleLogout = () => {
     axios
