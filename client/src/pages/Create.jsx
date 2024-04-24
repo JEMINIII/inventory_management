@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
 
+
 export const Create = () => {
     const [values, setValues] = useState({
         product_name: "",
@@ -35,22 +36,26 @@ export const Create = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        
         const formData = new FormData();
+        console.log(formData)
         formData.append("product_name", values.product_name);
         formData.append("category", values.category);
         formData.append("price", values.price);
         formData.append("quantity", values.quantity);
         formData.append("total_amount", values.total_amount);
-        formData.append("image", values.image);
+        formData.append("images", values.image);
         
-        axios.post("http://localhost:8082/products", formData)
-            .then(res => {
-                console.log(res);
-                setValues({ ...values, product_id: res.data.productId });
-                navigate("/");
-            })
-            .catch(err => console.log(err));
-    };
+        axios
+          .post("http://localhost:8082/products/create", formData)
+          
+          .then((res) => {
+            // console.log(formData)
+            console.log(res);
+            navigate("/");
+          })
+          .catch((err) => console.log(err));
+      };
 
     const handleFile = (e) => {
         setValues({

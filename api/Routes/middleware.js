@@ -3,7 +3,6 @@ import jwt from "jsonwebtoken";
 
 export const verifyUser = (req, res, next) => {
   const { token } = req.cookies;
-  // console.log(req.cookies.token)
   console.log(token);
 
 
@@ -24,7 +23,6 @@ export const verifyUser = (req, res, next) => {
       }
     }
   
-    // Token is valid, proceed with the next middleware
     req.userId = decoded.userId;
     next();
   })

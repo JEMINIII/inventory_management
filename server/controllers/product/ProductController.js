@@ -1,11 +1,13 @@
-import  db  from "../../models/db/DbModel.js";
+import db from "../../models/db/DbModel.js";
+import upload from '../../routes/config/multerConfig.js';
+
 
 export const getAllProducts = async (req, res) => {
   try {
     // Fetch all products from the database
     const q = "SELECT * FROM inventory";
     const [rows] = await db.query(q);
-    
+
     // Return the products in the response
     res.json({ success: true, items: rows });
   } catch (error) {
@@ -14,13 +16,13 @@ export const getAllProducts = async (req, res) => {
   }
 };
 
-
 export const createProduct = async (req, res) => {
   try {
-    const { name, price, quantity } = req.body;
+    // Access the fields from FormData
+    const { product_name, category, price, quantity, total_amount, images } = req.body;
 
-    const q = "INSERT INTO inventory (name, price, quantity) VALUES (?, ?, ?)";
-    await db.query(q, [name, price, quantity]);
+    const q = "INSERT INTO inventory (`product_name`,`category`,`price`,`quantity`,`total_amount`, `images`) VALUES (?, ?, ?, ?, ?, ?)";
+    await db.query(q, [product_name, category, price, quantity, total_amount, images]);
 
     res.json({ message: "Product created successfully" });
   } catch (error) {
@@ -29,34 +31,53 @@ export const createProduct = async (req, res) => {
   }
 };
 
+
 export const getProduct = async (req, res) => {
   try {
     const { id } = req.params;
-
-    const q = "SELECT * FROM inventory WHERE product_id = ?";
+    const q = "SELECT product_name, category, price, quantity, total_amount, CONVERT(images USING utf8) AS image FROM inventory WHERE product_id = ?";
     const [rows] = await db.query(q, [id]);
-
+    
     if (rows.length === 0) {
       return res.status(404).json({ error: "Product not found" });
     }
 
-    res.json({ product: rows[0] });
+    const productData = { ...rows[0] };
+    if (productData.image !== null) {
+      const imageBase64 = productData.image.toString('base64');
+      productData.image = imageBase64;
+    }
+
+    delete productData.image_base64;
+
+    res.json({ product: productData });
   } catch (error) {
     console.error("Error fetching product:", error.message);
-
-    console.error("Error fetching product:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 };
 
+
+
+
 export const updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, price, quantity } = req.body;
+    const { product_name, category, price, quantity, total_amount } = req.body;
+    console.log(product_name);
 
-    const q = "UPDATE inventory SET name = ?, price = ?, quantity = ? WHERE product_id = ?";
-    await db.query(q, [name, price, quantity, id]);
-    console.log(id)
+    const q =
+      "UPDATE inventory SET `product_name`=?, `category`=?, `price`=?, `quantity`=?, `total_amount`=? WHERE product_id=?";
+    await db.query(q, [
+      product_name,
+      category,
+      price,
+      quantity,
+      total_amount,
+      id,
+    ]);
+
+    
     res.json({ message: "Product updated successfully" });
   } catch (error) {
     console.error("Error updating product:", error);
@@ -68,7 +89,7 @@ export const deleteProduct = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const q = "DELETE FROM products WHERE id = ?";
+    const q = "DELETE FROM inventory WHERE id = ?";
     await db.query(q, [id]);
 
     res.json({ message: "Product deleted successfully" });

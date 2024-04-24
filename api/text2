@@ -167,7 +167,7 @@ app.post("/create", upload.single("image"), async (req, res) => {
       req.body.price,
       req.body.quantity,
       req.body.total_amount,
-      req.file.filename, // Assuming req.file.filename contains the uploaded image filename
+      req.file.filename, 
     ];
 
     const result = await pool.query(q, [values]);

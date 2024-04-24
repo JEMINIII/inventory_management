@@ -7,7 +7,7 @@ export const getAllUsers = async (req, res) => {
     // Fetch all users from the database
     const q = "SELECT * FROM users";
     const [rows] = await db.query(q);
-
+    
     // Return the users in the response
     res.json({ success: true, users: rows });
   } catch (error) {

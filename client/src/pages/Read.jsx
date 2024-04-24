@@ -8,15 +8,14 @@ const Read = () => {
   console.log(id)
   const [stock, setStock] = useState({});
   const [data, setData] = useState([]);
-  console.log(stock
-)
+  console.log(stock)
 
   useEffect(() => {
     axios
       .get(`http://localhost:8082/products/read/${id}`)
       .then((res) => {
         setStock(res.data.product);
-        console.log(res)
+        console.log(res.data)
       })
       .catch((err) => {
         console.error("Request failed:", err.message); // Log the error message
@@ -73,8 +72,8 @@ const Read = () => {
             <div className="mb-3">
               <strong>Image:</strong>{" "}
               <img
-                src={stock.image}
-                style={{ maxWidth: "20%", height: "auto" }}
+                src={`http://localhost:8082/images/${stock.image}`}
+                style={{ maxWidth: "30%", height: "auto" }}
                 alt="Product"
               />
             </div>
@@ -84,7 +83,7 @@ const Read = () => {
                 Back
               </Link>
               <Link
-                to={`/edit/${stock?.product_id}`}
+                to={`/edit/${id}`}
                 className="btn btn-info me-2"
               >
                 Edit
@@ -92,7 +91,7 @@ const Read = () => {
               <button
                 onClick={() => {
                   handleDelete(stock.product_id);
-                  window.location.href = '/'; 
+                  window.location.href = '/products'; 
                 }}
                 className="btn btn-sm btn-danger"
               >

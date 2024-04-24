@@ -340,6 +340,8 @@ app.use(session({
   },
 }));
 
+
+
 app.use("/", authRoutes);
 app.use("/products", productRoutes);
 app.use('/api', userRoutes);

@@ -1,11 +1,13 @@
 import express from "express";
 import { getProduct, createProduct, updateProduct, deleteProduct,getAllProducts } from "../../controllers/product/ProductController.js";
 
+import upload from "../config/multerConfig.js";
+
 const router = express.Router();
 
 router.get("/", getAllProducts);
 
-router.post("/products", createProduct);
+router.post("/create",upload.single("image"), createProduct);
 
 router.get("/read/:id", getProduct);
 

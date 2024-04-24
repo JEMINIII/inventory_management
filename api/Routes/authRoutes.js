@@ -33,7 +33,7 @@ router.post(
       const { name, email, password } = req.body;
       const hashedPassword = await bcrypt.hash(password, 10);
 
-      // Check if email already exists
+      // Check if email 
       const existingUser = await db.query(
         "SELECT * FROM users WHERE email = ?",
         [email]
@@ -42,7 +42,7 @@ router.post(
         return res.status(400).json({ message: "Email already exists" });
       }
 
-      // Insert new user into the database
+      // Insert new user
       await db.query(
         "INSERT INTO users (name, email, password) VALUES (?, ?, ?)",
         [name, email, hashedPassword]

@@ -4,6 +4,7 @@ import axios from 'axios';
 
 const Update = () => {
   const { id } = useParams();
+  console.log(id)
   const [values, setValues] = useState({
         product_name:"",
         category:"",

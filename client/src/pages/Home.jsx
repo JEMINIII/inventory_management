@@ -106,7 +106,7 @@ export const Home = () => {
             <h3>{message}</h3>
             <h3>Login Now</h3>
             <Link to="/login" className="btn btn-primary">
-              Login
+              hello
             </Link>
           </div>
         )}
