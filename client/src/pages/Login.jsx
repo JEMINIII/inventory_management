@@ -1,41 +1,46 @@
 import axios from "axios";
-import React,{useState} from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-
+import Cookies from "js-cookie";
 const Login = () => {
   const [values, setValues] = useState({
     email: "",
     password: "",
   });
   const navigate = useNavigate();
-  axios.defaults.withCredentials=true;
-  const [backendError,setBackendError] = useState([])
+  axios.defaults.withCredentials = true;
+  const [backendError, setBackendError] = useState([]);
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!values.email || !values.password) {
       alert("Please fill in all fields");
-      return
+      return;
     }
     axios
       .post("http://localhost:8082/login", values)
       .then((res) => {
+        console.log("Server response:", res.data); // Log the server response
         if (res.data.errors) {
-            setBackendError(res.data.errors);
-                }
-        else {
+          setBackendError(res.data.errors);
+        } else {
           setBackendError([]);
-        if (res.data.Status === "success") {
-                  navigate("/");
-                }
-        else {
-                  alert("no record existed");
-                }
-    }})
-      .catch((err) => console.log(err));
+          if (res.data.message === "Login successful") {
+            Cookies.set("token", res.data.token, { expires: 1 });
+            navigate("/");
+          } else {
+            console.log("Login unsuccessful:", res.data.message);
+            // Handle unsuccessful login
+          }
+        }
+      })
+      .catch((err) => {
+        console.error("Error logging in:", err);
+        // Handle error
+      });
   };
-  const handleInput = (e)=>{
-    setValues(prev => ({...prev, [e.target.name]:[e.target.value]}))
-  }
+  const handleInput = (e) => {
+    setValues((prev) => ({ ...prev, [e.target.name]: [e.target.value] }));
+  };
 
   return (
     <div className="d-flex justify-content-center align-items-center bg-light vh-100">
@@ -55,11 +60,8 @@ const Login = () => {
             Login
           </h2>
         </div>
-        {
-          backendError && backendError.map(e => (
-            <p className="text-danger">{e.msg}</p>
-          )) 
-        }
+        {backendError &&
+          backendError.map((e) => <p className="text-danger">{e.msg}</p>)}
         <form onSubmit={handleSubmit}>
           <div className="mb-3">
             <label htmlFor="email">
