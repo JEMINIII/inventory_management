@@ -4,6 +4,7 @@ import logo22 from "../images/5-removebg-preview.png";
 import axios from "axios";
 import { Link } from "react-router-dom";
 
+
 function Header() {
   const [auth, setAuth] = useState(false);
   const [name, setName] = useState("");
@@ -17,12 +18,9 @@ function Header() {
         console.log(res);
         if (res.status === 200) {
           const data = res.data;
-          console.log("Data:", data);
+          console.log( data);
           if (data.success === true) {
             setAuth(true);
-            const firstName = data.users[0].name; 
-            console.log("First Name:", firstName); 
-            setName(firstName);
           } else {
             setAuth(false);
           }
@@ -37,12 +35,14 @@ function Header() {
 
   const handleLogout = () => {
     axios
-      .get("http://localhost:8082/logout")
+      .get("http://localhost:8082/logout", { withCredentials: true })
       .then((res) => {
+        
         window.location.href = "/login";
       })
       .catch((err) => console.log(err));
   };
+  
 
   return (
     <div className="navbar">

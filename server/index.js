@@ -320,7 +320,8 @@ import authRoutes from "./routes/auth/AuthRoute.js";
 import productRoutes from "./routes/product/ProductRoute.js";
 import db from "./models/db/DbModel.js";
 const app = express();
-import userRoutes from "./routes/user/UserRoute.js"
+import userRoutes from "./routes/user/UserRoute.js";
+import { verifyUser } from "./controllers/auth/AuthController.js";
 
 app.use(express.json());
 app.use(cors({
@@ -343,7 +344,7 @@ app.use(session({
 
 
 app.use("/", authRoutes);
-app.use("/products", productRoutes);
+app.use("/products",verifyUser, productRoutes);
 app.use('/api', userRoutes);
 
 app.get("/sidebar", async (req, res) => {

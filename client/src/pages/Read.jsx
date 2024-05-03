@@ -8,13 +8,13 @@ const Read = () => {
   console.log(id)
   const [stock, setStock] = useState({});
   const [data, setData] = useState([]);
-  console.log(stock)
+  // console.log(data)
 
   useEffect(() => {
     axios
       .get(`http://localhost:8082/products/read/${id}`)
       .then((res) => {
-        setStock(res.data.product);
+        setStock(res.data);
         console.log(res.data)
       })
       .catch((err) => {
@@ -52,7 +52,7 @@ const Read = () => {
           </div>
           <div className="card-body">
             <div className="mb-3">
-              <strong>Product ID:</strong> {stock?.product_id}
+              <strong>Product ID:</strong> {id}
             </div>
             <div className="mb-3">
               <strong>Product Name:</strong> {stock?.product_name}

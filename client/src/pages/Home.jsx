@@ -38,14 +38,14 @@ export const Home = () => {
   }, []);
 
 
-  const handleLogout = () => {
-    axios
-      .get("http://localhost:8082/logout")
-      .then((res) => {
-        window.location.reload();
-      })
-      .catch((err) => console.log(err));
-  };
+  // const handleLogout = () => {
+  //   axios
+  //     .get("http://localhost:8082/logout")
+  //     .then((res) => {
+  //       window.location.reload();
+  //     })
+  //     .catch((err) => console.log(err));
+  // };
 
   useEffect(() => {
     const filtered = data.filter((item) =>
