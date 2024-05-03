@@ -30,82 +30,6 @@ const iconComponents = {
   MoneyCollectOutlined: MoneyCollectOutlined,
 };
 
-// const items = [
-//   { key: "1", label: "Item List", icon: <PieChartOutlined />, route: "/" },
-//   { key: "2", label: "Stock In", icon: <DesktopOutlined />, route: "/create" },
-//   {
-//     key: "3",
-//     label: "Stock Out",
-//     icon: <ContainerOutlined />,
-//     route: "/stockout",
-//   },
-//   { key: "4", label: "Adjust", icon: <ContainerOutlined /> },
-//   { key: "5", label: "Transaction", icon: <ContainerOutlined /> },
-//   {
-//     key: "sub1",
-//     label: "Purchase & Sales",
-//     icon: <MailOutlined />,
-//     items: [
-//       { key: "6", label: "Bundles" },
-//       { key: "7", label: "Purchases" },
-//       { key: "8", label: "Sales" },
-//       { key: "9", label: "Sales Analysis" },
-//     ],
-//   },
-//   {
-//     key: "sub2",
-//     label: "Print Barcode",
-//     icon: <MailOutlined />,
-//     items: [
-//       { key: "10", label: "Item" },
-//       { key: "11", label: "Bundle" },
-//     ],
-//   },
-//   {
-//     key: "sub3",
-//     label: "Other Features",
-//     icon: <MailOutlined />,
-//     items: [
-//       { key: "12", label: "Low Stock Alert" },
-//       { key: "13", label: "Past Quantity" },
-//       { key: "14", label: "Inventory Link" },
-//       { key: "15", label: "Inventory Count" },
-//     ],
-//   },
-//   {
-//     key: "sub4",
-//     label: "Reports",
-//     icon: <AppstoreOutlined />,
-//     items: [
-//       { key: "16", label: "Summary" },
-//       { key: "17", label: "Dashboard" },
-//       { key: "18", label: "Analytics" },
-//     ],
-//   },
-//   {
-//     key: "sub5",
-//     label: "Data Center",
-//     icon: <AppstoreOutlined />,
-//     items: [
-//       { key: "19", label: "Item" },
-//       { key: "20", label: "Attribute" },
-//       { key: "21", label: "Partners" },
-//     ],
-//   },
-//   {
-//     key: "sub6",
-//     label: "Settings",
-//     icon: <AppstoreOutlined />,
-//     items: [
-//       { key: "22", label: "User" },
-//       { key: "23", label: "Team" },
-//       { key: "24", label: "Members" },
-//       { key: "25", label: "Integration & API" },
-//       { key: "26", label: "Billing" },
-//     ],
-//   },
-// ];
-
 const Sidebar = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [menuCollapsed, setMenuCollapsed] = useState(false);
@@ -147,7 +71,6 @@ const Sidebar = () => {
         nestedMenuItems[item.parent_id].submenus.push(item);
       }
     }
-    // console.log(nestedMenuItems);
   });
 
   const [openKeys, setOpenKeys] = useState([]);

@@ -139,6 +139,10 @@ $menuHover:#39bfec;
     background-color:$menu; /* Set the desired background color for the selected item */
     color: #000; /* Set the desired text color for the selected item */
   }
+  .ant-menu-submenu-arrow {
+    color: transparent;
+  }
+  
 
   a[href="/create"] {
     /* Your styles here */
@@ -368,3 +372,4 @@ $menuHover:#39bfec;
     font-size: 30px;
     font-weight: bold;
 }
+

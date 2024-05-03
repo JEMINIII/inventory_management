@@ -50,15 +50,29 @@ export const loginUser = async (req, res) => {
   }
 };
 
+// export const logoutUser = async (req, res) => {
+//   try {
+//     res.clearCookie("token");
+//     res.json({ message: "Logout successful" });
+//   } catch (error) {
+//     console.error("Error logging out:", error);
+//     res.status(500).json({ error: "Internal server error" });
+//   }
+// };
+
 export const logoutUser = async (req, res) => {
   try {
-    res.clearCookie("token");
-    res.json({ message: "Logout successful" });
+    // Clear the token cookie
+    res.clearCookie('token');
+    // Send a success response
+    res.json({ message: 'Logout successful' });
   } catch (error) {
-    console.error("Error logging out:", error);
-    res.status(500).json({ error: "Internal server error" });
+    // Handle any errors
+    console.error('Error logging out:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 };
+
 
 export const verifyUser = async (req, res, next) => {
   try {

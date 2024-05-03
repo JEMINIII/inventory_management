@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
 
-
 export const Create = () => {
     const [values, setValues] = useState({
         product_name: "",
@@ -12,6 +11,8 @@ export const Create = () => {
         total_amount: "",
         product_id: null
     });
+
+    const [errors, setErrors] = useState({});
 
     const navigate = useNavigate();
 
@@ -36,56 +37,76 @@ export const Create = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        
+
+        const formErrors = {};
+        if (!values.product_name.trim()) {
+            formErrors.product_name = "Product name is required";
+        }
+        if (!values.category.trim()) {
+            formErrors.category = "Category is required";
+        }
+        if (!values.price.trim()) {
+            formErrors.price = "Price is required";
+        }
+        if (!values.quantity.trim()) {
+            formErrors.quantity = "Quantity is required";
+        }
+
+        if (Object.keys(formErrors).length > 0) {
+            setErrors(formErrors);
+            return;
+        }
+
         const formData = new FormData();
-        console.log(formData)
         formData.append("product_name", values.product_name);
         formData.append("category", values.category);
         formData.append("price", values.price);
         formData.append("quantity", values.quantity);
         formData.append("total_amount", values.total_amount);
         formData.append("images", values.image);
-        
+
         axios
-          .post("http://localhost:8082/products/create", formData)
-          
-          .then((res) => {
-            // console.log(formData)
-            console.log(res);
-            navigate("/");
-          })
-          .catch((err) => console.log(err));
-      };
+            .post("http://localhost:8082/products/create", formData)
+            .then((res) => {
+                console.log(res);
+                navigate("/");
+            })
+            .catch((err) => console.log(err));
+    };
 
     const handleFile = (e) => {
         setValues({
             ...values,
             image: e.target.files[0]
         });
-        
+
     };
 
     return (
         <div className=' bg-light justify-content-center align-items-center'>
             <div className=' bg-white rounded p-3' style={{ textAlign: "center", maxHeight: "calc(85vh - 25px)",
-          height: "calc(100vh - 64px)", overflowY: "auto" }}>
+                height: "calc(100vh - 64px)", overflowY: "auto" }}>
                 <form className='form' onSubmit={handleSubmit}>
                     <h2>Add Inventory</h2>
                     <div className='mb-2'>
                         <label htmlFor="ProductName"></label>
                         <input type="text" name="product_name" placeholder='Enter Product_name' className='form-control' onChange={handleInputChange} />
+                        {errors.product_name && <span className="text-danger">{errors.product_name}</span>}
                     </div>
                     <div className='mb-2'>
                         <label htmlFor="Address"></label>
                         <input type="text" name="category" placeholder='Enter Category' className='form-control' onChange={handleInputChange} />
+                        {errors.category && <span className="text-danger">{errors.category}</span>}
                     </div>
                     <div className='mb-2'>
                         <label htmlFor="Name"></label>
                         <input type="text" name="price" placeholder='Enter Price' className='form-control' onChange={handleInputChange} />
+                        {errors.price && <span className="text-danger">{errors.price}</span>}
                     </div>
                     <div className='mb-2'>
                         <label htmlFor="Name"></label>
                         <input type="text" name="quantity" placeholder='Enter Quantity' className='form-control' onChange={handleInputChange} />
+                        {errors.quantity && <span className="text-danger">{errors.quantity}</span>}
                     </div>
                     <div className='mb-2'>
                         <label htmlFor="Name"></label>

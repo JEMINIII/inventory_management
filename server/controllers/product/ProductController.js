@@ -1,6 +1,4 @@
 import db from "../../models/db/DbModel.js";
-import upload from '../../routes/config/multerConfig.js';
-
 
 export const getAllProducts = async (req, res) => {
   try {
@@ -50,15 +48,12 @@ export const getProduct = async (req, res) => {
 
     delete productData.image_base64;
 
-    res.json({ product: productData });
+    res.json(productData);
   } catch (error) {
     console.error("Error fetching product:", error.message);
     res.status(500).json({ error: "Internal server error" });
   }
 };
-
-
-
 
 export const updateProduct = async (req, res) => {
   try {
@@ -97,4 +92,15 @@ export const deleteProduct = async (req, res) => {
     console.error("Error deleting product:", error);
     res.status(500).json({ error: "Internal server error" });
   }
+};
+
+export const updateQuantity = (req, res) => {
+  const { productId, quantity } = req.body;
+  db.query('UPDATE inventory SET quantity = ? WHERE product_id = ?', [quantity, productId], (err, result) => {
+      if (err) {
+          console.error(err);
+          return res.status(500).json({ success: false, error: 'Failed to update quantity' });
+      }
+      return res.json({ success: true });
+  });
 };
