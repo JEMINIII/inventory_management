@@ -344,7 +344,7 @@ app.use(session({
 
 
 app.use("/", authRoutes);
-app.use("/products",verifyUser, productRoutes);
+app.use("/products", productRoutes);
 app.use('/api', userRoutes);
 
 app.get("/sidebar", async (req, res) => {

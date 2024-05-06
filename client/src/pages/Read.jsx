@@ -5,17 +5,16 @@ import { Link } from "react-router-dom";
 
 const Read = () => {
   const { id } = useParams();
-  console.log(id)
   const [stock, setStock] = useState({});
   const [data, setData] = useState([]);
-  // console.log(data)
-
+  console.log(stock)
+  
   useEffect(() => {
     axios
       .get(`http://localhost:8082/products/read/${id}`)
       .then((res) => {
         setStock(res.data);
-        console.log(res.data)
+        
       })
       .catch((err) => {
         console.error("Request failed:", err.message); // Log the error message
@@ -70,12 +69,12 @@ const Read = () => {
               <strong>Total Amount:</strong> {stock?.total_amount}
             </div>
             <div className="mb-3">
-              <strong>Image:</strong>{" "}
-              <img
-                src={`http://localhost:8082/images/${stock.image}`}
-                style={{ maxWidth: "30%", height: "auto" }}
-                alt="Product"
-              />
+              <strong>Image:</strong>{""}
+              {stock && <img
+              src={`http://localhost:8082/images/${stock.img}`}
+              style={{ maxWidth: "30%", height: "auto" }}
+              alt="Product"
+            />}
             </div>
 
             <div className="mt-3">
