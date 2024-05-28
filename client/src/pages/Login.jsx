@@ -2,6 +2,7 @@ import axios from "axios";
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
+
 const Login = () => {
   const [values, setValues] = useState({
     email: "",
@@ -10,16 +11,18 @@ const Login = () => {
   const navigate = useNavigate();
   axios.defaults.withCredentials = true;
   const [backendError, setBackendError] = useState([]);
+  const [frontendError, setFrontendError] = useState("");
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!values.email || !values.password) {
-      alert("Please fill in all fields");
+      setBackendError([{ field: "email", msg: "Please fill in all fields" }]);
       return;
     }
     axios
       .post("http://localhost:8082/login", values)
       .then((res) => {
-        console.log("Server response:", res.data); // Log the server response
+        console.log("Server response:", res.data);
         if (res.data.errors) {
           setBackendError(res.data.errors);
         } else {
@@ -34,12 +37,20 @@ const Login = () => {
         }
       })
       .catch((err) => {
-        console.error("Error logging in:", err);
-        // Handle error
+        console.error("Error logging in:", err.response.data);
+        setFrontendError("Invalid email or password");
       });
   };
+
   const handleInput = (e) => {
-    setValues((prev) => ({ ...prev, [e.target.name]: [e.target.value] }));
+    const { name, value } = e.target;
+    setValues((prev) => ({ ...prev, [name]: value }));
+
+    // Remove the error message for the input field
+    setBackendError((prevErrors) =>
+      prevErrors.filter((error) => error.field !== name)
+    );
+    setFrontendError(""); // Clear frontend error on input change
   };
 
   return (
@@ -60,8 +71,17 @@ const Login = () => {
             Login
           </h2>
         </div>
-        {backendError &&
-          backendError.map((e) => <p className="text-danger">{e.msg}</p>)}
+        {frontendError && <p className="text-danger">{frontendError}</p>}
+        {backendError.map((error, index) => {
+          if (error.field === "email" || error.field === "password" || error.field === "passwordNotMatch") {
+            return (
+              <p key={index} className="text-danger">
+                {error.msg}
+              </p>
+            );
+          }
+          return null;
+        })}
         <form onSubmit={handleSubmit}>
           <div className="mb-3">
             <label htmlFor="email">

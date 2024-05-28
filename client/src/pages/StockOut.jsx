@@ -1,10 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { Button, Card, InputNumber } from "antd";
+import {  Card, InputNumber,Alert } from "antd";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
+import Button from 'react-bootstrap/Button';
+import Modal from 'react-bootstrap/Modal';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
+import Toast from 'react-bootstrap/Toast';
 
-function StockIn() {
-
+function StockOut() {
+  // const [modalShow, setModalShow] = useState(false);
     const [data, setData] = useState([]);
     const [auth, setAuth] = useState(false);
     const [message, setMessage] = useState("");
@@ -12,6 +17,31 @@ function StockIn() {
     const [filteredData, setFilteredData] = useState([]);
     const [selectedItems, setSelectedItems] = useState([]);
     const navigate = useNavigate();
+    const [modalShow, setModalShow] = useState(false);
+    const [showToast, setShowToast] = useState(false);
+    const MyVerticallyCenteredModal = (props) => (
+      <Modal
+        {...props}
+        size="lg"
+        aria-labelledby="contained-modal-title-vcenter"
+        centered
+      >
+        <Modal.Header closeButton>
+          <Modal.Title id="contained-modal-title-vcenter">
+            Are you sure ?
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <h6>Do you really want to update the quantity ?</h6>
+          
+        </Modal.Body>
+        <Modal.Footer>
+        <Button type="primary" onClick={handleUpdateClick}>Update</Button>
+          <Button onClick={props.onHide}>Close</Button>
+        </Modal.Footer>
+      </Modal>
+    );
+    const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth <= 800);
 
     useEffect(() => {
         axios.defaults.withCredentials = true;
@@ -19,6 +49,7 @@ function StockIn() {
           .get("http://localhost:8082/products")
           .then((res) => {
             console.log(res.data)
+            
             if (res.data.success === true) {
               setAuth(true);
               const sortedInventory = res.data.items.sort((a, b) =>
@@ -58,90 +89,138 @@ function StockIn() {
     
 
     const handleUpdateClick = () => {
-        selectedItems.forEach(item => {
-          const existingItem = data.find(i => i.product_id === item.product_id);
-          const inventoryQuantity = existingItem ? existingItem.quantity : 0;
-          axios.put('http://localhost:8082/products/updateQuantity', { productId: item.product_id, quantity: inventoryQuantity - item.quantity })
-              .then(res => {
-                  console.log('Quantity updated successfully');
-              })
-              .catch(err => {
-                  console.error('Failed to update quantity:', err);
-              });
-        });
-        window.location.reload()
-    };
+      selectedItems.forEach(item => {
+        const existingItem = data.find(i => i.product_id === item.product_id);
+        const inventoryQuantity = existingItem ? existingItem.quantity : 0;
+        axios.put('http://localhost:8082/products/updateQuantity', { productId: item.product_id, quantity: inventoryQuantity - item.quantity })
+            .then(res => {
+                console.log('Quantity updated successfully');
+                setShowToast(true); // Show the toast message
+            })
+            .catch(err => {
+                console.error('Failed to update quantity:', err);
+            });
+      });
+      window.location.href = window.location.href;
+    };  
+
+    useEffect(() => {
+      const handleResize = () => {
+        setIsSmallScreen(window.innerWidth <= 800);
+      };
+  
+      window.addEventListener("resize", handleResize);
+  
+      return () => {
+        window.removeEventListener("resize", handleResize);
+      };
+    }, []);
+
     
 
     return (
       <div>
+        
       <div className="container mt-4">
         {auth ?(
         <div style={{
             display: "flex",
             flexDirection: "column",
             width: "100%",
-            maxHeight: "calc(80vh - 64px)",
+            maxHeight: "calc(80vh - 74px)",
           }}>
             <div
               style={{
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                marginBottom: 10,
-                height: "calc(100vh - 64px)"
+                marginBottom: 30,
+                height: "calc(100vh - 64px)",
+                borderBottom: "2px skyblue solid"
               }}
             >
               <h2>Stock Out</h2>
               
             </div>
             <div
-              style={{ display: "flex", justifyContent: "space-between" }}
-            >
-              <Card className="mb-3" style={{ width: "100%", border: "none",  height: "calc(77vh - 64px)", overflowY: "auto" }}>
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          flexDirection: isSmallScreen ? "column" : "row"
+        }}
+      >
+              <Card className="mb-3" style={{ width: "100%",padding:'10px',textAlign:'left',  height: "calc(73vh - 64px)", overflowY: "auto" }}>
+                
                 <div className="table-responsive">
+                  
                   <table>
+                  <thead style={{borderBottom:"3px skyblue solid"}}>
+                    <th>Product</th>
+                    <th>Quantity</th>
+                    </thead>
                     <tbody>
                       {filteredData.map((inventory, index) => (
                         <tr key={index} onClick={() => handleItemClick(inventory)} style={{ cursor: "pointer" }}>
                           <td>{inventory.product_name}</td>
                           <td>{inventory.quantity}</td>
+
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
+                <Toast onClose={() => setShowToast(false)} show={showToast} delay={3000} autohide style={{ position: 'absolute', top: 20, right: 20 }}>
+        <Toast.Header>
+          <strong className="me-auto">Inventory Management</strong>
+        </Toast.Header>
+        <Toast.Body>Product quantity updated successfully</Toast.Body>
+      </Toast>
               </Card>
-              <Card className="mb-3" style={{ width: "100%", border: "none", height: "calc(77vh - 64px)", overflowY: "auto", display: "flex", flexDirection: "column" }}>
-                {selectedItems.length > 0 ? (
-                  <div style={{ padding: "24px", color: "black" }}>
-                    <h5>Selected Items:</h5>
-                    <br/>
-                    {selectedItems.map(item => {
-                      const existingItem = data.find(i => i.product_id === item.product_id);
-                      const inventoryQuantity = existingItem ? existingItem.quantity : 0;
-                      return (
-                        <div key={item.product_id} style={{ marginBottom: "16px" }}>
-                          <p>{item.product_name}</p>
-                          <InputNumber
-                            min={1}
-                            value={item.quantity}
-                            onChange={(value) => handleQuantityChange(item.product_id, value)}
-                          />
-                          <p>Inventory Quantity: {inventoryQuantity - item.quantity}</p>
-                        </div>
-                      );
-                    })}
-                    <Button type="primary" onClick={handleUpdateClick}>Update</Button>
-                  </div>
-                ) : (
-                  <div style={{ padding: "24px", paddingTop: "103px", color: "#ccc", textAlign: "center" }}>
-                    To view inventory details,<br/> you can group items
-                    by attribute or <br/>select them individually from the list on the left.
-                  </div>
-                )}
-              </Card>
+              <Card className="mb-3" style={{ padding: '10px', width: "100%", height: "calc(73vh - 64px)", overflowY: "auto", display: "flex", flexDirection: "column" }}>
+              {selectedItems.length > 0 ? (
+  <div style={{ padding: "24px", color: "black" }}>
+    <h6 style={{ borderBottom: "3px skyblue solid", paddingBottom: '5px' }}>Add Quantity:</h6>
+    
+    {selectedItems.map(item => {
+      const existingItem = data.find(i => i.product_id === item.product_id);
+      const inventoryQuantity = existingItem ? existingItem.quantity : 0;
+      return (
+        <div key={item.product_id} style={{backgroundColor:"skyblue",display: "flex",alignItems: "center",padding:10,justifyContent: "space-between" }}>
+          
+          <p style={{ marginBottom: "8px",fontWeight:'bold'}}>{item.product_name}</p>
+          
+            <InputNumber
+              min={1}
+              value={item.quantity}
+              onChange={(value) => handleQuantityChange(item.product_id, value)}
+              style={{fontWeight: "bold" ,border:'3px skyblue solid' }}
+            />
+            {/* <p style={{ marginBottom: 0 }}>Latest Quantity: {inventoryQuantity + item.quantity}</p> */}
+          
+        </div>
+      );
+    })}
+    
+    <center style={{paddingTop:'20px'}}>
+              <Button type="primary" onClick={() => setModalShow(true)}>Update</Button>
+              <MyVerticallyCenteredModal
+        show={modalShow}
+        onHide={() => setModalShow(false)}
+      />
+              </center>
+  </div>
+) : (
+  <div style={{ padding: "24px", paddingTop: "103px", color: "#ccc", textAlign: "center" }}>
+    To view inventory details,<br/> you can group items
+    by attribute or <br/>select them individually from the list on the left.
+  </div>
+)}
+
+</Card>
+
             </div>
+            
+           
           </div>
         ) : (
           <div>
@@ -153,9 +232,10 @@ function StockIn() {
           </div>
         )}
       </div>
+      
     </div>
 
     )
 }
 
-export default StockIn;
+export default StockOut;

@@ -41,7 +41,7 @@ function StockIn() {
         </Modal.Footer>
       </Modal>
     );
-    
+    const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth <= 800);
 
     useEffect(() => {
         axios.defaults.withCredentials = true;
@@ -95,47 +95,69 @@ function StockIn() {
         axios.put('http://localhost:8082/products/updateQuantity', { productId: item.product_id, quantity: inventoryQuantity + item.quantity })
             .then(res => {
                 console.log('Quantity updated successfully');
-                
+                setShowToast(true); // Show the toast message
             })
             .catch(err => {
                 console.error('Failed to update quantity:', err);
             });
       });
       window.location.href = window.location.href;
+    };  
 
-  };
-
+    useEffect(() => {
+      const handleResize = () => {
+        setIsSmallScreen(window.innerWidth <= 800);
+      };
+  
+      window.addEventListener("resize", handleResize);
+  
+      return () => {
+        window.removeEventListener("resize", handleResize);
+      };
+    }, []);
 
     
 
     return (
       <div>
+        
       <div className="container mt-4">
         {auth ?(
         <div style={{
             display: "flex",
             flexDirection: "column",
             width: "100%",
-            maxHeight: "calc(40vh - 34px)",
+            maxHeight: "calc(80vh - 74px)",
           }}>
             <div
               style={{
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                marginBottom: 10,
-                height: "50px"
+                marginBottom: 30,
+                height: "calc(100vh - 64px)",
+                borderBottom: "2px skyblue solid"
               }}
             >
-              <h2>Stock In</h2>
+              <h2>Stock Out</h2>
               
             </div>
             <div
-              style={{ display: "flex", justifyContent: "space-between" }}
-            >
-              <Card className="mb-3" style={{ width: "100%", border: "none",  height: "calc(77vh - 64px)", overflowY: "auto" }}>
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          flexDirection: isSmallScreen ? "column" : "row"
+        }}
+      >
+              <Card className="mb-3" style={{ width: "100%",padding:'10px',textAlign:'left',  height: "calc(73vh - 64px)", overflowY: "auto" }}>
+                
                 <div className="table-responsive">
+                  
                   <table>
+                  <thead style={{borderBottom:"3px skyblue solid"}}>
+                    <th>Product</th>
+                    <th>Quantity</th>
+                    </thead>
                     <tbody>
                       {filteredData.map((inventory, index) => (
                         <tr key={index} onClick={() => handleItemClick(inventory)} style={{ cursor: "pointer" }}>
@@ -147,24 +169,31 @@ function StockIn() {
                     </tbody>
                   </table>
                 </div>
+                <Toast onClose={() => setShowToast(false)} show={showToast} delay={3000} autohide style={{ position: 'absolute', top: 20, right: 20 }}>
+        <Toast.Header>
+          <strong className="me-auto">Inventory Management</strong>
+        </Toast.Header>
+        <Toast.Body>Product quantity updated successfully</Toast.Body>
+      </Toast>
               </Card>
-              <Card className="mb-3" style={{ width: "100%", border: "none", height: "calc(77vh - 64px)", overflowY: "auto", display: "flex", flexDirection: "column" }}>
+              <Card className="mb-3" style={{ padding: '10px', width: "100%", height: "calc(73vh - 64px)", overflowY: "auto", display: "flex", flexDirection: "column" }}>
               {selectedItems.length > 0 ? (
   <div style={{ padding: "24px", color: "black" }}>
-    <h5>Add Quantity:</h5>
-    <br/>
+    <h6 style={{ borderBottom: "3px skyblue solid", paddingBottom: '5px' }}>Add Quantity:</h6>
+    
     {selectedItems.map(item => {
       const existingItem = data.find(i => i.product_id === item.product_id);
       const inventoryQuantity = existingItem ? existingItem.quantity : 0;
       return (
-        <div key={item.product_id} style={{display: "flex",alignItems: "center",padding:10,justifyContent: "space-between" }}>
-          <p style={{ marginBottom: "8px", fontWeight: "bold" }}>{item.product_name}</p>
+        <div key={item.product_id} style={{backgroundColor:"skyblue",display: "flex",alignItems: "center",padding:10,justifyContent: "space-between" }}>
+          
+          <p style={{ marginBottom: "8px",fontWeight:'bold'}}>{item.product_name}</p>
           
             <InputNumber
               min={1}
               value={item.quantity}
               onChange={(value) => handleQuantityChange(item.product_id, value)}
-              style={{border:'none' }}
+              style={{fontWeight: "bold" ,border:'3px skyblue solid' }}
             />
             {/* <p style={{ marginBottom: 0 }}>Latest Quantity: {inventoryQuantity + item.quantity}</p> */}
           
@@ -172,6 +201,13 @@ function StockIn() {
       );
     })}
     
+    <center style={{paddingTop:'20px'}}>
+              <Button type="primary" onClick={() => setModalShow(true)}>Update</Button>
+              <MyVerticallyCenteredModal
+        show={modalShow}
+        onHide={() => setModalShow(false)}
+      />
+              </center>
   </div>
 ) : (
   <div style={{ padding: "24px", paddingTop: "103px", color: "#ccc", textAlign: "center" }}>
@@ -179,19 +215,12 @@ function StockIn() {
     by attribute or <br/>select them individually from the list on the left.
   </div>
 )}
+
 </Card>
 
             </div>
             
-            <br />
-            <div>
-              <Button type="primary" onClick={() => setModalShow(true)}>Update</Button>
-              <MyVerticallyCenteredModal
-        show={modalShow}
-        onHide={() => setModalShow(false)}
-      />
-              </div>
-              <br />
+           
           </div>
         ) : (
           <div>
@@ -203,12 +232,7 @@ function StockIn() {
           </div>
         )}
       </div>
-      <Toast onClose={() => setShowToast(false)} show={showToast} delay={3000} autohide style={{ position: 'absolute', top: 20, right: 20 }}>
-        <Toast.Header>
-          <strong className="me-auto">Inventory Management</strong>
-        </Toast.Header>
-        <Toast.Body>Product quantity updated successfully</Toast.Body>
-      </Toast>
+      
     </div>
 
     )

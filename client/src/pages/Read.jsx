@@ -7,7 +7,7 @@ const Read = () => {
   const { id } = useParams();
   const [stock, setStock] = useState({});
   const [data, setData] = useState([]);
-  console.log(stock)
+  
   
   useEffect(() => {
     axios
@@ -89,8 +89,8 @@ const Read = () => {
               </Link>
               <button
                 onClick={() => {
-                  handleDelete(stock.product_id);
-                  window.location.href = '/products'; 
+                  handleDelete(id);
+                  window.location.href = '/'; 
                 }}
                 className="btn btn-sm btn-danger"
               >

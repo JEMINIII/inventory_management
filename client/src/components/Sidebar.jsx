@@ -85,12 +85,12 @@ const Sidebar = () => {
         className="menu"
         style={{
           maxHeight: "calc(83.7vh - 25px)",
-          height: "calc(100vh - 64px)", // Set a fixed height
+          height: "calc(100vh - 64px)", 
           overflowY: "auto",
           top: 30,
-          background: "#E5E5E5",
+          // background: "#E5E5E5",
         }}
-        defaultSelectedKeys={["1"]}
+        // defaultSelectedKeys={["1"]}
         mode="inline"
         theme="light"
         inlineCollapsed={menuCollapsed}
@@ -148,16 +148,16 @@ const Sidebar = () => {
           position: "fixed",
 
           // right: menuCollapsed ? 7 : 100,
-          background: "white",
+          background: "transparent",
           border: "none",
           transition: "left 0.3s ease",
           borderRadius: "90%",
           padding: "0%",
-          left: menuCollapsed ? 75 : 190,
-          top: 90,
+          left: menuCollapsed ? 70 : 185,
+          top: 200,
           zIndex: 1,
           fontSize: "24px",
-          color: "Gray",
+          color: "black",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",

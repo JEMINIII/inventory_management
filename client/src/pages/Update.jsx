@@ -1,22 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
+import { Toast } from 'react-bootstrap';
 
 const Update = () => {
   const { id } = useParams();
-  console.log(id)
   const [values, setValues] = useState({
-        product_name:"",
-        category:"",
-        price:"",
-        quantity:"",
-        total_amount:""
+    product_name:"",
+    category:"",
+    price:"",
+    quantity:"",
+    total_amount:""
   });
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [showErrorToast, setShowErrorToast] = useState(false);
 
   useEffect(() => {
     axios.get("http://localhost:8082/products/read/" + id)
       .then(res => {
-        // console.log(res.data);
         setValues(prevValues => ({
           ...prevValues,
           product_name:res.data.product_name,
@@ -33,17 +34,24 @@ const Update = () => {
     e.preventDefault();
     axios.put("http://localhost:8082/products/edit/" + id, values)
       .then(res => {
-        // console.log(res.data);
-        window.location.href = "/";
+        setShowSuccessToast(true);
+        setTimeout(() => {
+          setShowSuccessToast(false);
+          window.location.href = "/";
+        }, 3000);
       })
-      .catch(err => console.log(err));
+      .catch(err => {
+        setShowErrorToast(true);
+        setTimeout(() => setShowErrorToast(false), 3000);
+        console.log(err);
+      });
   };
 
   return (
-    <div className=' bg-light justify-content-center align-items-center'>
-            <div className=' bg-white rounded p-3' style={{ textAlign: "center", maxHeight: "calc(85vh - 25px)",
-          height: "calc(100vh - 64px)", overflowY: "auto" }}>
-        <form onSubmit={handleUpdate}>
+    <div className=' bg-light'>
+      <div className=' bg-white rounded p-3' style={{ maxHeight: "calc(85vh - 25px)",
+        height: "calc(100vh - 64px)", overflowY: "auto" }}>
+        <form onSubmit={handleUpdate} style={{width:"50%"}}>
           <h2>Update Inventory</h2>
           <div className='mb-2'>
             <label htmlFor="ProductName"></label>
@@ -71,6 +79,12 @@ const Update = () => {
           </div>
         </form>
       </div>
+      <Toast show={showSuccessToast} onClose={() => setShowSuccessToast(false)} delay={3000} autohide bg="success" text="white">
+        <Toast.Body>Inventory updated successfully!</Toast.Body>
+      </Toast>
+      <Toast show={showErrorToast} onClose={() => setShowErrorToast(false)} delay={3000} autohide bg="danger" text="white">
+        <Toast.Body>Error updating inventory. Please try again.</Toast.Body>
+      </Toast>
     </div>
   );
 };

@@ -161,6 +161,7 @@ $menuHover:#39bfec;
     width: 100%;
     border-collapse: collapse;
   }
+ 
   
   td {
     font-size: 14px; /* Set the font size */
@@ -170,16 +171,15 @@ $menuHover:#39bfec;
     padding: 10px; /* Add padding inside the cell */
     border-bottom: 1px solid #ddd; /* Add a bottom border */
     transition: background-color 0.3s; /* Add a smooth transition for background color */
-    height: 60px;
+    height: 50px;
   }
   
   table tr:hover td {
-    background-color: $menu; /* Change the background color on hover */
-    cursor: pointer; /* Change the cursor to a pointer on hover */
+    background-color: $menu; 
+    // cursor: pointer; 
   }
   :where(.css-dev-only-do-not-override-11xg00t).ant-card .ant-card-body {
     padding: 0%;
-    
     height: 100%;
     
   }
@@ -372,4 +372,8 @@ $menuHover:#39bfec;
     font-size: 30px;
     font-weight: bold;
 }
+
+._title-section_n780a_91{
+  
+};
 

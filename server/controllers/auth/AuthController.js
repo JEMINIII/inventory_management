@@ -10,13 +10,14 @@ const salt = 10;
 export const registerUser = async (req, res) => {
   try {
     const { name, email, password } = req.body;
-
-    const hash = await bcrypt.hash(password, salt);
-
+    
+    const hash = await bcrypt.hash(password.toString(), salt);
+    
     const q = "INSERT INTO users (name, email, password) VALUES (?, ?, ?)";
     await db.query(q, [name, email, hash]);
-
+    
     res.json({ message: "User registered successfully" });
+    
   } catch (error) {
     console.error("Error registering user:", error);
     res.status(500).json({ error: "Internal server error" });

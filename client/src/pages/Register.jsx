@@ -9,27 +9,40 @@ const Register = () => {
     email: "",
     password: "",
   });
+  const [errors, setErrors] = useState({
+    name: "",
+    email: "",
+    password: "",
+  });
+
   const handleInput = (e) => {
-    setValues((prev) => ({ ...prev, [e.target.name]: [e.target.value] }));
+    setValues((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    setErrors((prev) => ({ ...prev, [e.target.name]: "" })); // Reset error message for the field
   };
+
   const navigate = useNavigate();
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!values.name || !values.email || !values.password) {
-      alert("Please fill in all fields");
+      setErrors({
+        name: !values.name ? "Name is required" : "",
+        email: !values.email ? "Email is required" : "",
+        password: !values.password ? "Password is required" : "",
+      });
       return;
     }
     axios
       .post("http://localhost:8082/register", values)
       .then((res) => {
-        if (res.data.Status === "success") {
+        if (res.data.message === "User registered successfully") {
           navigate("/login");
         } else {
           alert("Error");
         }
       })
-      .then((err) => console.log(err));
+      .catch((err) => console.log(err));
   };
+
   return (
     <div className="d-flex justify-content-center align-items-center bg-light vh-100">
       <div className="bg-white p-3 rounded w-25 border border shadow">
@@ -60,6 +73,7 @@ const Register = () => {
               onChange={handleInput}
               className="form-control rounded-0"
             />
+            {errors.name && <p className="text-danger">{errors.name}</p>}
           </div>
           <div className="mb-3">
             <label htmlFor="email">
@@ -72,6 +86,7 @@ const Register = () => {
               onChange={handleInput}
               className="form-control rounded-0"
             />
+            {errors.email && <p className="text-danger">{errors.email}</p>}
           </div>
           <div className="mb-3">
             <label htmlFor="password">
@@ -84,6 +99,7 @@ const Register = () => {
               onChange={handleInput}
               className="form-control rounded-0"
             />
+            {errors.password && <p className="text-danger">{errors.password}</p>}
           </div>
           <button
             type="submit"
