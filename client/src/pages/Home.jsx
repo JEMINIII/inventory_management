@@ -1,16 +1,52 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import axios from "axios";
-import { Link, useNavigate,useParams } from "react-router-dom";
-import { Button, Card } from "antd";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { Table,Button, Card } from "antd";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
 import { notification } from 'antd';
 import Modal from 'react-bootstrap/Modal';
-
-
+// import TeamSelector from "../components/TeamSelector";
+import { TeamContext } from "../context/TeamContext";
 
 export const Home = () => {
+  const [formValues, setFormValues] = useState({
+    product_name: "",
+    category: "",
+    price: "",
+    quantity: "",
+    total_amount: "",
+    team_id: "",
+    user_id: '',
+    product_id: null,
+  });
+
+  // const { teamId, changeTeam } = useContext(TeamContext);
+  const [teams, setTeams] = useState([]);
+
+  useEffect(() => {
+    axios.get('http://localhost:8082/team')
+      .then((response) => {
+        if (response.data.success) {
+          setTeams(response.data.items);
+        } else {
+          console.error("Failed to fetch teams");
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching teams:", error);
+      });
+  }, []);
+
+  const handleTeamChange = (e) => {
+    const selectedTeamId = e.target.value;
+    setTeamId(selectedTeamId);
+    setFormValues((prevFormValues) => ({
+      ...prevFormValues,
+      team_id: selectedTeamId,
+    }));
+  };
   const { id } = useParams();
   const [data, setData] = useState([]);
   const [auth, setAuth] = useState(false);
@@ -20,77 +56,126 @@ export const Home = () => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [isEditing, setIsEditing] = useState(false); 
   const [editedItem, setEditedItem] = useState(null);
-    const [showModal, setShowModal] = useState(false); 
+  const [showModal, setShowModal] = useState(false); 
   const [modalShow, setModalShow] = useState(false);
-  const [teamId, setTeamId] = useState(null); 
-  console.log(teamId)
+  // const [teamId, setTeamId] = useState(localStorage.getItem("teamId") || ""); 
+  const { teamId, setTeamId } = useContext(TeamContext);
+  const [items, setItems] = useState([]);
+  const [createModalShow, setCreateModalShow] = useState(false);
+  const [formErrors, setFormErrors] = useState({});
+
   const MyVerticallyCenteredModal = (props) => (
-    <Modal
-      {...props}
-      size="lg"
-      aria-labelledby="contained-modal-title-vcenter"
-      centered
-    >
+    <Modal {...props} size="lg" aria-labelledby="contained-modal-title-vcenter" centered>
       <Modal.Header closeButton>
-        <Modal.Title id="contained-modal-title-vcenter">
-          Are you sure ?
-        </Modal.Title>
+        <Modal.Title id="contained-modal-title-vcenter">Are you sure?</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        <h6>Do you really want to Delete the Product ?</h6>
-        
+        <h6>Do you really want to Delete the Product?</h6>
       </Modal.Body>
       <Modal.Footer>
-      <Button type="primary" onClick={deleteItem}>Delete</Button>
+        <Button type="primary" onClick={deleteItem}>Delete</Button>
         <Button onClick={props.onHide}>Close</Button>
       </Modal.Footer>
     </Modal>
   );
+
   const navigate = useNavigate();
   const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth <= 800);
 
-
   useEffect(() => {
-    const storedTeamId = localStorage.getItem("teamId");
+    const storedTeamId = localStorage.getItem("selectedTeamId");
     if (storedTeamId) {
-      setTeamId(parseInt(storedTeamId));
+        setTeamId(storedTeamId);
     }
-  }, []);
+}, [setTeamId]);
 
-  useEffect(() => {
-    if (teamId) {
-      axios.defaults.withCredentials = true;
-      axios
-        .get(`http://localhost:8082/products?team_id=${teamId}`)
-        .then((res) => {
-          console.log(res.data)
-          if (res.data.success === true) {
-            setAuth(true);
-            const sortedInventory = res.data.items.sort((a, b) =>
-              a.product_name.localeCompare(b.product_name)
-            );
-            setData(sortedInventory);
-            setFilteredData(sortedInventory);
-          } else {
-            setAuth(false);
-            setMessage(res.data.error);
-          }
-        })
-        .catch((err) => {
-          console.log(err.response.data);
-          console.error(err);
-        });
-    }
-  }, [teamId]);
+useEffect(() => {
+  if (teamId) {
+    axios.get(`http://localhost:8082/products?team_id=${teamId}`)
+      .then((res) => {
+        if (res.data.success === true) {
+          setAuth(true);
+          const sortedInventory = res.data.items.sort((a, b) =>
+            a.product_name.localeCompare(b.product_name)
+          );
+          setItems(res.data.items);
+          setData(sortedInventory);
+          setFilteredData(sortedInventory);
+        } else {
+          setAuth(false);
+          setMessage(res.data.error);
+        }
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  }
+}, [teamId]);
+
+const handleCreateInputChange = (e) => {
+  const { name, value } = e.target;
+  setFormValues({
+    ...formValues,
+    [name]: value,
+    total_amount: name === 'price' || name === 'quantity' ? calculateTotalAmount(value) : formValues.total_amount
+  });
+};
+
+const calculateTotalAmount = (value) => {
+  const price = parseFloat(formValues.price) || 0;
+  const quantity = parseFloat(formValues.quantity) || 0;
+  const newValue = parseFloat(value) || 0;
+  if (isNaN(price) || isNaN(quantity) || isNaN(newValue)) {
+    return formValues.total_amount;
+  }
+  return (quantity * price).toFixed(2);
+};
+
+const handleCreateSubmit = (e) => {
+  e.preventDefault();
+
+  const formData = new FormData();
+  console.log('Values:', formValues);
+
+  formData.append("product_name", formValues.product_name);
+  formData.append("category", formValues.category);
+  formData.append("price", formValues.price);
+  formData.append("quantity", formValues.quantity);
+  formData.append("total_amount", formValues.total_amount);
+  formData.append("team_id", formValues.team_id);
+  formData.append("image", formValues.image);
+
+  for (var key of formData.entries()) {
+    console.log(key[0] + ', ' + key[1]);
+  }
+
+  axios
+    .post("http://localhost:8082/products/create", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+        "enctype":"multipart/form-data"
+      }
+    })
+    .then((res) => {
+      console.log(res);
+      setCreateModalShow(false);
+      navigate("/");
+      // Reset form values after successful submission
+      setFormValues({
+        product_name: "",
+        category: "",
+        price: "",
+        quantity: "",
+        total_amount: "",
+        team_id: "",
+        user_id: '',
+        product_id: null,
+      });
+    })
+    .catch((err) => console.log(err));
+};
 
 
-  const handleTeamChange = (e) => {
-    setTeamId(e.target.value);
-    
-  };
-
-
-  
   useEffect(() => {
     const handleResize = () => {
       setIsSmallScreen(window.innerWidth <= 800);
@@ -108,7 +193,6 @@ export const Home = () => {
     axios
       .get("http://localhost:8082/products")
       .then((res) => {
-        console.log(res.data)
         if (res.data.success === true) {
           setAuth(true);
           const sortedInventory = res.data.items.sort((a, b) =>
@@ -122,10 +206,22 @@ export const Home = () => {
         }
       })
       .catch((err) => {
-        console.log(err.response.data); 
-        console.error(err); 
+        console.error(err);
       });
   }, []);
+
+  const handleFile = (e) => {
+    const file = e.target.files[0];
+    console.log("Selected file:", file);
+
+    setFormValues({
+      ...formValues,
+      image: file
+    });
+  };
+
+
+  
 
   useEffect(() => {
     const filtered = data.filter((item) =>
@@ -134,62 +230,26 @@ export const Home = () => {
     setFilteredData(filtered);
   }, [searchQuery, data]);
 
-
-  // const handleDelete = (id) => {
-  //   axios
-  //     .delete(`http://localhost:8082/products/delete/${selectedItem.product_id}`)
-  //     .then(() => {
-  //       const updatedData = data.filter(
-  //         (inventory) => inventory.product_id !== id
-  //       );
-  //       setData(updatedData);
-  //       setSelectedItem(null); 
-  //       window.location.reload();   
-  //       toast.success("Item deleted successfully"); // Show success toast
-  //     })
-  //     .catch((err) => {
-  //       console.log(err);
-  //       toast.error("Failed to delete item"); // Show error toast
-  //     });
-  // };
-
-  // const handleDelete = (id) => {
-  //   setShowModal(true);
-  //   setSelectedItem(id);
-  // };
-
-
-
-  // const handleDelete = (id) => {
-  //   const key = `open${Date.now()}`;
-  //   notification.open({
-  //     message: 'product successfully deleted',
-  //     key
-  //   });
-  // };
-
-const deleteItem = (id) => {
-  axios
-    .delete(`http://localhost:8082/products/delete/${selectedItem.product_id}`)
-    .then(() => {
-      const updatedData = data.filter(
-        (inventory) => inventory.product_id !== id
-      );
-      setData(updatedData);
-      setSelectedItem(null); 
-      const key = `open${Date.now()}`;
-    notification.open({
-      message: 'product successfully deleted',
-      key
-    });
-    setTimeout(() => {
-      window.location.reload();
-    }, 1000); 
-  
-    })
-    .catch((err) => console.log(err));
-};
-
+  const deleteItem = (id) => {
+    axios
+      .delete(`http://localhost:8082/products/delete/${selectedItem.product_id}`)
+      .then(() => {
+        const updatedData = data.filter(
+          (inventory) => inventory.product_id !== id
+        );
+        setData(updatedData);
+        setSelectedItem(null); 
+        const key = `open${Date.now()}`;
+        notification.open({
+          message: 'Product successfully deleted',
+          key
+        });
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000); 
+      })
+      .catch((err) => console.log(err));
+  };
 
   const handleConfirmDelete = () => {
     axios
@@ -213,10 +273,6 @@ const deleteItem = (id) => {
   const handleCancelDelete = () => {
     setShowModal(false);
   };
-
-
-
-
 
   const handleItemClick = (inventory) => {
     setSelectedItem(inventory);
@@ -246,16 +302,12 @@ const deleteItem = (id) => {
       .catch((err) => console.log(err));
   };
 
+  const { Column } = Table;
   return (
     <div>
-      <select onChange={handleTeamChange}>
-        <option value="">Select Team</option>
-        <option value="1">Team 1</option>
-        <option value="2">Team 2</option>
-        
-      </select>
+      
       <ToastContainer />
-      <div className="container mt-4">
+      {/* <div className="container mt-3"> */}
         {auth ? (
           <div style={{
             display: "flex",
@@ -274,37 +326,50 @@ const deleteItem = (id) => {
               }}
             >
               <h2>Item List</h2>
-              <Button href="/create">+ Add Item</Button>
+              <Button onClick={() => setCreateModalShow(true)} style={{
+                height: "30px",
+                margin: "15px",
+                backgroundColor: "skyblue",
+                border: "none"
+              }}>
+                Add Item
+              </Button>
             </div>
-           <div
+            {/* <TeamSelector teamId={teamId} setTeamId={setTeamId} /> */}
+            <div
         style={{
           display: "flex",
           justifyContent: "space-between",
           flexDirection: isSmallScreen ? "column" : "row"
         }}
       >
-              <Card className="mb-3" style={{ width: "100%",padding:'10px',textAlign:'left',  height: "calc(73vh - 64px)", overflowY: "auto" }}>
+              <Card className="mb-3" style={{ width: "100%",padding:'10px',textAlign:'left', overflowY: "auto" }}>
                 
                 <div className="table-responsive">
                   
-                  <table>
-                    <thead style={{borderBottom:"3px skyblue solid"}}>
-                    <th>Product</th>
-                    <th>Quantity</th>
-                    </thead>
-                    <tbody>
-                  
-                      {filteredData.map((inventory, index) => (
-                        <tr key={index} onClick={() => handleItemClick(inventory)} style={{ cursor: "pointer" }}>
-                          <td>{inventory.product_name}</td>
-                          <td>{inventory.quantity}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                <Table dataSource={filteredData.filter((inventory) => inventory.team_id === parseInt(teamId))} rowKey="product_id"
+                  pagination={{ pageSize: 5 }}>
+                  <Column 
+                    title="Product" 
+                    dataIndex="product_name" 
+                    key="product_name"  
+                    />
+                  <Column title="Quantity" dataIndex="quantity" key="quantity" />
+                  <Column
+                    // title="Action"
+                    key="action"
+                    render={(text, inventory, index) => (
+                      <span onClick={() => handleItemClick(inventory)} style={{ cursor: "pointer" }}>
+                        View
+                      </span>
+                    )}
+                  />
+                </Table>
+
+
                 </div>
               </Card>
-              <Card className="mb-3" style={{ padding: '10px', width: "100%", height: "calc(73vh - 64px)", overflowY: "auto", display: "flex", flexDirection: "column" }}>
+              <Card className="mb-3" style={{ padding: '10px', width: "100%", overflowY: "auto", display: "flex", flexDirection: "column" }}>
   {selectedItem ? (
     <div style={{ color: "black", justifyContent: 'center' }}>
       {isEditing ? (
@@ -332,6 +397,10 @@ const deleteItem = (id) => {
               <tr>
                 <td><label><strong>Total Amount:</strong></label></td>
                 <td><input type="text"style={{border:'none'}} name="total_amount" value={editedItem.total_amount} onChange={handleEditChange} /></td>
+              </tr>
+              <tr>
+                <td><label><strong>Team Id:</strong></label></td>
+                <td><input type="text"style={{border:'none'}} name="total_amount" value={editedItem.team_id} onChange={handleEditChange} /></td>
               </tr>
             </tbody>
           </table>
@@ -418,7 +487,128 @@ const deleteItem = (id) => {
     </div>
   )}
 </Card>
+<Modal size='lg' show={createModalShow} onHide={() => setCreateModalShow(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Add Item</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <form onSubmit={handleCreateSubmit}>
+            <div className="mb-3">
+              <label htmlFor="product_name" className="form-label">
+                Product Name
+              </label>
+              <input
+                type="text"
+                className="form-control"
+                id="product_name"
+                name="product_name"
+                value={formValues.product_name}
+                onChange={handleCreateInputChange}
+              />
+              {formErrors.product_name && <p className="text-danger">{formErrors.product_name}</p>}
             </div>
+            <div className="mb-3">
+              <label htmlFor="category" className="form-label">
+                Category
+              </label>
+              <input
+                type="text"
+                className="form-control"
+                id="category"
+                name="category"
+                value={formValues.category}
+                onChange={handleCreateInputChange}
+              />
+              {formErrors.category && <p className="text-danger">{formErrors.category}</p>}
+            </div>
+            <div className="mb-3">
+              <label htmlFor="price" className="form-label">
+                Price
+              </label>
+              <input
+                type="text"
+                className="form-control"
+                id="price"
+                name="price"
+                value={formValues.price}
+                onChange={handleCreateInputChange}
+              />
+              {formErrors.price && <p className="text-danger">{formErrors.price}</p>}
+            </div>
+            <div className="mb-3">
+              <label htmlFor="quantity" className="form-label">
+                Quantity
+              </label>
+              <input
+                type="text"
+                className="form-control"
+                id="quantity"
+                name="quantity"
+                value={formValues.quantity}
+                onChange={handleCreateInputChange}
+              />
+              {formErrors.quantity && <p className="text-danger">{formErrors.quantity}</p>}
+            </div>
+            <div className="mb-3">
+              <label htmlFor="total_amount" className="form-label">
+                Total Amount
+              </label>
+              <input
+                type="text"
+                className="form-control"
+                id="total_amount"
+                name="total_amount"
+                value={formValues.total_amount}
+                readOnly
+              />
+            </div>
+            <div className="mb-3">
+              <label htmlFor="team_id" className="form-label">
+                Team Id
+              </label>
+              <select
+                className="form-control"
+                value={teamId}
+                onChange={handleTeamChange}
+              >
+                <option value="">Select Team</option>
+                {teams.map((team) => (
+                  <option key={team.id} value={team.id}>
+                    {team.name}
+                  </option>
+                ))}
+              </select>
+              <input
+                type="text"
+                className="form-control"
+                id="team_id"
+                name="team_id"
+                value={formValues.team_id}
+                readOnly
+              />
+            </div>
+            <div className="mb-3">
+              <label htmlFor="image" className="form-label">
+                Image
+              </label>
+              <input
+                type="file"
+                className="form-control"
+                id="image"
+                name="image"
+                accept="image/*"
+                onChange={handleFile}
+              />
+            </div>
+            <div className="mt-3">
+                        <button style={{marginRight:'10px'}}className='btn btn-info'onClick={() => setCreateModalShow(false)}>Close</button>
+                        <button className='btn btn-success'>Submit</button>
+                    </div>
+          </form>
+        </Modal.Body>
+      </Modal>
+            </div>
+            
           </div>
         ) : (
           <div>
@@ -430,7 +620,7 @@ const deleteItem = (id) => {
           </div>
         )}
       </div>
-    </div>
+    // </div>
   );
 };
 

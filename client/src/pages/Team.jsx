@@ -197,7 +197,7 @@ const Team = () => {
 
   return (
     <div>
-      <div className="container mt-4">
+      {/* <div className="container mt-4"> */}
       {auth ? (
         <div style={{ display: "flex", flexDirection: "column", width: "100%", maxHeight: "calc(80vh - 74px)" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 30, borderBottom: "2px skyblue solid" }}>
@@ -268,7 +268,7 @@ const Team = () => {
           </div>
         )}
       </div>
-    </div>
+    // </div>
   );
 };
 

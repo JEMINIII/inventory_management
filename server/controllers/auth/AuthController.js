@@ -28,6 +28,10 @@ export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    if (!email || !password) {
+      return res.status(400).json({ error: "Email and password are required" });
+    }
+
     const q = "SELECT * FROM users WHERE email = ?";
     const [rows] = await db.query(q, [email]);
 
@@ -50,6 +54,7 @@ export const loginUser = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
 
 // export const logoutUser = async (req, res) => {
 //   try {

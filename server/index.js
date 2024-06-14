@@ -10,7 +10,7 @@ import MemberRoute from "./routes/team/TeamRoute.js";
 import userRoutes from "./routes/user/UserRoute.js";
 import db from "./models/db/DbModel.js";
 import { verifyUser } from "./controllers/auth/AuthController.js";
-// import {RoleRoute} from './routes/role/RoleRoute.js'
+import roleRoutes from './routes/role/RoleRoute.js'
 const app = express();
 const router = express.Router();
 
@@ -27,7 +27,7 @@ const transporter = nodemailer.createTransport({
 
 app.use(express.json());
 app.use(cors({
-  origin: ["http://localhost:3000"],
+  origin: ["http://localhost:3001"],
   methods: ["POST", "GET", "PUT", "DELETE"],
   credentials: true,
 }));
@@ -47,7 +47,7 @@ app.use("/", authRoutes);
 app.use("/products", productRoutes);
 app.use('/api', userRoutes);
 app.use('/', MemberRoute);
-// app.use('/roles', RoleRoute)
+app.use('/roles', roleRoutes)
 app.post('/send-email', (req, res) => {
   const { email } = req.body;
   console.log(email)

@@ -1,5 +1,4 @@
-// App.js
-import React from "react";
+import React, { useState } from "react";
 import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Home } from "./pages/Home.jsx";
@@ -19,24 +18,22 @@ import StockIn from "./pages/StockIn.jsx";
 import StockOut from "./pages/StockOut.jsx";
 import Team from "./pages/Team.jsx";
 import { TeamProvider } from "./context/TeamContext.js";
-
 const { Content } = AntLayout;
 
-const Layout = () => {
+const Layout = ({ toggleSidebar, isSidebarOpen }) => {
   return (
     <AntLayout style={{ background: "#ffffff" }}>
-      <Header />
-      <Footer style={{ textAlign: "center" }}>Footer</Footer>
-      <Content style={{ justifyContent: "space-between" }}>
+      <Content>
+        <Header toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
+        {/* <Footer style={{ textAlign: "center" }}>Footer</Footer> */}
         <div
           style={{
             display: "flex",
             flexDirection: "row",
-            marginBottom: 20,
             background: "transparent",
           }}
         >
-          <Sidebar />
+          {isSidebarOpen && <Sidebar />}
           <div
             style={{
               paddingLeft: 40,
@@ -57,12 +54,21 @@ const Layout = () => {
 };
 
 function App() {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
   return (
-    <TeamProvider>
-      <div>
+    <div>
+      <TeamProvider>
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Layout />}>
+            <Route
+              path="/"
+              element={<Layout toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />}
+            >
               <Route index element={<Home />} />
               <Route path="create" element={<Create />} />
               <Route path="read/:id" element={<Read />} />
@@ -76,8 +82,8 @@ function App() {
             <Route path="register" element={<Register />} />
           </Routes>
         </BrowserRouter>
-      </div>
-    </TeamProvider>
+      </TeamProvider>
+    </div>
   );
 }
 

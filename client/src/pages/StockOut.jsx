@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {  Card, InputNumber,Alert } from "antd";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
@@ -7,6 +7,7 @@ import Modal from 'react-bootstrap/Modal';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Toast from 'react-bootstrap/Toast';
+import { TeamContext } from "../context/TeamContext";
 
 function StockOut() {
   // const [modalShow, setModalShow] = useState(false);
@@ -19,6 +20,8 @@ function StockOut() {
     const navigate = useNavigate();
     const [modalShow, setModalShow] = useState(false);
     const [showToast, setShowToast] = useState(false);
+    const { teamId, setTeamId, changeTeam } = useContext(TeamContext); 
+    const [items, setItems] = useState([]);
     const MyVerticallyCenteredModal = (props) => (
       <Modal
         {...props}
@@ -42,13 +45,43 @@ function StockOut() {
       </Modal>
     );
     const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth <= 800);
+    useEffect(() => {
+      const storedTeamId = localStorage.getItem("selectedTeamId");
+      if (storedTeamId) {
+        changeTeam(storedTeamId); // use changeTeam to update context
+      }
+    }, [changeTeam]);
+    
+useEffect(() => {
+    if (teamId) {
+      axios.get(`http://localhost:8082/products?team_id=${teamId}`)
+        .then((res) => {
+          if (res.data.success === true) {
+            setAuth(true);
+            const sortedInventory = res.data.items.sort((a, b) =>
+              a.product_name.localeCompare(b.product_name)
+            );
+            setItems(res.data.items);
+            setData(sortedInventory);
+            setFilteredData(sortedInventory);
+          } else {
+            setAuth(false);
+            setMessage(res.data.error);
+          }
+        })
+        .catch((err) => {
+          console.error(err);
+        });
+    }
+  }, [teamId]);
+
 
     useEffect(() => {
         axios.defaults.withCredentials = true;
         axios
           .get("http://localhost:8082/products")
           .then((res) => {
-            console.log(res.data)
+            // console.log(res.data)
             
             if (res.data.success === true) {
               setAuth(true);
@@ -159,13 +192,14 @@ function StockOut() {
                     <th>Quantity</th>
                     </thead>
                     <tbody>
-                      {filteredData.map((inventory, index) => (
-                        <tr key={index} onClick={() => handleItemClick(inventory)} style={{ cursor: "pointer" }}>
-                          <td>{inventory.product_name}</td>
-                          <td>{inventory.quantity}</td>
-
-                        </tr>
-                      ))}
+                    {filteredData
+      .filter((inventory) => inventory.team_id === parseInt(teamId)) // Filter based on team_id
+      .map((inventory, index) => (
+        <tr key={index} onClick={() => handleItemClick(inventory)} style={{ cursor: "pointer" }}>
+          <td>{inventory.product_name}</td>
+          <td>{inventory.quantity}</td>
+        </tr>
+      ))}
                     </tbody>
                   </table>
                 </div>

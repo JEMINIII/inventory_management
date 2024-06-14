@@ -1,129 +1,162 @@
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
-
+import "./Login.css";
+import {Button} from 'antd'
+ 
 const Login = () => {
   const [values, setValues] = useState({
+    name: "",
     email: "",
     password: "",
   });
+  const [isSignUpActive, setIsSignUpActive] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [errorPopup, setErrorPopup] = useState(""); // For error popup
   const navigate = useNavigate();
-  axios.defaults.withCredentials = true;
-  const [backendError, setBackendError] = useState([]);
-  const [frontendError, setFrontendError] = useState("");
+  let errorTimeout;
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!values.email || !values.password) {
-      setBackendError([{ field: "email", msg: "Please fill in all fields" }]);
-      return;
+  useEffect(() => {
+    if (errorPopup) {
+      errorTimeout = setTimeout(() => {
+        setErrorPopup("");
+      }, 3001);
     }
-    axios
-      .post("http://localhost:8082/login", values)
-      .then((res) => {
-        console.log("Server response:", res.data);
-        if (res.data.errors) {
-          setBackendError(res.data.errors);
-        } else {
-          setBackendError([]);
-          if (res.data.message === "Login successful") {
-            Cookies.set("token", res.data.token, { expires: 1 });
-            navigate("/");
-          } else {
-            console.log("Login unsuccessful:", res.data.message);
-            // Handle unsuccessful login
-          }
-        }
-      })
-      .catch((err) => {
-        console.error("Error logging in:", err.response.data);
-        setFrontendError("Invalid email or password");
-      });
-  };
+    return () => clearTimeout(errorTimeout);
+  }, [errorPopup]);
 
   const handleInput = (e) => {
     const { name, value } = e.target;
     setValues((prev) => ({ ...prev, [name]: value }));
+    setErrors({});
+    setErrorPopup(""); // Clear popup on input change
+    clearTimeout(errorTimeout); // Clear previous timeout
+  };
 
-    // Remove the error message for the input field
-    setBackendError((prevErrors) =>
-      prevErrors.filter((error) => error.field !== name)
-    );
-    setFrontendError(""); // Clear frontend error on input change
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const url = isSignUpActive ? "http://localhost:8082/register" : "http://localhost:8082/login";
+    axios
+      .post(url, values, { withCredentials: true })
+      .then((res) => {
+        console.log(res.data)
+        if (res.data.errors) {
+          const errorMessages = res.data.errors.reduce((acc, error) => {
+            acc[error.param] = error.msg;
+            return acc;
+          }, {});
+          setErrors(errorMessages);
+        } else {
+          setErrors({});
+          if (res.data.message === "Login successful") {
+            Cookies.set("token", res.data.token, { expires: 1 });
+            navigate("/");
+          } else if (res.data.message === "User registered successfully") {
+            setIsSignUpActive(false);
+            setValues({ name: "", email: "", password: "" });
+          }
+        }
+      })
+      .catch((err) => {
+        setErrorPopup("!! An error occurred. Please try again.");
+      });
+  };
+
+  const toggleSignUp = () => {
+    setIsSignUpActive(!isSignUpActive);
   };
 
   return (
-    <div className="d-flex justify-content-center align-items-center bg-light vh-100">
-      <div className="bg-white p-3 rounded w-25 border border shadow">
-        <div style={{ textAlign: "center", marginBottom: "1rem" }}>
-          <h2
-            style={{
-              fontFamily: "'Roboto', sans-serif",
-              fontSize: "1.5rem",
-              fontWeight: "bold",
-              backgroundImage:
-                "linear-gradient(to right, #e66465, #9198e5, #e66465, #9198e5, #e66465)",
-              WebkitBackgroundClip: "text",
-              color: "transparent",
-            }}
-          >
-            Login
-          </h2>
+    <div className="body">
+      {errorPopup && (
+        <div className="error-popup">
+          <p>{errorPopup}</p>
+          {/* <Button onClick={() => setErrorPopup("")}></Button> */}
         </div>
-        {frontendError && <p className="text-danger">{frontendError}</p>}
-        {backendError.map((error, index) => {
-          if (error.field === "email" || error.field === "password" || error.field === "passwordNotMatch") {
-            return (
-              <p key={index} className="text-danger">
-                {error.msg}
-              </p>
-            );
-          }
-          return null;
-        })}
-        <form onSubmit={handleSubmit}>
-          <div className="mb-3">
-            <label htmlFor="email">
-              <strong>Email</strong>
-            </label>
+      )}
+      <div className={`container ${isSignUpActive ? "right-panel-active" : ""}`} id="container">
+        <div className="form-container sign-in-container">
+          <form onSubmit={handleSubmit}>
+            <h1>Sign in</h1>
+            <div className="social-container">
+              <a href="#" className="social"><i className="fab fa-facebook-f"></i></a>
+              <a href="#" className="social"><i className="fab fa-google-plus-g"></i></a>
+              <a href="#" className="social"><i className="fab fa-linkedin-in"></i></a>
+            </div>
+            <span>or use your account</span>
+            {errors.general && <p className="text-danger">{errors.general}</p>}
             <input
               type="email"
-              placeholder="Enter Email"
+              placeholder="Email"
               name="email"
+              value={values.email}
               onChange={handleInput}
-              className="form-control rounded-0"
             />
-          </div>
-          <div className="mb-3">
-            <label htmlFor="password">
-              <strong>Password</strong>
-            </label>
+            {errors.email && <p className="text-danger">{errors.email}</p>}
+            <input
+              
+              type="password"
+              placeholder="Password"
+              name="password"
+              value={values.password}
+              onChange={handleInput}
+            />
+            {errors.password && <p className="text-danger">{errors.password}</p>}
+            <a href="#" className="forgot">Forgot your password?</a>
+            <button type="submit">Sign In</button>
+          </form>
+        </div>
+        <div className="form-container sign-up-container">
+          <form onSubmit={handleSubmit}>
+            <h1>Create Account</h1>
+            <div className="social-container">
+              <a href="#" className="social"><i className="fab fa-facebook-f"></i></a>
+              <a href="#" className="social"><i className="fab fa-google-plus-g"></i></a>
+              <a href="#" className="social"><i className="fab fa-linkedin-in"></i></a>
+            </div>
+            <span>or use your email for registration</span>
+            <input
+              type="text"
+              placeholder="Name"
+              name="name"
+              value={values.name}
+              onChange={handleInput}
+            />
+            {errors.name && <p className="text-danger">{errors.name}</p>}
+            <input
+              type="email"
+              placeholder="Email"
+              name="email"
+              value={values.email}
+              onChange={handleInput}
+            />
+            {errors.email && <p className="text-danger">{errors.email}</p>}
             <input
               type="password"
-              placeholder="Enter password"
+              placeholder="Password"
               name="password"
+              value={values.password}
               onChange={handleInput}
-              className="form-control rounded-0"
             />
+            {errors.password && <p className="text-danger">{errors.password}</p>}
+            <button type="submit">Sign Up</button>
+          </form>
+        </div>
+        <div className="overlay-container">
+          <div className="overlay">
+            <div className="overlay-panel overlay-left">
+              <h1>Welcome Back!</h1>
+              <p>To keep connected with us please login with your personal info</p>
+              <button onClick={toggleSignUp} id="signInBtn">Sign In</button>
+            </div>
+            <div className="overlay-panel overlay-right">
+              <h1>Hello, Friend!</h1>
+              <p>Enter your personal details and start your journey with us</p>
+              <button onClick={toggleSignUp} id="signUpBtn">Sign Up</button>
+            </div>
           </div>
-          <button
-            type="submit"
-            style={{
-              backgroundImage: "linear-gradient(to right, #e66465, #9198e5)",
-            }}
-            className="btn btn-success w-100 rounded-0"
-          >
-            Login
-          </button>
-          <p>You are agree to our terms and policies</p>
-          <Link
-            to="/register"
-            className="btn btn-default border w-100 bg-light rounded-0 text-decoration-none"
-          >
-            Create account
-          </Link>
-        </form>
+        </div>
       </div>
     </div>
   );

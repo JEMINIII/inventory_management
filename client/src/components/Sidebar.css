@@ -1,0 +1,26 @@
+.sidebar-container {
+    display: flex;
+    flex-direction: column;
+    height: 70vh;
+    overflow: hidden;
+    
+  }
+  
+  /* .toggle-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    background-color: #f0f0f0;
+    border-bottom: 1px solid #d9d9d9;
+  } */
+  
+  .menu {
+    flex: 1;
+    overflow-y: auto;
+  }
+  
+  .team-selector {
+border: none;
+  }
+  

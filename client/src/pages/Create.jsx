@@ -9,6 +9,8 @@ export const Create = () => {
         price: "",
         quantity: "",
         total_amount: "",
+        team_id:"",
+        user_id:'',
         product_id: null,
     
     });
@@ -129,6 +131,10 @@ export const Create = () => {
                     <div className='mb-2'>
                         <label htmlFor="Name"></label>
                         <input type="text" name="total_amount" placeholder='Enter Amount' className='form-control' value={values.total_amount} readOnly />
+                    </div>
+                    <div className='mb-2'>
+                        <label htmlFor="Team"></label>
+                        <input type="text" name="team" placeholder='enter team_name' className='form-control' value={values.team_id} readOnly />
                     </div>
                     <br/>
                     <div className="d-flex justify-content-between align-items-center">
