@@ -13,6 +13,7 @@ import { verifyUser } from "./controllers/auth/AuthController.js";
 import roleRoutes from './routes/role/RoleRoute.js'
 const app = express();
 const router = express.Router();
+import teamMembersRoutes from './routes/team_members/teamMembersRoutes.js';
 
 // Nodemailer configuration
 const transporter = nodemailer.createTransport({
@@ -27,7 +28,7 @@ const transporter = nodemailer.createTransport({
 
 app.use(express.json());
 app.use(cors({
-  origin: ["http://localhost:3001"],
+  origin: ["http://localhost:3000"],
   methods: ["POST", "GET", "PUT", "DELETE"],
   credentials: true,
 }));
@@ -42,12 +43,13 @@ app.use(session({
     maxAge: 1000 * 60 * 60 * 24,
   },
 }));
-
+app.use('/api',teamMembersRoutes);
 app.use("/", authRoutes);
 app.use("/products", productRoutes);
 app.use('/api', userRoutes);
 app.use('/', MemberRoute);
 app.use('/roles', roleRoutes)
+// app.use('/api/team_members', teamRoutes);
 app.post('/send-email', (req, res) => {
   const { email } = req.body;
   console.log(email)

@@ -2,12 +2,13 @@ import React, { useContext, useEffect, useState } from "react";
 import {  Card, InputNumber,Alert } from "antd";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
-import Button from 'react-bootstrap/Button';
+import {Button,notification} from 'antd';
 import Modal from 'react-bootstrap/Modal';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Toast from 'react-bootstrap/Toast';
 import { TeamContext } from "../context/TeamContext";
+import '../pages/Login.css'
 
 function StockIn() {
   // const [modalShow, setModalShow] = useState(false);
@@ -24,7 +25,7 @@ function StockIn() {
     const [items, setItems] = useState([]);
 
 
-    const MyVerticallyCenteredModal = (props) => (
+    const MyVerticallyCenteredModal = ({ handleUpdateClick, ...props }) => (
       <Modal
         {...props}
         size="lg"
@@ -38,14 +39,16 @@ function StockIn() {
         </Modal.Header>
         <Modal.Body>
           <h6>Do you really want to update the quantity ?</h6>
-          
         </Modal.Body>
         <Modal.Footer>
-        <Button type="primary" onClick={handleUpdateClick}>Update</Button>
-          <Button onClick={props.onHide}>Close</Button>
+          <button type="primary" onClick={handleUpdateClick}>
+            Yes
+          </button>
+          <button onClick={props.onHide}>No</button>
         </Modal.Footer>
       </Modal>
     );
+    
     const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth <= 800);
 
 useEffect(() => {
@@ -60,6 +63,7 @@ useEffect(() => {
       if (teamId) {
         axios.get(`http://localhost:8082/products?team_id=${teamId}`)
           .then((res) => {
+            
             if (res.data.success === true) {
               setAuth(true);
               const sortedInventory = res.data.items.sort((a, b) =>
@@ -78,11 +82,6 @@ useEffect(() => {
           });
       }
     }, [teamId]);
-
-
-
-
-
 
     useEffect(() => {
         axios.defaults.withCredentials = true;
@@ -142,7 +141,8 @@ useEffect(() => {
                 console.error('Failed to update quantity:', err);
             });
       });
-      window.location.href = window.location.href;
+     setShowToast(false)
+     window.location.href = window.location.href; 
     };  
 
     useEffect(() => {
@@ -160,9 +160,8 @@ useEffect(() => {
     
 
     return (
+      
       <div>
-        
-      <div className="container mt-4">
         {auth ?(
         <div style={{
             display: "flex",
@@ -176,8 +175,9 @@ useEffect(() => {
                 alignItems: "center",
                 justifyContent: "space-between",
                 marginBottom: 30,
-                height: "calc(100vh - 64px)",
-                borderBottom: "2px skyblue solid"
+                marginTop: 30,
+                // height: "calc(100vh - 64px)",
+                borderBottom: "2px black solid"
               }}
             >
               <h2>Stock In</h2>
@@ -195,7 +195,7 @@ useEffect(() => {
                 <div className="table-responsive">
                   
                   <table>
-                  <thead style={{borderBottom:"3px skyblue solid"}}>
+                  <thead style={{borderBottom:"3px black solid"}}>
                     <th>Product</th>
                     <th>Quantity</th>
                     </thead>
@@ -221,13 +221,13 @@ useEffect(() => {
               <Card className="mb-3" style={{ padding: '10px', width: "100%", height: "calc(73vh - 64px)", overflowY: "auto", display: "flex", flexDirection: "column" }}>
               {selectedItems.length > 0 ? (
   <div style={{ padding: "24px", color: "black" }}>
-    <h6 style={{ borderBottom: "3px skyblue solid", paddingBottom: '5px' }}>Add Quantity:</h6>
+    <h6 style={{ borderBottom: "3px black solid", paddingBottom: '5px' }}>Add Quantity:</h6>
     
     {selectedItems.map(item => {
       const existingItem = data.find(i => i.product_id === item.product_id);
       const inventoryQuantity = existingItem ? existingItem.quantity : 0;
       return (
-        <div key={item.product_id} style={{backgroundColor:"skyblue",display: "flex",alignItems: "center",padding:10,justifyContent: "space-between" }}>
+        <div key={item.product_id} style={{backgroundColor:'#ebebeb',display: "flex",alignItems: "center",padding:10,justifyContent: "space-between" }}>
           
           <p style={{ marginBottom: "8px",fontWeight:'bold'}}>{item.product_name}</p>
           
@@ -235,7 +235,7 @@ useEffect(() => {
               min={1}
               value={item.quantity}
               onChange={(value) => handleQuantityChange(item.product_id, value)}
-              style={{fontWeight: "bold" ,border:'3px skyblue solid' }}
+              style={{fontWeight: "bold" ,border:'3px black solid',fontWeight: 'bold' }}
             />
             {/* <p style={{ marginBottom: 0 }}>Latest Quantity: {inventoryQuantity + item.quantity}</p> */}
           
@@ -244,11 +244,12 @@ useEffect(() => {
     })}
     
     <center style={{paddingTop:'20px'}}>
-              <Button type="primary" onClick={() => setModalShow(true)}>Update</Button>
+              <button style={{borderRadius:'50px'}} onClick={() => setModalShow(true)}>Update</button>
               <MyVerticallyCenteredModal
-        show={modalShow}
-        onHide={() => setModalShow(false)}
-      />
+  show={modalShow}
+  onHide={() => setModalShow(false)}
+  handleUpdateClick={handleUpdateClick}
+/>
               </center>
   </div>
 ) : (
@@ -275,7 +276,6 @@ useEffect(() => {
         )}
       </div>
       
-    </div>
 
     )
 }

@@ -27,7 +27,7 @@ const TeamSelector = () => {
   };
 
   return (
-    <select value={teamId || ''} style={{ width: '195px' }} onChange={handleTeamChange}>
+    <select value={teamId || ''} style={{ backgroundColor:'black',color:'white',border:'none' }} onChange={handleTeamChange}>
       <option value="">Select Team</option>
       {teams.map((team) => (
         <option key={team.id} value={team.id}>

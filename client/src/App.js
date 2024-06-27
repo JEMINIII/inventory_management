@@ -23,33 +23,35 @@ const { Content } = AntLayout;
 const Layout = ({ toggleSidebar, isSidebarOpen }) => {
   return (
     <AntLayout style={{ background: "#ffffff" }}>
-      <Content>
-        <Header toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
-        {/* <Footer style={{ textAlign: "center" }}>Footer</Footer> */}
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "row",
-            background: "transparent",
-          }}
-        >
-          {isSidebarOpen && <Sidebar />}
-          <div
-            style={{
-              paddingLeft: 40,
-              paddingRight: 40,
-              flex: 1,
-              marginLeft: 0,
-              overflow: "auto",
-            }}
-          >
-            <div>
-              <Outlet />
-            </div>
-          </div>
+  
+  <Content> 
+    <Header toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "row",
+        background: "transparent",
+        maxHeight: "calc(98vh - 74px)"
+      }}
+    >
+      {isSidebarOpen && <Sidebar />}
+      <div
+        style={{
+          paddingLeft: 40,
+          paddingRight: 40,
+          flex: 1,
+          marginLeft: 0,
+          overflow: "auto",
+        }}
+      >
+        <div>
+          <Outlet />
         </div>
-      </Content>
-    </AntLayout>
+      </div>
+    </div>
+  </Content>
+</AntLayout>
+
   );
 };
 

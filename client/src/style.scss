@@ -1,16 +1,16 @@
 // $button: #de7d9b;
-$menu:#cbedfa;
-$menuHover:#39bfec;
+$menu:#cfcfcf;
+$menuHover:#000000;
 
 /* style.css */
-#root, .ant-layout, .ant-layout-content {
+// #root, .ant-layout, .ant-layout-content {
   
-  align-content:center;
-  margin: 0;
-  padding: 0;
-  background-color: #ffffff;
+//   align-content:center;
+//   margin: 0;
+//   padding: 0;
+//   background-color: #ffffff;
   
-}
+// }
 
 .ant-layout {
   display: flex;
@@ -30,6 +30,10 @@ $menuHover:#39bfec;
 .main-content {
   flex: 1;
   overflow: auto;
+}
+
+:where(.css-dev-only-do-not-override-11xg00t).ant-menu-dark .ant-menu-item-selected, :where(.css-dev-only-do-not-override-11xg00t).ant-menu-dark>.ant-menu .ant-menu-item-selected {
+  background-color: #000000; 
 }
 
 
@@ -209,7 +213,7 @@ $menuHover:#39bfec;
   }
   :where(.css-dev-only-do-not-override-11xg00t).ant-card .ant-card-body {
     padding: 0%;
-    height: 100%;
+    // height: 100%;
     
   }
 

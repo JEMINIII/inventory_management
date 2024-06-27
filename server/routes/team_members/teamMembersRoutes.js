@@ -1,12 +1,13 @@
 import express from 'express';
-import { addTeamMember, getTeamMembers } from './path/to/your/controller';
-
+import { addTeamMember, getTeamMembers } from '../../controllers/team_members/TeamMembersController.js';
+import { verifyUser } from "../../controllers/auth/AuthController.js";
 const router = express.Router();
 
 // Route to add a team member
-router.post('/api/team_members', addTeamMember);
+router.post('/team_members',verifyUser, addTeamMember);
 
 // Route to get team members by team ID
-router.get('/api/team_members/:team_id', getTeamMembers);
+router.get('/team_members/:team_id',verifyUser, getTeamMembers);
 
 export default router;
+

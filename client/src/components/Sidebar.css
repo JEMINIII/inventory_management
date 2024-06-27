@@ -1,10 +1,15 @@
 .sidebar-container {
     display: flex;
     flex-direction: column;
-    height: 70vh;
+    height: 100vh;
     overflow: hidden;
     
   }
+  .sidebar-container.collapsed {
+    width: 80px; /* Width when collapsed, showing only icons */
+  }
+
+  
   
   /* .toggle-button {
     display: flex;
@@ -23,4 +28,11 @@
   .team-selector {
 border: none;
   }
-  
+
+  :where(.css-dev-only-do-not-override-11xg00t).ant-menu-inline.ant-menu-root .ant-menu-item >.ant-menu-title-content, :where(.css-dev-only-do-not-override-11xg00t).ant-menu-inline.ant-menu-root .ant-menu-submenu-title >.ant-menu-title-content {
+    flex: auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: medium;
+  }

@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Table, Modal, Form, Input, notification, Card } from "antd";
-import { SaveOutlined, CloseOutlined, EditOutlined,UploadOutlined, DeleteOutlined } from '@ant-design/icons';
-import Button from 'react-bootstrap/Button';
-import {Link} from "react-router-dom";
+import { Table, Form, Input, notification, Card } from "antd";
+import { Modal, Button } from 'react-bootstrap';
+import { SaveOutlined, CloseOutlined, EditOutlined, UploadOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Link } from "react-router-dom";
+import '../pages/Login.css';
 
 
 const Team = () => {
@@ -19,7 +20,6 @@ const Team = () => {
   const [editingTeamId, setEditingTeamId] = useState(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [teamName, setTeamName] = useState("");
-  
 
   const openCreateModal = () => {
     setIsCreateModalOpen(true);
@@ -27,21 +27,15 @@ const Team = () => {
 
   const closeCreateModal = () => {
     setTeamName("");
-    
     setIsCreateModalOpen(false);
   };
 
- 
-
   const handleCreate = () => {
-    axios
-      .post("http://localhost:8082/team/create", { name: teamName })
+    axios.post("http://localhost:8082/team/create", { name: teamName })
       .then((response) => {
         console.log("Team created:", response.data);
         notification.success({ message: "Team created successfully" });
         closeCreateModal();
-  
-        // Fetch the updated team list
         axios.get("http://localhost:8082/team")
           .then((res) => {
             if (res.data.success === true) {
@@ -57,12 +51,10 @@ const Team = () => {
         notification.error({ message: "Failed to create team" });
       });
   };
-  
 
   useEffect(() => {
     axios.defaults.withCredentials = true;
-    axios
-      .get("http://localhost:8082/team")
+    axios.get("http://localhost:8082/team")
       .then((res) => {
         if (res.data.success === true) {
           setAuth(true);
@@ -92,8 +84,7 @@ const Team = () => {
 
   const handleUpdate = () => {
     if (selectedItem && selectedItem.id) {
-      axios
-        .put(`http://localhost:8082/team/edit/${selectedItem.id}`, editedItem)
+      axios.put(`http://localhost:8082/team/edit/${selectedItem.id}`, editedItem)
         .then(() => {
           const updatedData = filteredData.map((item) =>
             item.id === selectedItem.id ? editedItem : item
@@ -107,7 +98,6 @@ const Team = () => {
         .catch((err) => console.log(err));
     }
   };
-  
 
   const handleEditClick = (id) => {
     setEditingTeamId(id);
@@ -129,8 +119,7 @@ const Team = () => {
 
   const handleConfirmDelete = () => {
     if (selectedItem && selectedItem.id) {
-      axios
-        .delete(`http://localhost:8082/team/delete/${selectedItem.id}`)
+      axios.delete(`http://localhost:8082/team/delete/${selectedItem.id}`)
         .then(() => {
           const updatedData = filteredData.filter((team) => team.id !== selectedItem.id);
           setFilteredData(updatedData);
@@ -173,22 +162,22 @@ const Team = () => {
       key: 'actions',
       render: (text, record) => (
         editingTeamId === record.id ? (
-          <div style={{display:'flex',gap:'10px'}}>
-          <div>
-            <Button onClick={handleUpdate} >Save</Button>
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <div>
+              <button onClick={handleUpdate} icon={<SaveOutlined />}>Save</button>
             </div>
             <div>
-            <Button onClick={handleCancelEdit}>Cancel</Button>
-          </div>
+              <button onClick={handleCancelEdit} icon={<CloseOutlined />}>Cancel</button>
+            </div>
           </div>
         ) : (
-          <div style={{display:'flex',gap:'10px'}}>
-          <div>
-            <Button onClick={() => handleEditClick(record.id)} >Edit</Button>
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <div>
+              <button onClick={() => handleEditClick(record.id)} icon={<EditOutlined />}>Edit</button>
             </div>
             <div>
-            <Button onClick={() => handleDelete(record.id)} type="danger">Delete</Button>
-          </div>
+              <button onClick={() => handleDelete(record.id)} type="danger" icon={<DeleteOutlined />}>Delete</button>
+            </div>
           </div>
         )
       ),
@@ -197,13 +186,11 @@ const Team = () => {
 
   return (
     <div>
-      {/* <div className="container mt-4"> */}
       {auth ? (
         <div style={{ display: "flex", flexDirection: "column", width: "100%", maxHeight: "calc(80vh - 74px)" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 30, borderBottom: "2px skyblue solid" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 30, borderBottom: "2px black solid" }}>
             <h2>Team</h2>
-            <Button onClick={openCreateModal}>Create Team</Button>
-            
+            <button onClick={openCreateModal} icon={<UploadOutlined />}>Create Team</button>
           </div>
 
           <Card className="mb-3" style={{ width: "100%", padding: '10px', textAlign: 'left', height: "calc(73vh - 64px)" }}>
@@ -213,62 +200,72 @@ const Team = () => {
               rowKey="id"
               pagination={{ pageSize: 5 }} // Enable pagination with 5 items per page
               scroll={false} // Disable scrolling
-              
             />
-            
 
+            {/* Delete Modal */}
             <Modal
-              title="Delete Team"
-              visible={isDeleteModalOpen}
-              onOk={handleConfirmDelete}
-              onCancel={handleCancelDelete}
+              show={isDeleteModalOpen}
+              onHide={handleCancelDelete}
+              centered
             >
-              <p>Are you sure you want to delete this team?</p>
+              <Modal.Header closeButton>
+                <Modal.Title>Delete Team</Modal.Title>
+              </Modal.Header>
+              <Modal.Body>
+                <p>Are you sure you want to delete this team?</p>
+              </Modal.Body>
+              <Modal.Footer>
+                <button variant="secondary" onClick={handleCancelDelete}>
+                  Cancel
+                </button>
+                <button variant="danger" onClick={handleConfirmDelete}>
+                  Delete
+                </button>
+              </Modal.Footer>
             </Modal>
 
+            {/* Create Modal */}
             <Modal
-        title="Create Team"
-        visible={isCreateModalOpen}
-        onCancel={closeCreateModal}
-        footer={[
-          <div style={{display:'flex',gap:'10px'}}>
-          <div>
-          <Button key="back" onClick={closeCreateModal}>
-            Close
-          </Button>
-          </div>
-          <div>
-          <Button key="submit" type="primary" onClick={handleCreate}>
-            Create
-          </Button>
-          </div>
-          </div>
-        ]}
-      >
-        <Form>
-          <Form.Item label="Team Name">
-            <Input
-              type="text"
-              placeholder="Enter team name"
-              value={teamName}
-              onChange={(e) => setTeamName(e.target.value)}
-            />
-          </Form.Item>
-        </Form>
-      </Modal>
+              show={isCreateModalOpen}
+              onHide={closeCreateModal}
+              centered
+            >
+              <Modal.Header closeButton>
+                <Modal.Title>Create Team</Modal.Title>
+              </Modal.Header>
+              <Modal.Body>
+                <Form>
+                  <Form.Item label="Team Name">
+                    <Input
+                      type="text"
+                      placeholder="Enter team name"
+                      value={teamName}
+                      onChange={(e) => setTeamName(e.target.value)}
+                    />
+                  </Form.Item>
+                </Form>
+              </Modal.Body>
+              <Modal.Footer>
+                <button variant="secondary" onClick={closeCreateModal}>
+                  Close
+                </button>
+                <button variant="primary" onClick={handleCreate}>
+                  Create
+                </button>
+              </Modal.Footer>
+            </Modal>
           </Card>
         </div>
-        ) : (
-          <div>
-            <h3>{message}</h3>
-            <h3>Login Now</h3>
-            <Link to="/login" className="btn btn-primary">
-              hello
-            </Link>
-          </div>
-        )}
-      </div>
-    // </div>
+      ) : (
+        <div>
+          <h3>{message}</h3>
+          <h3>Login Now</h3>
+          <Link to="/login" className="btn btn-primary">
+            Login
+          </Link>
+        </div>
+      )}
+    </div>
   );
 };
 

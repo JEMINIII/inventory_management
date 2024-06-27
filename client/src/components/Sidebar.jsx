@@ -63,15 +63,19 @@ const Sidebar = () => {
 
   return (
     <div className="sidebar-container">
-      {/* <div className="toggle-button">
+      {/* <div className="toggle-button"> 
         <Button onClick={toggleCollapsed}>
           {menuCollapsed ? <RightCircleOutlined /> : <LeftCircleOutlined />}
         </Button>
       </div> */}
       <Menu
         className="menu"
+        style={{
+          backgroundColor:'black',
+          color:'white'
+        }}
         mode="inline"
-        theme="light"
+        theme="dark"
         inlineCollapsed={menuCollapsed}
         onClick={({ id }) => handleMenuClick(id)}
         openKeys={openKeys}

@@ -1,39 +1,52 @@
-import db from "../../models/db/DbModel";
+import db from "../../models/db/DbModel.js";
 
-// Function to add a team member
-export const addTeamMember = (req, res) => {
+export const addTeamMember = async (req, res) => {
   const { user_id, role_id, team_id } = req.body;
 
-  const sql = 'INSERT INTO team_members (user_id, role_id, team_id) VALUES (?, ?, ?)';
+  if (!user_id || !role_id || !team_id) {
+    return res.status(400).send({ message: 'Missing required fields' });
+  }
 
-  db.query(sql, [user_id, role_id, team_id], (err, result) => {
-    if (err) {
-      console.error(err);
-      res.status(500).json({ error: 'Failed to add team member' });
-    } else {
-      res.status(201).json({ success: 'Team member added successfully', memberId: result.insertId });
+  try {
+    // Insert the new team member
+    const result = await db.query(
+      'INSERT INTO team_members (user_id, role_id, team_id) VALUES (?, ?, ?)',
+      [user_id, role_id, team_id]
+    );
+    
+    res.status(201).send({ message: 'Member added successfully', member: result });
+  } catch (error) {
+    if (error.code === 'ER_DUP_ENTRY') {
+      // Duplicate entry error handling
+      return res.status(400).send({ message: 'This combination is already present' });
     }
-  });
+    console.error('Error adding team member:', error);
+    res.status(500).send({ message: 'Internal server error' });
+  }
 };
 
-// Function to fetch team members
-export const getTeamMembers = (req, res) => {
-  const { team_id } = req.params;
 
-  const sql = `
-    SELECT tm.id, tm.team_id, u.name as user_name, r.name as role_name
-    FROM team_members tm
-    JOIN users u ON tm.user_id = u.id
-    JOIN roles r ON tm.role_id = r.id
-    WHERE tm.team_id = ?
-  `;
 
-  db.query(sql, [team_id], (err, results) => {
-    if (err) {
-      console.error(err);
-      res.status(500).json({ error: 'Failed to fetch team members' });
-    } else {
-      res.status(200).json({ success: true, teamMembers: results });
-    }
-  });
+
+export const getTeamMembers = async (req, res) => {
+  const team_id = req.params.team_id;
+
+  try {
+    // Fetch team members from the database based on team_id
+    const query = `
+      SELECT tm.*, u.name as user_name, r.name as role_name
+      FROM team_members tm
+      INNER JOIN users u ON tm.user_id = u.id
+      INNER JOIN roles r ON tm.role_id = r.id
+      WHERE tm.team_id = ?
+    `;
+    const teamMembers = await db.query(query, [team_id]);
+
+    res.status(200).json({ teamMembers });
+  } catch (error) {
+    console.error('Error fetching team members:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
 };
+
+
