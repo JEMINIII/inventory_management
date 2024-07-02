@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import {  Card, InputNumber,Alert } from "antd";
+import {  Card, InputNumber,Alert,Table,Pagination } from "antd";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import {Button,notification} from 'antd';
@@ -9,6 +9,7 @@ import Col from 'react-bootstrap/Col';
 import Toast from 'react-bootstrap/Toast';
 import { TeamContext } from "../context/TeamContext";
 import '../pages/Login.css'
+import { CloseOutlined } from '@ant-design/icons';
 
 function StockIn() {
   // const [modalShow, setModalShow] = useState(false);
@@ -23,6 +24,7 @@ function StockIn() {
     const [showToast, setShowToast] = useState(false);
     const { teamId, setTeamId } = useContext(TeamContext);
     const [items, setItems] = useState([]);
+    
 
 
     const MyVerticallyCenteredModal = ({ handleUpdateClick, ...props }) => (
@@ -157,8 +159,29 @@ useEffect(() => {
       };
     }, []);
 
-    
+    const columns = [
+      {
+        title: "Product",
+        dataIndex: "product_name",
+        key: "product_name",
+      },
+      {
+        title: "Quantity",
+        dataIndex: "quantity",
+        key: "quantity",
+      },
+    ];
 
+    const onRowClick = (record) => {
+      return {
+        onClick: () => handleItemClick(record), // Handle click on row
+      };
+    };
+    
+    const handleCloseRow = (productId) => {
+      setSelectedItems(selectedItems.filter(item => item.product_id !== productId));
+  };
+    
     return (
       
       <div>
@@ -190,26 +213,19 @@ useEffect(() => {
           flexDirection: isSmallScreen ? "column" : "row"
         }}
       >
-              <Card className="mb-3" style={{ width: "100%",padding:'10px',textAlign:'left',  height: "calc(73vh - 64px)", overflowY: "auto" }}>
+              <Card className="mb-3" style={{ width: "100%",padding:'10px',textAlign:'left',overflowY: "auto" }}>
                 
                 <div className="table-responsive">
                   
-                  <table>
-                  <thead style={{borderBottom:"3px black solid"}}>
-                    <th>Product</th>
-                    <th>Quantity</th>
-                    </thead>
-                    <tbody>
-                    {filteredData
-      .filter((inventory) => inventory.team_id === parseInt(teamId)) // Filter based on team_id
-      .map((inventory, index) => (
-        <tr key={index} onClick={() => handleItemClick(inventory)} style={{ cursor: "pointer" }}>
-          <td>{inventory.product_name}</td>
-          <td>{inventory.quantity}</td>
-        </tr>
-      ))}
-                    </tbody>
-                  </table>
+                <Table
+                columns={columns}
+                dataSource={data.filter(
+                  (inventory) => inventory.team_id === parseInt(teamId)
+                )}
+                onRow={onRowClick}
+                rowKey="product_id"
+                pagination={{ pageSize: 5 }}
+              />
                 </div>
                 <Toast onClose={() => setShowToast(false)} show={showToast} delay={3000} autohide style={{ position: 'absolute', top: 20, right: 20 }}>
         <Toast.Header>
@@ -230,14 +246,21 @@ useEffect(() => {
         <div key={item.product_id} style={{backgroundColor:'#ebebeb',display: "flex",alignItems: "center",padding:10,justifyContent: "space-between" }}>
           
           <p style={{ marginBottom: "8px",fontWeight:'bold'}}>{item.product_name}</p>
-          
+          <div>
             <InputNumber
               min={1}
               value={item.quantity}
               onChange={(value) => handleQuantityChange(item.product_id, value)}
-              style={{fontWeight: "bold" ,border:'3px black solid',fontWeight: 'bold' }}
+              style={{fontWeight: "bold" ,border:'3px black solid',fontWeight: 'bold',marginRight: '10px' }}
             />
+            
+            <CloseOutlined
+            onClick={() => handleCloseRow(item.product_id)}
+            style={{ color: 'Black', cursor: 'pointer' }}
+        />
+            </div>
             {/* <p style={{ marginBottom: 0 }}>Latest Quantity: {inventoryQuantity + item.quantity}</p> */}
+            
           
         </div>
       );
@@ -246,9 +269,9 @@ useEffect(() => {
     <center style={{paddingTop:'20px'}}>
               <button style={{borderRadius:'50px'}} onClick={() => setModalShow(true)}>Update</button>
               <MyVerticallyCenteredModal
-  show={modalShow}
-  onHide={() => setModalShow(false)}
-  handleUpdateClick={handleUpdateClick}
+              show={modalShow}
+              onHide={() => setModalShow(false)}
+              handleUpdateClick={handleUpdateClick}
 />
               </center>
   </div>

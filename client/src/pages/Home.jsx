@@ -61,7 +61,6 @@ export const Home = () => {
   const [editedItem, setEditedItem] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [modalShow, setModalShow] = useState(false);
-  // const [teamId, setTeamId] = useState(localStorage.getItem("teamId") || "");
   const { teamId, setTeamId } = useContext(TeamContext);
   const [items, setItems] = useState([]);
   const [createModalShow, setCreateModalShow] = useState(false);
@@ -324,6 +323,12 @@ export const Home = () => {
   };
 
   const { Column } = Table;
+  const onRowClick = (record) => {
+    return {
+      onClick: () => handleItemClick(record), // Handle click on row
+    };
+  };
+
   return (
     <div>
       <ToastContainer />
@@ -518,6 +523,7 @@ export const Home = () => {
                   )}
                   rowKey="product_id"
                   pagination={{ pageSize: 10 }}
+                  onRow={onRowClick}
                 >
                   <Column
                     title="Product"
@@ -528,18 +534,6 @@ export const Home = () => {
                     title="Quantity"
                     dataIndex="quantity"
                     key="quantity"
-                  />
-                  <Column
-                    // title="Action"
-                    key="action"
-                    render={(text, inventory, index) => (
-                      <span
-                        onClick={() => handleItemClick(inventory)}
-                        style={{ cursor: "pointer" }}
-                      >
-                        View
-                      </span>
-                    )}
                   />
                 </Table>
               </div>
@@ -687,37 +681,43 @@ export const Home = () => {
                     </>
                   ) : (
                     <>
+                    
                       <h6
                         style={{
                           borderBottom: "3px black solid",
                           paddingBottom: "5px",
+                          display: "flex",
+                          justifyContent: "space-evenly",
+                          alignItems:'center'
                         }}
                       >
                         Selected Item Details
+
+                        <button onClick={() => setIsEditing(true)}>
+                            Edit
+                          </button>
+                          <button onClick={() => setModalShow(true)}>
+                            Delete
+                          </button>
                       </h6>
+                      
                       <div
                         style={{
                           fontWeight: "bold",
-                          fontSize: "20px",
+                          fontSize: "40px",
                           textAlign: "center",
-                          display: "flex",
-                          justifyContent: "space-between",
+                          
+                          
                         }}
                       >
                         <div>{selectedItem.product_name}</div>
                         <div
                           style={{
                             textAlign: "center",
-                            marginTop: "10px",
                             display: "flex",
                           }}
                         >
-                          <button onClick={() => setIsEditing(true)}>
-                            Edit
-                          </button>
-                          <button onClick={() => setModalShow(true)}>
-                            Delete
-                          </button>
+                          
                           <MyVerticallyCenteredModal
                             show={modalShow}
                             onHide={() => setModalShow(false)}
@@ -725,7 +725,7 @@ export const Home = () => {
                         </div>
                       </div>
 
-                      <br />
+                      
 
                       <table>
                         {showModal && (

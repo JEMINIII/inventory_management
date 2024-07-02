@@ -28,18 +28,19 @@ export const addTeamMember = async (req, res) => {
 
 
 
+
 export const getTeamMembers = async (req, res) => {
   const team_id = req.params.team_id;
 
   try {
-    // Fetch team members from the database based on team_id
+    // Fetch team members with user and role names from the database based on team_id
     const query = `
       SELECT tm.*, u.name as user_name, r.name as role_name
       FROM team_members tm
       INNER JOIN users u ON tm.user_id = u.id
       INNER JOIN roles r ON tm.role_id = r.id
-      WHERE tm.team_id = ?
-    `;
+      WHERE tm.team_id = ?`; // Filter team members by team_id
+
     const teamMembers = await db.query(query, [team_id]);
 
     res.status(200).json({ teamMembers });
@@ -48,5 +49,6 @@ export const getTeamMembers = async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 };
+
 
 
