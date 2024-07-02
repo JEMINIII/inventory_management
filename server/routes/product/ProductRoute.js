@@ -13,7 +13,7 @@ router.get("/read/:id",verifyUser, getProduct);
 
 router.put("/edit/:id",verifyUser, updateProduct);
 
-router.delete("/products/:id",verifyUser, deleteProduct);
+router.delete("/delete/:id",verifyUser, deleteProduct);
 
 router.put('/updateQuantity',updateQuantity);
 

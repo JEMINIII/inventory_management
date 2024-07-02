@@ -10,13 +10,14 @@ const salt = 10;
 export const registerUser = async (req, res) => {
   try {
     const { name, email, password } = req.body;
-
-    const hash = await bcrypt.hash(password, salt);
-
+    
+    const hash = await bcrypt.hash(password.toString(), salt);
+    
     const q = "INSERT INTO users (name, email, password) VALUES (?, ?, ?)";
     await db.query(q, [name, email, hash]);
-
+    
     res.json({ message: "User registered successfully" });
+    
   } catch (error) {
     console.error("Error registering user:", error);
     res.status(500).json({ error: "Internal server error" });
@@ -26,6 +27,10 @@ export const registerUser = async (req, res) => {
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ error: "Email and password are required" });
+    }
 
     const q = "SELECT * FROM users WHERE email = ?";
     const [rows] = await db.query(q, [email]);
@@ -49,6 +54,7 @@ export const loginUser = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
 
 // export const logoutUser = async (req, res) => {
 //   try {
@@ -77,7 +83,6 @@ export const logoutUser = async (req, res) => {
 export const verifyUser = async (req, res, next) => {
   try {
     const token = req.cookies.token;
-
     if (!token) {
       return res.status(401).json({ error: "Unauthorized" });
     }
@@ -94,3 +99,4 @@ export const verifyUser = async (req, res, next) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+

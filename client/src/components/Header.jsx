@@ -3,13 +3,13 @@ import Logo from "../images/4-removebg-preview.png";
 import logo22 from "../images/5-removebg-preview.png";
 import axios from "axios";
 import { Link } from "react-router-dom";
+import { MenuOutlined } from "@ant-design/icons";
+import { Button } from "antd";
+import './Header.css';
 
-
-function Header() {
+function Header({ toggleSidebar, isSidebarOpen }) {
   const [auth, setAuth] = useState(false);
   const [name, setName] = useState("");
-  
-  
 
   useEffect(() => {
     axios
@@ -18,7 +18,7 @@ function Header() {
         console.log(res);
         if (res.status === 200) {
           const data = res.data;
-          console.log( data);
+          console.log(data);
           if (data.success === true) {
             setAuth(true);
           } else {
@@ -30,60 +30,51 @@ function Header() {
       })
       .catch((err) => console.error("Error fetching products:", err));
   }, []);
-  
-  
 
   const handleLogout = () => {
     axios
       .get("http://localhost:8082/logout", { withCredentials: true })
       .then((res) => {
-        
         window.location.href = "/login";
       })
       .catch((err) => console.log(err));
   };
-  
 
   return (
-    <div className="navbar">
+    <nav className="navbar">
+      <div className="toggle-button">
+        <Button onClick={toggleSidebar}>
+          <MenuOutlined />
+        </Button>
+      </div>
       <div className="logo">
         <img src={logo22} alt="" />
       </div>
-
-      <div className="links">
-        <span className="dropdown">
+      <ul className="links">
+        <li className="dropdown">
           <img className="logo22" src={Logo} alt="" />
           <div className="dropdown-content">
-            <ul className="navbar-nav ml-auto">
-              {auth ? (
-                // <div className="d-flex align-items-center gap-5">
-                <>
-                  <li className="nav-item">
-                    <Link
-                      to="/profile"
-                      style={{ backgroundColor: "pink" }}
-                      className="nav-link"
-                    >
-                      {name}
-                    </Link>
-                  </li>
-                  <li className="nav-item">
-                    <Link onClick={handleLogout}>Logout</Link>
-                  </li>
-                </>
-              ) : (
-                <li className="nav-item">
-                  <Link to="/login" className="nav-link">
-                    Login
-                  </Link>
+            {auth ? (
+              <>
+                <li>
+                  <Link to="/profile">{name}</Link>
                 </li>
-              )}
-            </ul>
-            <a href="/">Settings</a>
+                <li>
+                  <Link onClick={handleLogout}>Logout</Link>
+                </li>
+              </>
+            ) : (
+              <li>
+                <Link to="/login">Login</Link>
+              </li>
+            )}
+            <li>
+              <a href="/">Settings</a>
+            </li>
           </div>
-        </span>
-      </div>
-    </div>
+        </li>
+      </ul>
+    </nav>
   );
 }
 

@@ -1,155 +1,280 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import InviteMembersModal from "./InviteMembersModal";
+import { Card, Table,pagination } from "antd";
+import { Link, useNavigate } from "react-router-dom";
+import Modal from 'react-bootstrap/Modal';
+import Button from 'react-bootstrap/Button';
+import Form from 'react-bootstrap/Form';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+// Adjust the URL to match your backend endpoint for fetching team members
+
 
 const Member = () => {
-  const [name, setName] = useState("");
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+  const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth <= 800);
+  const [selectedUser, setSelectedUser] = useState("");
+  const [selectedRole, setSelectedRole] = useState("");
+  const [selectedTeam, setSelectedTeam] = useState(localStorage.getItem('selectedTeamId') || "");
+  const [teamMembers, setTeamMembers] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [roles, setRoles] = useState([]);
+  const [auth, setAuth] = useState(false);
+  const [message, setMessage] = useState("");
+  const [teams, setTeams] = useState([]);
+  console.log(teamMembers)
+
+
+
+  const fetchTeamMembers = async (teamId) => {
+    try {
+      const response = await axios.get(`http://localhost:8082/api/team_members/${teamId}`);
+      // console.log(response.data )
+      return response.data.teamMembers[0] || []; // Adjust according to your API response structure
+    } catch (error) {
+      console.error("Error fetching team members:", error);
+      return [];
+    }
+  };
+  
+  
+  
+  const flattenTeamMembers = (teamMembersArray) => {
+    if (!Array.isArray(teamMembersArray)) {
+      return [];
+    }
+    return teamMembersArray;
+  };
+
+  
+  useEffect(() => {
+    if (selectedTeam) {
+      fetchTeamMembers(selectedTeam).then(data => setTeamMembers(data));
+    }
+  }, [selectedTeam]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [usersData, rolesData, teamsData] = await Promise.all([
+          fetchUsers(),
+          fetchRoles(),
+          fetchTeams()
+        ]);
+        setUsers(usersData);
+        setRoles(rolesData);
+        setTeams(teamsData);
+      } catch (error) {
+        console.error("Error fetching initial data:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const fetchUsers = async () => {
+    try {
+      const response = await axios.get("http://localhost:8082/api/users");
+      console.log(response.data)
+      return response.data.users || [];
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      return [];
+    }
+  };
+
+  const fetchRoles = async () => {
+    try {
+      const response = await axios.get("http://localhost:8082/roles");
+      console.log(response.data.items)
+      return response.data.items || [];
+    } catch (error) {
+      console.error("Error fetching roles:", error);
+      return [];
+    }
+  };
+
+  const fetchTeams = async () => {
+    try {
+      const response = await axios.get("http://localhost:8082/team");
+      console.log(response.data)
+      return response.data.items || [];
+    } catch (error) {
+      console.error("Error fetching teams:", error);
+      return [];
+    }
+  };
 
   const openInviteModal = () => {
     setIsInviteModalOpen(true);
   };
 
   const closeInviteModal = () => {
+    setSelectedUser("");
+    setSelectedRole("");
+    setSelectedTeam("");
     setIsInviteModalOpen(false);
   };
-  useEffect(() => {
-    axios
-      .get("http://localhost:8082")
-      .then((res) => {
-        if (res.data.Status === "success") {
-          setName(res.data.name);
-          console.log(name); 
-        }
+
+  const handleAddMember = () => {
+    if (!selectedUser || !selectedRole || !selectedTeam) {
+      toast.error("Please select a user, role, and team.");
+      return;
+    }
+
+    axios.post("http://localhost:8082/api/team_members", { user_id: selectedUser, role_id: selectedRole, team_id: selectedTeam })
+      .then(response => {
+        toast.success("Member added successfully!");
+        fetchTeamMembers(selectedTeam).then(setTeamMembers);
+        closeInviteModal();
       })
-      .catch((err) => console.log(err));
-  }, []);
-  const [activeTab, setActiveTab] = useState("All Members");
+      .catch(error => {
+        console.error("Error adding member:", error);
+        toast.error("Error adding member!");
+      });
+  };
 
-  const handleTabClick = (tab) => {
-    setActiveTab(tab);
-    };
+  const handleTeamChange = (e) => {
+    const newTeamId = e.target.value;
+    setSelectedTeam(newTeamId);
+    localStorage.setItem('selectedTeamId', newTeamId);
+    
+    fetchTeamMembers().then(allTeamMembers => {
+      // console.log("Fetched data:", allTeamMembers.filter(member => member.team_id === parseInt(newTeamId)))
+      const filteredTeamMembers = allTeamMembers.filter(member => member.team_id === parseInt(newTeamId));
+      console.log("Fetched team members:", filteredTeamMembers); // Log the fetched team members
+      setTeamMembers(filteredTeamMembers);
+    });
+  };
+  
+
+
+
+  const columns = [
+    {
+      title: 'User Name',
+      dataIndex: 'user_name',
+      key: 'user_id',
+    },
+    {
+      title: 'Role Name',
+      dataIndex: 'role_name',
+      key: 'role_id',
+    },
+    // {
+    //   title: 'Team ID',
+    //   dataIndex: 'team_id',
+    //   key: 'team_id',
+    // },
+  ];
+
   return (
-    <section id="boxhero-main-view" className="tw-flex-1 tw-overflow-auto">
-      <section
-        className="tw-h-full tw-pr-50px"
-        style={{ minWidth: "948px", maxWidth: "1660px" }}
-      >
-        <div className="tw-px-40px tw-pb-40px">
-          <div className="_with-breadcrumbs_n780a_85 tw-flex-none">
-            <section className="_title-section_n780a_91">
-              <div className="_breadcrumbs_n780a_6">
-                <span className="_breadcrumb_n780a_6">Settings</span>
-              </div>
-              <div className="_title_n780a_25">
-                Members
-                <div className="tw-flex tw-items-center tw-h-full">
-                  <i className="icon icon-question _help_74"></i>
-                </div>
-              </div>
-            </section>
-          </div>
-          <div className="tab-menu-container tw-flex-none tw-mt-[10px]">
-            <div
-              className={`tab-menu ${activeTab === "All Members" && "active"}`}
-              onClick={() => handleTabClick("All Members")}
-            >
-              All Members
-            </div>
-            <div
-              className={`tab-menu ${
-                activeTab === "Custom Permissions" && "active"
-              }`}
-              onClick={() => handleTabClick("Custom Permissions")}
-            >
-              Custom Permissions
-            </div>
-          </div>
-          
-
-          <div className="tw-w-full tw-overflow-x-auto">
-          {activeTab === "All Members" && (
-            <div>
-              <div className="tw-flex tw-items-center tw-flex-none tw-mt-10px _control-bar_zpmz1_1">
-            <button onClick={openInviteModal} className="btn blue medium with-icon">
-              <i className="icon icon-plus-thin left-icon"></i>Invite Members
+    <div>
+      <ToastContainer />
+     
+        <div style={{
+          display: "flex",
+          flexDirection: "column",
+          width: "100%",
+        }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              marginBottom: 30,
+              paddingTop: '30px',
+              borderBottom: "2px black solid"
+            }}
+          >
+            <h2>Members</h2>
+            <button onClick={openInviteModal}>
+              Add Members
             </button>
-            <InviteMembersModal open={isInviteModalOpen} onClose={closeInviteModal} />
           </div>
-
-          <div className="tw-w-full tw-overflow-x-auto">
-            <table className="general-table tw-w-full tw-mt-[10px]">
-              <thead>
-                <tr className="general-table--header">
-                  <th>Name</th>
-                  <th>Permissions</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr className="general-table--item">
-                  <td>
-                    <div className="tw-flex tw-items-center">
-                      <span className="tw-truncate _name_zpmz1_5">{name}</span>
-                    </div>
-                  </td>
-                  <td className="tw-flex tw-items-center tw-flex-auto">
-                    <button
-                      disabled=""
-                      className="btn with-icon tw-flex tw-justify-between _role-selector_5o2kw_4"
-                    >
-                      <span className="tw-truncate">Admin</span>
-                      <i className="icon icon-dropdown right-icon"></i>
-                    </button>
-                    <div className="tw-truncate tw-ml-20px tw-flex-auto">
-                      Can access all data and activities.
-                    </div>
-                  </td>
-                  <td className="tw-flex-none tw-text-right">
-                    <button className="btn medium tw-text-danger">Leave</button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+          <Form.Group controlId="formTeamSelection" style={{ marginBottom: 20 }}>
+            <Form.Label>Team</Form.Label>
+            <Form.Control as="select" value={selectedTeam} onChange={handleTeamChange}>
+              <option style={{color:'orange'}} value="">Select Team</option>
+              {teams.map(team => (
+                <option key={team.id} value={team.id}>{team.name}</option>
+              ))}
+            </Form.Control>
+          </Form.Group>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              flexDirection: isSmallScreen ? "column" : "row"
+            }}
+          >
+            <Card className="mb-3" style={{ width: "100%", padding: '10px', textAlign: 'left', height: "calc(73vh - 64px)", overflowY: "auto" }}>
+              <section className="tw-flex-1 tw-overflow-auto">
+                <section
+                  className="tw-h-full tw-pr-50px"
+                  
+                >
+                  <div className="tw-px-40px tw-pb-40px">
+                    <Table
+                      columns={columns}
+                      dataSource={teamMembers}
+                      rowKey="user_id"
+                      pagination={{ pageSize: 5 }}
+                    />
+                  </div>
+                </section>
+              </section>
+            </Card>
           </div>
-            </div>
-          )}
-          {activeTab === "Custom Permissions" && (
-            <div>
-              <table className="general-table tw-w-full tw-mt-[10px]">
-      <thead>
-        <tr className="general-table--header">
-          <th className="_col-name_12v3f_5">Name</th>
-          <th className="_col-member_12v3f_9">Member</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody className="_role-table_12v3f_17">
-        <tr className="general-table--item">
-          <td colSpan="3" className="tw-text-base tw-text-gray-2 tw-text-center">
-            No custom permissions yet.
-          </td>
-        </tr>
-      </tbody>
-      <tfoot>
-        <tr className="general-table--footer">
-          <td colSpan="3">
-            <div className="tw-text-primary tw-cursor-pointer tw-w-full tw-h-full tw-flex tw-items-center tw-justify-center _add-btn_12v3f_25">
-              <i className="icon icon-plus-thin"></i>Add Custom Permissions
-            </div>
-          </td>
-        </tr>
-      </tfoot>
-    </table>
-            </div>
-          )}
+          <Modal show={isInviteModalOpen} onHide={closeInviteModal} centered>
+            <Modal.Header closeButton>
+              <Modal.Title>Add Member</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+              <Form>
+                <Form.Group controlId="formUser">
+                  <Form.Label>User</Form.Label>
+                  <Form.Control as="select" value={selectedUser} onChange={e => setSelectedUser(e.target.value)}>
+                    <option value="">Select User</option>
+                    {users.map(user => (
+                      <option key={user.id} value={user.id}>{user.name}</option>
+                    ))}
+                  </Form.Control>
+                </Form.Group>
+                <Form.Group controlId="formRole" style={{ marginTop: '10px' }}>
+                  <Form.Label>Role</Form.Label>
+                  <Form.Control as="select" value={selectedRole} onChange={e => setSelectedRole(e.target.value)}>
+                    <option value="">Select Role</option>
+                    {roles.map(role => (
+                      <option key={role.id} value={role.id}>{role.name}</option>
+                    ))}
+                  </Form.Control>
+                </Form.Group>
+                <Form.Group controlId="formTeam" style={{ marginTop: '10px' }}>
+                  <Form.Label>Team</Form.Label>
+                  <Form.Control as="select" value={selectedTeam} onChange={handleTeamChange}>
+                    <option value="">Select Team</option>
+                    {teams.map(team => (
+                      <option key={team.id} value={team.id}>{team.name}</option>
+                    ))}
+                  </Form.Control>
+                </Form.Group>
+              </Form>
+            </Modal.Body>
+            <Modal.Footer>
+              <Button variant="secondary" onClick={closeInviteModal}>
+                Close
+              </Button>
+              <Button variant="primary" onClick={handleAddMember}>
+                Add Member
+              </Button>
+            </Modal.Footer>
+          </Modal>
         </div>
-
-          
-        </div>
-      </section>
-    </section>
+      
+    </div>
   );
-};
+}  
 
 export default Member;

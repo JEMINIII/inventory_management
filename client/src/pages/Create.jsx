@@ -9,8 +9,12 @@ export const Create = () => {
         price: "",
         quantity: "",
         total_amount: "",
-        product_id: null
+        team_id:"",
+        user_id:'',
+        product_id: null,
+    
     });
+    
 
     const [errors, setErrors] = useState({});
 
@@ -37,7 +41,7 @@ export const Create = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-
+    
         const formErrors = {};
         if (!values.product_name.trim()) {
             formErrors.product_name = "Product name is required";
@@ -51,42 +55,58 @@ export const Create = () => {
         if (!values.quantity.trim()) {
             formErrors.quantity = "Quantity is required";
         }
-
+    
         if (Object.keys(formErrors).length > 0) {
             setErrors(formErrors);
             return;
         }
-
+    
         const formData = new FormData();
+        console.log('Values:', values);
+    
         formData.append("product_name", values.product_name);
         formData.append("category", values.category);
         formData.append("price", values.price);
         formData.append("quantity", values.quantity);
         formData.append("total_amount", values.total_amount);
-        formData.append("images", values.image);
-
+        formData.append("image", values.image);
+    
+        // console.log('FormData:', formData);
+        for (var key of formData.entries()) {
+            console.log(key[0] + ', ' + key[1]);
+        }
+    
         axios
-            .post("http://localhost:8082/products/create", formData)
+            .post("http://localhost:8082/products/create", formData, {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                    "enctype":"multipart/form-data"
+                }
+            })
             .then((res) => {
                 console.log(res);
                 navigate("/");
             })
             .catch((err) => console.log(err));
     };
+    
 
     const handleFile = (e) => {
+        const file = e.target.files[0];
+        console.log("Selected file:", file);
+        
         setValues({
             ...values,
-            image: e.target.files[0]
+            image: file
         });
-
     };
+    
 
     return (
-        <div className=' bg-light justify-content-center align-items-center'>
-            <div className=' bg-white rounded p-3' style={{ textAlign: "center", maxHeight: "calc(85vh - 25px)",
+        <div className=' bg-light justify-content-center'>
+            <div className=' bg-white rounded p-3' style={{  maxHeight: "calc(85vh - 25px)",
                 height: "calc(100vh - 64px)", overflowY: "auto" }}>
-                <form className='form' onSubmit={handleSubmit}>
+                <form className='form' onSubmit={handleSubmit} style={{width:'50%'}}>
                     <h2>Add Inventory</h2>
                     <div className='mb-2'>
                         <label htmlFor="ProductName"></label>
@@ -111,6 +131,10 @@ export const Create = () => {
                     <div className='mb-2'>
                         <label htmlFor="Name"></label>
                         <input type="text" name="total_amount" placeholder='Enter Amount' className='form-control' value={values.total_amount} readOnly />
+                    </div>
+                    <div className='mb-2'>
+                        <label htmlFor="Team"></label>
+                        <input type="text" name="team" placeholder='enter team_name' className='form-control' value={values.team_id} readOnly />
                     </div>
                     <br/>
                     <div className="d-flex justify-content-between align-items-center">
