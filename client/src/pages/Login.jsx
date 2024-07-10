@@ -1,80 +1,89 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import Cookies from "js-cookie";
+import { toast, ToastContainer } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
 import "./Login.css";
-import {Button} from 'antd'
- 
+
 const Login = () => {
   const [values, setValues] = useState({
     name: "",
     email: "",
     password: "",
   });
-  const [isSignUpActive, setIsSignUpActive] = useState(false);
+  const [isSignUpActive, setIsSignUpActive] = useState(true); // Changed initial state to true
   const [errors, setErrors] = useState({});
-  const [errorPopup, setErrorPopup] = useState(""); // For error popup
+  const [inviteCode, setInviteCode] = useState(""); // State to store invite code
   const navigate = useNavigate();
+  const location = useLocation();
+
   let errorTimeout;
 
   useEffect(() => {
-    if (errorPopup) {
+    const searchParams = new URLSearchParams(location.search);
+    const code = searchParams.get("inviteCode");
+    if (code) {
+      setInviteCode(code);
+    }
+
+    if (errors) {
       errorTimeout = setTimeout(() => {
-        setErrorPopup("");
+        setErrors({});
       }, 3001);
     }
     return () => clearTimeout(errorTimeout);
-  }, [errorPopup]);
+  }, [errors, location.search]);
 
   const handleInput = (e) => {
     const { name, value } = e.target;
     setValues((prev) => ({ ...prev, [name]: value }));
     setErrors({});
-    setErrorPopup(""); // Clear popup on input change
-    clearTimeout(errorTimeout); // Clear previous timeout
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     const url = isSignUpActive ? "http://localhost:8082/register" : "http://localhost:8082/login";
+    const payload = { ...values, inviteCode: isSignUpActive ? inviteCode : undefined };
+
     axios
-      .post(url, values, { withCredentials: true })
+      .post(url, payload, { withCredentials: true })
       .then((res) => {
-        console.log(res.data)
         if (res.data.errors) {
           const errorMessages = res.data.errors.reduce((acc, error) => {
             acc[error.param] = error.msg;
             return acc;
           }, {});
           setErrors(errorMessages);
+          toast.error("Please check the form for errors.");
         } else {
           setErrors({});
           if (res.data.message === "Login successful") {
             Cookies.set("token", res.data.token, { expires: 1 });
             navigate("/");
           } else if (res.data.message === "User registered successfully") {
+            toast.success("User registered successfully. Please sign in.");
             setIsSignUpActive(false);
             setValues({ name: "", email: "", password: "" });
+            setInviteCode(""); 
           }
         }
       })
       .catch((err) => {
-        setErrorPopup("!! An error occurred. Please try again.");
+        console.error('Error:', err);
+        toast.error("An error occurred. Please try again.");
       });
   };
 
   const toggleSignUp = () => {
     setIsSignUpActive(!isSignUpActive);
+    setErrors({});
+    setInviteCode(""); // Clear invite code when switching forms
   };
 
   return (
     <div className="body">
-      {errorPopup && (
-        <div className="error-popup">
-          <p>{errorPopup}</p>
-          {/* <Button onClick={() => setErrorPopup("")}></Button> */}
-        </div>
-      )}
+      <ToastContainer />
       <div className={`container ${isSignUpActive ? "right-panel-active" : ""}`} id="container">
         <div className="form-container sign-in-container">
           <form onSubmit={handleSubmit}>
@@ -95,7 +104,6 @@ const Login = () => {
             />
             {errors.email && <p className="text-danger">{errors.email}</p>}
             <input
-              
               type="password"
               placeholder="Password"
               name="password"
@@ -140,6 +148,14 @@ const Login = () => {
               onChange={handleInput}
             />
             {errors.password && <p className="text-danger">{errors.password}</p>}
+            <input
+              type="text"
+              placeholder="Invitation Code"
+              name="inviteCode"
+              value={inviteCode}
+              onChange={(e) => setInviteCode(e.target.value)}
+              disabled
+            />
             <button type="submit">Sign Up</button>
           </form>
         </div>
