@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import TeamSelector from "./TeamSelector";
 import './Sidebar.css';
-import { RightCircleOutlined, LeftCircleOutlined } from "@ant-design/icons";
-import { UnorderedListOutlined, ArrowUpOutlined, ArrowDownOutlined, CarryOutOutlined, MoneyCollectOutlined, TeamOutlined } from "@ant-design/icons";
+import { RightCircleOutlined, LeftCircleOutlined, UnorderedListOutlined, ArrowUpOutlined, ArrowDownOutlined, CarryOutOutlined, MoneyCollectOutlined, TeamOutlined } from "@ant-design/icons";
 import { Button, Menu } from "antd";
 import axios from "axios";
+import { TeamContext } from "../context/TeamContext";
 
 const iconComponents = {
   UnorderedListOutlined: UnorderedListOutlined,
@@ -18,31 +18,25 @@ const iconComponents = {
 
 const Sidebar = () => {
   const [menuCollapsed, setMenuCollapsed] = useState(false);
-
-  const toggleCollapsed = () => {
-    setMenuCollapsed(!menuCollapsed);
-  };
+  const toggleCollapsed = () => setMenuCollapsed(!menuCollapsed);
 
   const { SubMenu } = Menu;
   const navigate = useNavigate();
   const [selectedMenuItem, setSelectedMenuItem] = useState(null);
-
-  const handleMenuClick = (id) => {
-    setSelectedMenuItem(id);
-  };
+  const handleMenuClick = (id) => setSelectedMenuItem(id);
 
   const [menuItems, setMenuItems] = useState([]);
+  const { teamId } = useContext(TeamContext);
 
   useEffect(() => {
-    axios
-      .get("http://localhost:8082/sidebar")
-      .then((response) => {
-        setMenuItems(response.data);
-      })
-      .catch((error) => {
-        console.error("Error fetching menu items:", error);
-      });
-  }, []);
+    if (teamId) {
+      axios.get("http://localhost:8082/sidebar", { params: { teamId } })
+        .then((response) => setMenuItems(response.data))
+        .catch((error) => console.error("Error fetching menu items:", error));
+    } else {
+      setMenuItems([]); // Clear menu items if no team is selected
+    }
+  }, [teamId]);
 
   const nestedMenuItems = {};
   menuItems.forEach((item) => {
@@ -56,24 +50,13 @@ const Sidebar = () => {
   });
 
   const [openKeys, setOpenKeys] = useState([]);
-
-  const handleOpenChange = (keys) => {
-    setOpenKeys(keys);
-  };
+  const handleOpenChange = (keys) => setOpenKeys(keys);
 
   return (
     <div className="sidebar-container">
-      {/* <div className="toggle-button"> 
-        <Button onClick={toggleCollapsed}>
-          {menuCollapsed ? <RightCircleOutlined /> : <LeftCircleOutlined />}
-        </Button>
-      </div> */}
       <Menu
         className="menu"
-        style={{
-          backgroundColor:'black',
-          color:'white'
-        }}
+        style={{ backgroundColor: 'black', color: 'white' }}
         mode="inline"
         theme="dark"
         inlineCollapsed={menuCollapsed}
@@ -85,40 +68,28 @@ const Sidebar = () => {
         <Menu.Item key="teamSelector" icon={<TeamOutlined />}>
           <TeamSelector />
         </Menu.Item>
-        
+
         {Object.values(nestedMenuItems).map((menuItem) =>
           menuItem.submenus.length > 0 ? (
-            <Menu.SubMenu
+            <SubMenu
               key={menuItem.id}
-              icon={
-                menuItem.icon
-                  ? React.createElement(iconComponents[menuItem.icon])
-                  : null
-              }
+              icon={menuItem.icon ? React.createElement(iconComponents[menuItem.icon]) : null}
               title={menuItem.label}
             >
               {menuItem.submenus.map((submenu) => (
                 <Menu.Item
                   key={submenu.id}
-                  icon={
-                    submenu.icon
-                      ? React.createElement(iconComponents[submenu.icon])
-                      : null
-                  }
+                  icon={submenu.icon ? React.createElement(iconComponents[submenu.icon]) : null}
                 >
                   {submenu.label}
                   <Link to={submenu.route}></Link>
                 </Menu.Item>
               ))}
-            </Menu.SubMenu>
+            </SubMenu>
           ) : (
             <Menu.Item
               key={menuItem.id}
-              icon={
-                menuItem.icon
-                  ? React.createElement(iconComponents[menuItem.icon])
-                  : null
-              }
+              icon={menuItem.icon ? React.createElement(iconComponents[menuItem.icon]) : null}
             >
               {menuItem.label}
               <Link to={menuItem.route}></Link>

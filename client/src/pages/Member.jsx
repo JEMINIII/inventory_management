@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Card, Table,pagination } from "antd";
+import { Card, Table } from "antd";
 import { Link, useNavigate } from "react-router-dom";
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
@@ -8,10 +8,8 @@ import Form from 'react-bootstrap/Form';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-// Adjust the URL to match your backend endpoint for fetching team members
-
-
 const Member = () => {
+  const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth <= 800);
   const [selectedUser, setSelectedUser] = useState("");
@@ -23,23 +21,23 @@ const Member = () => {
   const [auth, setAuth] = useState(false);
   const [message, setMessage] = useState("");
   const [teams, setTeams] = useState([]);
-  console.log(teamMembers)
-
+  
+  // New state variables for the invite modal
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteName, setInviteName] = useState("");
+  const [inviteCode, setInviteCode] = useState("");
 
 
   const fetchTeamMembers = async (teamId) => {
     try {
       const response = await axios.get(`http://localhost:8082/api/team_members/${teamId}`);
-      // console.log(response.data )
-      return response.data.teamMembers[0] || []; // Adjust according to your API response structure
+      return response.data.teamMembers[0] || [];
     } catch (error) {
       console.error("Error fetching team members:", error);
       return [];
     }
   };
-  
-  
-  
+
   const flattenTeamMembers = (teamMembersArray) => {
     if (!Array.isArray(teamMembersArray)) {
       return [];
@@ -48,6 +46,7 @@ const Member = () => {
   };
 
   
+
   useEffect(() => {
     if (selectedTeam) {
       fetchTeamMembers(selectedTeam).then(data => setTeamMembers(data));
@@ -76,7 +75,6 @@ const Member = () => {
   const fetchUsers = async () => {
     try {
       const response = await axios.get("http://localhost:8082/api/users");
-      console.log(response.data)
       return response.data.users || [];
     } catch (error) {
       console.error("Error fetching users:", error);
@@ -87,7 +85,6 @@ const Member = () => {
   const fetchRoles = async () => {
     try {
       const response = await axios.get("http://localhost:8082/roles");
-      console.log(response.data.items)
       return response.data.items || [];
     } catch (error) {
       console.error("Error fetching roles:", error);
@@ -98,7 +95,6 @@ const Member = () => {
   const fetchTeams = async () => {
     try {
       const response = await axios.get("http://localhost:8082/team");
-      console.log(response.data)
       return response.data.items || [];
     } catch (error) {
       console.error("Error fetching teams:", error);
@@ -106,14 +102,26 @@ const Member = () => {
     }
   };
 
+  const openAddMemberModal = () => {
+    setIsAddMemberModalOpen(true);
+  };
+
+  const closeAddMemberModal = () => {
+    setIsAddMemberModalOpen(false);
+    setSelectedUser("");
+    setSelectedRole("");
+  };
+
   const openInviteModal = () => {
     setIsInviteModalOpen(true);
+    // Generate a Invite code when opening the modal
+    setInviteCode(`INV-${Math.random().toString(36).substr(2, 9)}`);
   };
 
   const closeInviteModal = () => {
-    setSelectedUser("");
-    setSelectedRole("");
-    setSelectedTeam("");
+    setInviteEmail("");
+    setInviteName("");
+    setInviteCode("");
     setIsInviteModalOpen(false);
   };
 
@@ -127,7 +135,7 @@ const Member = () => {
       .then(response => {
         toast.success("Member added successfully!");
         fetchTeamMembers(selectedTeam).then(setTeamMembers);
-        closeInviteModal();
+        closeAddMemberModal();
       })
       .catch(error => {
         console.error("Error adding member:", error);
@@ -135,21 +143,34 @@ const Member = () => {
       });
   };
 
+  const handleSendInvite = () => {
+    if (!inviteEmail || !inviteName) {
+      toast.error("Please fill in all fields.");
+      return;
+    }
+  
+    axios.post("http://localhost:8082/api/invite", { email: inviteEmail, name: inviteName, inviteCode })
+      .then(response => {
+        toast.success("Invitation sent successfully!");
+        closeInviteModal();
+      })
+      .catch(error => {
+        console.error("Error sending invite:", error.response ? error.response.data : error.message);
+        toast.error(error.response ? error.response.data.message : "Error sending invite!");
+      });
+  };
+
+
   const handleTeamChange = (e) => {
     const newTeamId = e.target.value;
     setSelectedTeam(newTeamId);
     localStorage.setItem('selectedTeamId', newTeamId);
-    
+
     fetchTeamMembers().then(allTeamMembers => {
-      // console.log("Fetched data:", allTeamMembers.filter(member => member.team_id === parseInt(newTeamId)))
       const filteredTeamMembers = allTeamMembers.filter(member => member.team_id === parseInt(newTeamId));
-      console.log("Fetched team members:", filteredTeamMembers); // Log the fetched team members
       setTeamMembers(filteredTeamMembers);
     });
   };
-  
-
-
 
   const columns = [
     {
@@ -162,119 +183,157 @@ const Member = () => {
       dataIndex: 'role_name',
       key: 'role_id',
     },
-    // {
-    //   title: 'Team ID',
-    //   dataIndex: 'team_id',
-    //   key: 'team_id',
-    // },
   ];
 
   return (
     <div>
       <ToastContainer />
-     
-        <div style={{
-          display: "flex",
-          flexDirection: "column",
-          width: "100%",
-        }}>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              marginBottom: 30,
-              paddingTop: '30px',
-              borderBottom: "2px black solid"
-            }}
-          >
-            <h2>Members</h2>
-            <button onClick={openInviteModal}>
-              Add Members
+
+      <div style={{
+        display: "flex",
+        flexDirection: "column",
+        width: "100%",
+      }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: 30,
+            paddingTop: '30px',
+            borderBottom: "2px black solid"
+          }}
+        >
+          <h2>Members</h2>
+          <div style={{display: "flex",
+            alignItems: "center",
+            justifyContent: "space-end",}}>
+          <button onClick={openAddMemberModal}>
+            Add Member
+          </button>
+          <button variant="primary" onClick={openInviteModal}>
+              Invite Member
             </button>
-          </div>
-          <Form.Group controlId="formTeamSelection" style={{ marginBottom: 20 }}>
-            <Form.Label>Team</Form.Label>
-            <Form.Control as="select" value={selectedTeam} onChange={handleTeamChange}>
-              <option style={{color:'orange'}} value="">Select Team</option>
-              {teams.map(team => (
-                <option key={team.id} value={team.id}>{team.name}</option>
-              ))}
-            </Form.Control>
-          </Form.Group>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              flexDirection: isSmallScreen ? "column" : "row"
-            }}
-          >
-            <Card className="mb-3" style={{ width: "100%", padding: '10px', textAlign: 'left', height: "calc(73vh - 64px)", overflowY: "auto" }}>
-              <section className="tw-flex-1 tw-overflow-auto">
-                <section
-                  className="tw-h-full tw-pr-50px"
-                  
-                >
-                  <div className="tw-px-40px tw-pb-40px">
-                    <Table
-                      columns={columns}
-                      dataSource={teamMembers}
-                      rowKey="user_id"
-                      pagination={{ pageSize: 5 }}
-                    />
-                  </div>
-                </section>
-              </section>
-            </Card>
-          </div>
-          <Modal show={isInviteModalOpen} onHide={closeInviteModal} centered>
-            <Modal.Header closeButton>
-              <Modal.Title>Add Member</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-              <Form>
-                <Form.Group controlId="formUser">
-                  <Form.Label>User</Form.Label>
-                  <Form.Control as="select" value={selectedUser} onChange={e => setSelectedUser(e.target.value)}>
-                    <option value="">Select User</option>
-                    {users.map(user => (
-                      <option key={user.id} value={user.id}>{user.name}</option>
-                    ))}
-                  </Form.Control>
-                </Form.Group>
-                <Form.Group controlId="formRole" style={{ marginTop: '10px' }}>
-                  <Form.Label>Role</Form.Label>
-                  <Form.Control as="select" value={selectedRole} onChange={e => setSelectedRole(e.target.value)}>
-                    <option value="">Select Role</option>
-                    {roles.map(role => (
-                      <option key={role.id} value={role.id}>{role.name}</option>
-                    ))}
-                  </Form.Control>
-                </Form.Group>
-                <Form.Group controlId="formTeam" style={{ marginTop: '10px' }}>
-                  <Form.Label>Team</Form.Label>
-                  <Form.Control as="select" value={selectedTeam} onChange={handleTeamChange}>
-                    <option value="">Select Team</option>
-                    {teams.map(team => (
-                      <option key={team.id} value={team.id}>{team.name}</option>
-                    ))}
-                  </Form.Control>
-                </Form.Group>
-              </Form>
-            </Modal.Body>
-            <Modal.Footer>
-              <Button variant="secondary" onClick={closeInviteModal}>
-                Close
-              </Button>
-              <Button variant="primary" onClick={handleAddMember}>
-                Add Member
-              </Button>
-            </Modal.Footer>
-          </Modal>
+            </div>
         </div>
-      
+        <Form.Group controlId="formTeamSelection" style={{ marginBottom: 20 }}>
+          <Form.Label>Team</Form.Label>
+          <Form.Control as="select" value={selectedTeam} onChange={handleTeamChange}>
+            <option style={{color:'orange'}} value="">Select Team</option>
+            {teams.map(team => (
+              <option key={team.id} value={team.id}>{team.name}</option>
+            ))}
+          </Form.Control>
+        </Form.Group>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            flexDirection: isSmallScreen ? "column" : "row"
+          }}
+        >
+          <Card className="mb-3" style={{ width: "100%", padding: '10px', textAlign: 'left', height: "calc(73vh - 64px)", overflowY: "auto" }}>
+            <section className="tw-flex-1 tw-overflow-auto">
+              <section className="tw-h-full tw-pr-50px">
+                <div className="tw-px-40px tw-pb-40px">
+                  <Table
+                    columns={columns}
+                    dataSource={teamMembers}
+                    rowKey="user_id"
+                    pagination={{ pageSize: 5 }}
+                  />
+                </div>
+              </section>
+            </section>
+          </Card>
+        </div>
+
+        {/* Add Member Modal */}
+        <Modal show={isAddMemberModalOpen} onHide={closeAddMemberModal} centered>
+          <Modal.Header closeButton>
+            <Modal.Title>Add Member</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Form>
+              <Form.Group controlId="formSelectUser">
+                <Form.Label>Select User</Form.Label>
+                <Form.Control as="select" value={selectedUser} onChange={e => setSelectedUser(e.target.value)}>
+                  <option value="">Select User</option>
+                  {users.map(user => (
+                    <option key={user.id} value={user.id}>{user.name}</option>
+                  ))}
+                </Form.Control>
+              </Form.Group>
+              <Form.Group controlId="formSelectRole" style={{ marginTop: '10px' }}>
+                <Form.Label>Select Role</Form.Label>
+                <Form.Control as="select" value={selectedRole} onChange={e => setSelectedRole(e.target.value)}>
+                  <option value="">Select Role</option>
+                  {roles.map(role => (
+                    <option key={role.id} value={role.id}>{role.name}</option>
+                  ))}
+                </Form.Control>
+              </Form.Group>
+              <Form.Group controlId="formSelectTeam" style={{ marginTop: '10px' }}>
+                <Form.Label>Select Team</Form.Label>
+                <Form.Control as="select" value={selectedTeam} onChange={e => setSelectedTeam(e.target.value)}>
+                  <option value="">Select Team</option>
+                  {teams.map(team => (
+                    <option key={team.id} value={team.id}>{team.name}</option>
+                  ))}
+                </Form.Control>
+              </Form.Group>
+            </Form>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={closeAddMemberModal}>
+              Close
+            </Button>
+            <Button variant="primary" onClick={handleAddMember}>
+              Add Member
+            </Button>
+          </Modal.Footer>
+        </Modal>
+
+        {/* Invite Modal */}
+        <Modal show={isInviteModalOpen} onHide={closeInviteModal} centered>
+          <Modal.Header closeButton>
+            <Modal.Title>Invite Member</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Form>
+              <Form.Group controlId="formInviteEmail">
+                <Form.Label>Email</Form.Label>
+                <Form.Control
+                  type="email"
+                  value={inviteEmail}
+                  onChange={e => setInviteEmail(e.target.value)}
+                />
+              </Form.Group>
+              <Form.Group controlId="formInviteName">
+                <Form.Label>Name</Form.Label>
+                <Form.Control
+                  type="text"
+                  value={inviteName}
+                  onChange={e => setInviteName(e.target.value)}
+                  style={{ marginTop: '10px' }}
+                />
+              </Form.Group>
+              {/* Hide the invite code input box but still send the inviteCode in the request */}
+              <Form.Control type="hidden" value={inviteCode} />
+            </Form>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={closeInviteModal}>
+              Close
+            </Button>
+            <Button variant="primary" onClick={handleSendInvite}>
+              Send Invite
+            </Button>
+          </Modal.Footer>
+        </Modal>
+      </div>
     </div>
   );
-}  
+};
 
 export default Member;

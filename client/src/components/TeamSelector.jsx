@@ -10,8 +10,10 @@ const TeamSelector = () => {
   useEffect(() => {
     axios.get('http://localhost:8082/team')
       .then((response) => {
+        
         if (response.data.success) {
           setTeams(response.data.items);
+          
         } else {
           console.error("Failed to fetch teams");
         }
@@ -24,6 +26,7 @@ const TeamSelector = () => {
   const handleTeamChange = (e) => {
     const selectedTeamId = e.target.value;
     changeTeam(selectedTeamId);
+    console.log(selectedTeamId)
   };
 
   return (
