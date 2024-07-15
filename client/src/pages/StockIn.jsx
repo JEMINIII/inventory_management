@@ -185,7 +185,7 @@ useEffect(() => {
     return (
       
       <div>
-        {auth ?(
+       
         <div style={{
             display: "flex",
             flexDirection: "column",
@@ -203,7 +203,7 @@ useEffect(() => {
                 borderBottom: "2px black solid"
               }}
             >
-              <h2>Stock In</h2>
+              <h2 style={{ marginBottom: 30 }}>Stock In</h2>
               
             </div>
             <div
@@ -236,7 +236,7 @@ useEffect(() => {
               </Card>
               <Card className="mb-3" style={{ padding: '10px', width: "100%", height: "calc(73vh - 64px)", overflowY: "auto", display: "flex", flexDirection: "column" }}>
               {selectedItems.length > 0 ? (
-  <div style={{ padding: "24px", color: "black" }}>
+  <div style={{  color: "black" }}>
     <h6 style={{ borderBottom: "3px black solid", paddingBottom: '5px' }}>Add Quantity:</h6>
     
     {selectedItems.map(item => {
@@ -288,15 +288,7 @@ useEffect(() => {
             
            
           </div>
-        ) : (
-          <div>
-            <h3>{message}</h3>
-            <h3>Login Now</h3>
-            <Link to="/login" className="btn btn-primary">
-              hello
-            </Link>
-          </div>
-        )}
+        
       </div>
       
 

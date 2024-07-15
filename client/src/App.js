@@ -34,7 +34,7 @@ const Layout = ({ toggleSidebar, isSidebarOpen }) => {
         maxHeight: "calc(98vh - 74px)"
       }}
     >
-      {isSidebarOpen && <Sidebar />}
+     <Sidebar />
       <div
         style={{
           paddingLeft: 40,

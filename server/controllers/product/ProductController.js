@@ -5,6 +5,7 @@ import upload from "../../routes/config/multerConfig.js";
 export const getAllProducts = async (req, res) => {
   try {
     const { team_id } = req.query;
+    // console.log(req.query)
     const q = team_id ? "SELECT * FROM inventory WHERE team_id = ?" : "SELECT * FROM inventory";
     const [rows] = await db.query(q, [team_id]);
 

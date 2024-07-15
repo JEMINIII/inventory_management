@@ -54,12 +54,12 @@ const AddItemModal = ({ isVisible, handleClose }) => {
       visible={isVisible}
       onCancel={handleClose}
       footer={[
-        <Button key="cancel" onClick={handleClose}>
+        <button key="cancel" onClick={handleClose}>
           Cancel
-        </Button>,
-        <Button key="submit" type="primary" onClick={handleAddItem}>
+        </button>,
+        <button key="submit" type="primary" onClick={handleAddItem}>
           Add Item
-        </Button>,
+        </button>,
       ]}
     >
       <Form layout="vertical">

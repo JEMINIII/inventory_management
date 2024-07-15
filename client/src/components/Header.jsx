@@ -4,7 +4,8 @@ import logo22 from "../images/5-removebg-preview.png";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import { MenuOutlined } from "@ant-design/icons";
-import { Button } from "antd";
+import { Button, Popover } from 'antd';
+import { SettingOutlined, LogoutOutlined, UserOutlined } from '@ant-design/icons';
 import './Header.css';
 
 function Header({ toggleSidebar, isSidebarOpen }) {
@@ -21,6 +22,7 @@ function Header({ toggleSidebar, isSidebarOpen }) {
           console.log(data);
           if (data.success === true) {
             setAuth(true);
+            setName(data.name);  // Assuming `data.name` contains the user's name
           } else {
             setAuth(false);
           }
@@ -28,7 +30,7 @@ function Header({ toggleSidebar, isSidebarOpen }) {
           console.log("Unexpected response status:", res.status);
         }
       })
-      .catch((err) => console.error("Error fetching products:", err));
+      .catch((err) => console.error("Error fetching user data:", err));
   }, []);
 
   const handleLogout = () => {
@@ -40,40 +42,45 @@ function Header({ toggleSidebar, isSidebarOpen }) {
       .catch((err) => console.log(err));
   };
 
+  if (!auth) {
+    return null;
+  }
+  const menuContent = (
+    <div>
+      {/* <Button type="text" icon={<UserOutlined />}>
+        <Link to="/profile">{name}</Link>
+      </Button> */}
+      <br />
+      <button type="text" icon={<LogoutOutlined />} onClick={handleLogout} >
+  Logout
+</button>
+
+      <br />
+      
+    </div>
+  );
+
+
   return (
     <nav className="navbar">
-      <div className="toggle-button">
-        <Button onClick={toggleSidebar}>
+      {/* <div className="toggle-button">
+        <button onClick={toggleSidebar}>
           <MenuOutlined />
-        </Button>
-      </div>
+        </button>
+      </div> */}
       <div className="logo">
         <img src={logo22} alt="" />
       </div>
       <ul className="links">
-        <li className="dropdown">
-          <img className="logo22" src={Logo} alt="" />
-          <div className="dropdown-content">
-            {auth ? (
-              <>
-                <li>
-                  <Link to="/profile">{name}</Link>
-                </li>
-                <li>
-                  <Link onClick={handleLogout}>Logout</Link>
-                </li>
-              </>
-            ) : (
-              <li>
-                <Link to="/login">Login</Link>
-              </li>
-            )}
-            <li>
-              <a href="/">Settings</a>
-            </li>
-          </div>
-        </li>
-      </ul>
+      {/* <li className="popover"> */}
+        <Popover style={{backgroundColor:'black'}} content={menuContent} trigger="click" placement="bottom">
+        <div style={{backgroundColor:'black',color:'white'}}>
+          <UserOutlined />
+        </div>
+          {/* <img className="logo22" src={Logo} alt="Logo" style={{ cursor: 'pointer' }} /> */}
+        </Popover>
+      {/* </li> */}
+    </ul>
     </nav>
   );
 }

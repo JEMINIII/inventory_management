@@ -1,19 +1,28 @@
-// TeamSelector.jsx
+// File path: src/components/TeamSelector.js
+
 import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { TeamContext } from '../context/TeamContext';
+import { Select } from "antd";
+
+const { Option } = Select;
+
 
 const TeamSelector = () => {
   const { teamId, changeTeam } = useContext(TeamContext);
   const [teams, setTeams] = useState([]);
+  const [selectedTeamName, setSelectedTeamName] = useState('');
 
   useEffect(() => {
     axios.get('http://localhost:8082/team')
       .then((response) => {
-        
         if (response.data.success) {
           setTeams(response.data.items);
-          
+          // If teamId exists, find and set the team name
+          const selectedTeam = response.data.items.find(team => team.id === teamId);
+          if (selectedTeam) {
+            setSelectedTeamName(selectedTeam.name);
+          }
         } else {
           console.error("Failed to fetch teams");
         }
@@ -21,23 +30,34 @@ const TeamSelector = () => {
       .catch((error) => {
         console.error("Error fetching teams:", error);
       });
-  }, []);
+  }, [teamId]);
 
-  const handleTeamChange = (e) => {
-    const selectedTeamId = e.target.value;
-    changeTeam(selectedTeamId);
-    console.log(selectedTeamId)
+  const handleTeamChange = (value) => {
+    const selectedTeam = teams.find(team => team.id === value);
+    changeTeam(value);
+    setSelectedTeamName(selectedTeam ? selectedTeam.name : '');
+    console.log(value);
   };
 
   return (
-    <select value={teamId || ''} style={{ backgroundColor:'black',color:'white',border:'none' }} onChange={handleTeamChange}>
-      <option value="">Select Team</option>
+    <Select 
+      value={selectedTeamName || undefined} 
+      style={{ width: 200 }} 
+      onChange={handleTeamChange}
+      dropdownStyle={{ maxHeight: 200, overflowY: 'auto',background:'white' }}
+      placeholder="Select Team"
+      optionLabelProp="label" 
+    >
       {teams.map((team) => (
-        <option key={team.id} value={team.id}>
+        <Option 
+          key={team.id} 
+          value={team.id} 
+          label={team.name}
+        >
           {team.name}
-        </option>
+        </Option>
       ))}
-    </select>
+    </Select>
   );
 };
 

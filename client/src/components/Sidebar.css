@@ -11,14 +11,13 @@
 
   
   
-  /* .toggle-button {
+  .toggle-button {
     display: flex;
     justify-content: center;
     align-items: center;
     padding: 10px;
-    background-color: #f0f0f0;
-    border-bottom: 1px solid #d9d9d9;
-  } */
+    background-color: #000000;
+  }
   
   .menu {
     flex: 1;
@@ -35,4 +34,5 @@ border: none;
     overflow: hidden;
     text-overflow: ellipsis;
     font-size: medium;
+    
   }
