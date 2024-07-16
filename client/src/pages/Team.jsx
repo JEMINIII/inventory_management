@@ -186,11 +186,12 @@ const Team = () => {
 
   return (
     <div>
-      {auth ? (
+      
         <div style={{ display: "flex", flexDirection: "column", width: "100%", maxHeight: "calc(80vh - 74px)" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 30, borderBottom: "2px black solid" }}>
-            <h2>Team</h2>
-            <button onClick={openCreateModal} icon={<UploadOutlined />}>Create Team</button>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between",marginBottom: 30,
+                marginTop: 30, borderBottom: "2px black solid" }}>
+            <h2 style={{ marginBottom: 30 }}>Team</h2>
+            <button style={{ marginBottom: 30 }} onClick={openCreateModal} icon={<UploadOutlined />}>Create Team</button>
           </div>
 
           <Card className="mb-3" style={{ width: "100%", padding: '10px', textAlign: 'left', height: "calc(73vh - 64px)" }}>
@@ -256,15 +257,7 @@ const Team = () => {
             </Modal>
           </Card>
         </div>
-      ) : (
-        <div>
-          <h3>{message}</h3>
-          <h3>Login Now</h3>
-          <Link to="/login" className="btn btn-primary">
-            Login
-          </Link>
-        </div>
-      )}
+      
     </div>
   );
 };

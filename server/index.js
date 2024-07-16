@@ -13,14 +13,15 @@ import { verifyUser } from './controllers/auth/AuthController.js';
 import roleRoutes from './routes/role/RoleRoute.js';
 import teamMembersRoutes from './routes/team_members/teamMembersRoutes.js';
 import inviteRoute from './routes/invite/inviteRoute.js';
-import SidebarRoute from './routes/sidebar/sidebarRoute.js'
+import SidebarRoute from './routes/sidebar/sidebarRoute.js';
+import initDatabase from './models/initDatabase/initDatabase.js';
 
 dotenv.config();
 
 const app = express();
 
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  service: 'gmail',
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
@@ -30,16 +31,16 @@ const transporter = nodemailer.createTransport({
 app.use(express.json());
 app.use(
   cors({
-    origin: ["http://localhost:3000"],
-    methods: ["POST", "GET", "PUT", "DELETE"],
+    origin: ['http://localhost:3000'],
+    methods: ['POST', 'GET', 'PUT', 'DELETE'],
     credentials: true,
   })
 );
-app.use(express.static("public"));
+app.use(express.static('public'));
 app.use(cookieParser());
 app.use(
   session({
-    secret: "secret",
+    secret: 'secret',
     resave: false,
     saveUninitialized: false,
     cookie: {
@@ -49,58 +50,41 @@ app.use(
   })
 );
 
-app.use("/api", teamMembersRoutes);
-app.use("/", authRoutes);
-app.use("/products", productRoutes);
-app.use("/api", userRoutes);
-app.use("/", MemberRoute);
-app.use("/roles", roleRoutes);
-app.use("/api", inviteRoute);
-app.use('/',SidebarRoute)
+app.use('/api', teamMembersRoutes);
+app.use('/', authRoutes);
+app.use('/products', productRoutes);
+app.use('/api', userRoutes);
+app.use('/', MemberRoute);
+app.use('/roles', roleRoutes);
+app.use('/api', inviteRoute);
+app.use('/', SidebarRoute);
 
-app.post("/send-email", (req, res) => {
+app.post('/send-email', (req, res) => {
   const { email } = req.body;
   console.log(email);
   if (!email) {
-    return res.status(400).json({ status: "error", error: "Email is required" });
+    return res.status(400).json({ status: 'error', error: 'Email is required' });
   }
 
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: email,
-    subject: "Invitation to Join",
-    text: "You are invited to join our platform.",
+    subject: 'Invitation to Join',
+    text: 'You are invited to join our platform.',
   };
 
   transporter.sendMail(mailOptions, (error, info) => {
     if (error) {
-      console.error("Error sending email:", error);
-      return res.status(500).json({ status: "error", error: error.message });
+      console.error('Error sending email:', error);
+      return res.status(500).json({ status: 'error', error: error.message });
     } else {
-      return res.status(200).json({ status: "success", info });
+      return res.status(200).json({ status: 'success', info });
     }
   });
 });
 
-// app.get("/sidebar", async (req, res) => {
-//   try {
-//     const [rows, fields] = await db.query("SELECT * FROM menu");
-
-//     const formattedMenuItems = rows.map((item) => ({
-//       id: item.id,
-//       label: item.label,
-//       icon: item.icon,
-//       route: item.route,
-//       parent_id: item.parent_id,
-//     }));
-
-//     res.json(formattedMenuItems);
-//   } catch (err) {
-//     console.error("Error fetching menu items:", err);
-//     res.status(500).json({ error: "Failed to fetch menu items" });
-//   }
-// });
-
-app.listen(8082, () => {
-  console.log("Server is running on port 8082");
+initDatabase().then(() => {
+  app.listen(8082, () => {
+    console.log('Server is running on port 8082');
+  });
 });

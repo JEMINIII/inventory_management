@@ -1,57 +1,50 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import axios from "axios";
 import { Card, Table } from "antd";
-import { Link, useNavigate } from "react-router-dom";
-import Modal from 'react-bootstrap/Modal';
-import Button from 'react-bootstrap/Button';
-import Form from 'react-bootstrap/Form';
+import { Modal, Form } from "react-bootstrap";
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { TeamContext } from "../context/TeamContext"; // Assuming you have a TeamContext
 
 const Member = () => {
+  const { teamId } = useContext(TeamContext); // Using TeamContext for team selection
   const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth <= 800);
   const [selectedUser, setSelectedUser] = useState("");
   const [selectedRole, setSelectedRole] = useState("");
-  const [selectedTeam, setSelectedTeam] = useState(localStorage.getItem('selectedTeamId') || "");
   const [teamMembers, setTeamMembers] = useState([]);
   const [users, setUsers] = useState([]);
   const [roles, setRoles] = useState([]);
-  const [auth, setAuth] = useState(false);
-  const [message, setMessage] = useState("");
   const [teams, setTeams] = useState([]);
+  const [selectedTeam, setSelectedTeam] = useState(localStorage.getItem('selectedTeamId') || "");
+  const [auth, setAuth] = useState(false);
   
   // New state variables for the invite modal
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteName, setInviteName] = useState("");
   const [inviteCode, setInviteCode] = useState("");
 
-
   const fetchTeamMembers = async (teamId) => {
     try {
       const response = await axios.get(`http://localhost:8082/api/team_members/${teamId}`);
-      return response.data.teamMembers[0] || [];
+      setAuth(true); // Assuming successful fetching means user is authenticated
+      console.log('Fetched Team Members:', response.data.teamMembers);
+      return response.data.teamMembers || [];
     } catch (error) {
       console.error("Error fetching team members:", error);
       return [];
     }
   };
 
-  const flattenTeamMembers = (teamMembersArray) => {
-    if (!Array.isArray(teamMembersArray)) {
-      return [];
-    }
-    return teamMembersArray;
-  };
-
-  
-
   useEffect(() => {
-    if (selectedTeam) {
-      fetchTeamMembers(selectedTeam).then(data => setTeamMembers(data));
+    if (teamId) {
+      fetchTeamMembers(teamId).then(data => {
+        console.log('Setting teamMembers state:', data);
+        setTeamMembers(data);
+      });
     }
-  }, [selectedTeam]);
+  }, [teamId]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -64,6 +57,9 @@ const Member = () => {
         setUsers(usersData);
         setRoles(rolesData);
         setTeams(teamsData);
+        console.log('Fetched Users:', usersData);
+        console.log('Fetched Roles:', rolesData);
+        console.log('Fetched Teams:', teamsData);
       } catch (error) {
         console.error("Error fetching initial data:", error);
       }
@@ -75,6 +71,7 @@ const Member = () => {
   const fetchUsers = async () => {
     try {
       const response = await axios.get("http://localhost:8082/api/users");
+      console.log('Fetched Users:', response.data.users);
       return response.data.users || [];
     } catch (error) {
       console.error("Error fetching users:", error);
@@ -85,6 +82,7 @@ const Member = () => {
   const fetchRoles = async () => {
     try {
       const response = await axios.get("http://localhost:8082/roles");
+      console.log('Fetched Roles:', response.data.items);
       return response.data.items || [];
     } catch (error) {
       console.error("Error fetching roles:", error);
@@ -95,6 +93,7 @@ const Member = () => {
   const fetchTeams = async () => {
     try {
       const response = await axios.get("http://localhost:8082/team");
+      console.log('Fetched Teams:', response.data.items);
       return response.data.items || [];
     } catch (error) {
       console.error("Error fetching teams:", error);
@@ -114,7 +113,7 @@ const Member = () => {
 
   const openInviteModal = () => {
     setIsInviteModalOpen(true);
-    // Generate a Invite code when opening the modal
+    // Generate an invite code when opening the modal
     setInviteCode(`INV-${Math.random().toString(36).substr(2, 9)}`);
   };
 
@@ -126,49 +125,68 @@ const Member = () => {
   };
 
   const handleAddMember = () => {
-    if (!selectedUser || !selectedRole || !selectedTeam) {
+    if (!selectedUser || !selectedRole || !teamId) {
       toast.error("Please select a user, role, and team.");
       return;
     }
 
-    axios.post("http://localhost:8082/api/team_members", { user_id: selectedUser, role_id: selectedRole, team_id: selectedTeam })
+    axios.post("http://localhost:8082/api/team_members", { user_id: selectedUser, role_id: selectedRole, team_id: teamId })
       .then(response => {
         toast.success("Member added successfully!");
-        fetchTeamMembers(selectedTeam).then(setTeamMembers);
+        setAuth(true); // Assuming successful member addition means user is authenticated
+        fetchTeamMembers(teamId).then(data => {
+          console.log('Updated teamMembers state after adding member:', data);
+          setTeamMembers(data);
+        });
         closeAddMemberModal();
       })
       .catch(error => {
+        setAuth(false); // Reset authentication state if there's an error
         console.error("Error adding member:", error);
         toast.error("Error adding member!");
       });
   };
 
   const handleSendInvite = () => {
+    // Example check: Ensure inviteEmail and inviteName are filled
     if (!inviteEmail || !inviteName) {
       toast.error("Please fill in all fields.");
       return;
     }
-  
+
+    // Example authentication check: Assume some form of authentication check
+    const isLoggedIn = localStorage.getItem('isLoggedIn'); // Example: Check if user is logged in
+    if (!isLoggedIn) {
+      toast.error("You are not authenticated. Please log in to send invites.");
+      return;
+    }
+
     axios.post("http://localhost:8082/api/invite", { email: inviteEmail, name: inviteName, inviteCode })
       .then(response => {
+        setAuth(true); // Assuming successful invitation means user is authenticated
         toast.success("Invitation sent successfully!");
         closeInviteModal();
       })
       .catch(error => {
+        setAuth(false); // Reset authentication state if there's an error
         console.error("Error sending invite:", error.response ? error.response.data : error.message);
         toast.error(error.response ? error.response.data.message : "Error sending invite!");
       });
   };
 
-
   const handleTeamChange = (e) => {
     const newTeamId = e.target.value;
     setSelectedTeam(newTeamId);
     localStorage.setItem('selectedTeamId', newTeamId);
-
-    fetchTeamMembers().then(allTeamMembers => {
-      const filteredTeamMembers = allTeamMembers.filter(member => member.team_id === parseInt(newTeamId));
-      setTeamMembers(filteredTeamMembers);
+    
+    // Fetch team members for the selected team
+    fetchTeamMembers(newTeamId).then(data => {
+      // Update teamMembers state with fetched data
+      setTeamMembers(prevTeamMembers => {
+        const updatedMembers = [...prevTeamMembers];
+        updatedMembers[newTeamId - 1] = data; // Assuming team IDs are sequential
+        return updatedMembers;
+      });
     });
   };
 
@@ -204,11 +222,13 @@ const Member = () => {
             borderBottom: "2px black solid"
           }}
         >
-          <h2>Members</h2>
+          <h2 style={{
+            padding: '10px'}}>Members</h2>
           <div style={{display: "flex",
             alignItems: "center",
-            justifyContent: "space-end",}}>
-          <button onClick={openAddMemberModal}>
+            justifyContent:'space-between',
+            padding: '10px'}}>
+          <button  onClick={openAddMemberModal}>
             Add Member
           </button>
           <button variant="primary" onClick={openInviteModal}>
@@ -216,15 +236,7 @@ const Member = () => {
             </button>
             </div>
         </div>
-        <Form.Group controlId="formTeamSelection" style={{ marginBottom: 20 }}>
-          <Form.Label>Team</Form.Label>
-          <Form.Control as="select" value={selectedTeam} onChange={handleTeamChange}>
-            <option style={{color:'orange'}} value="">Select Team</option>
-            {teams.map(team => (
-              <option key={team.id} value={team.id}>{team.name}</option>
-            ))}
-          </Form.Control>
-        </Form.Group>
+        
         <div
           style={{
             display: "flex",
@@ -236,12 +248,14 @@ const Member = () => {
             <section className="tw-flex-1 tw-overflow-auto">
               <section className="tw-h-full tw-pr-50px">
                 <div className="tw-px-40px tw-pb-40px">
-                  <Table
-                    columns={columns}
-                    dataSource={teamMembers}
-                    rowKey="user_id"
-                    pagination={{ pageSize: 5 }}
-                  />
+                {selectedTeam && (
+        <Table
+          columns={columns}
+          dataSource={teamMembers[selectedTeam - 1]} // Assuming team IDs are 1-indexed
+          rowKey="user_id"
+          pagination={{ pageSize: 5 }}
+        />
+      )}
                 </div>
               </section>
             </section>
@@ -257,44 +271,38 @@ const Member = () => {
             <Form>
               <Form.Group controlId="formSelectUser">
                 <Form.Label>Select User</Form.Label>
-                <Form.Control as="select" value={selectedUser} onChange={e => setSelectedUser(e.target.value)}>
+                <Form.Control as="select" value={selectedUser} onChange={(e) => setSelectedUser(e.target.value)}>
                   <option value="">Select User</option>
                   {users.map(user => (
-                    <option key={user.id} value={user.id}>{user.name}</option>
+                    <option key={user.user_id} value={user.user_id}>{user.user_name}</option>
                   ))}
                 </Form.Control>
               </Form.Group>
-              <Form.Group controlId="formSelectRole" style={{ marginTop: '10px' }}>
+
+              <Form.Group controlId="formSelectRole">
                 <Form.Label>Select Role</Form.Label>
-                <Form.Control as="select" value={selectedRole} onChange={e => setSelectedRole(e.target.value)}>
+                <Form.Control as="select" value={selectedRole} onChange={(e) => setSelectedRole(e.target.value)}>
                   <option value="">Select Role</option>
                   {roles.map(role => (
-                    <option key={role.id} value={role.id}>{role.name}</option>
-                  ))}
-                </Form.Control>
-              </Form.Group>
-              <Form.Group controlId="formSelectTeam" style={{ marginTop: '10px' }}>
-                <Form.Label>Select Team</Form.Label>
-                <Form.Control as="select" value={selectedTeam} onChange={e => setSelectedTeam(e.target.value)}>
-                  <option value="">Select Team</option>
-                  {teams.map(team => (
-                    <option key={team.id} value={team.id}>{team.name}</option>
+                    <option key={role.role_id} value={role.role_id}>{role.role_name}</option>
                   ))}
                 </Form.Control>
               </Form.Group>
             </Form>
           </Modal.Body>
           <Modal.Footer>
-            <Button variant="secondary" onClick={closeAddMemberModal}>
-              Close
-            </Button>
-            <Button variant="primary" onClick={handleAddMember}>
+            
+            <button variant="secondary" onClick={closeAddMemberModal}>
+              Cancel
+            </button>
+            <button variant="primary" onClick={handleAddMember}>
               Add Member
-            </Button>
+            </button>
+           
           </Modal.Footer>
         </Modal>
 
-        {/* Invite Modal */}
+        {/* Invite Member Modal */}
         <Modal show={isInviteModalOpen} onHide={closeInviteModal} centered>
           <Modal.Header closeButton>
             <Modal.Title>Invite Member</Modal.Title>
@@ -302,33 +310,28 @@ const Member = () => {
           <Modal.Body>
             <Form>
               <Form.Group controlId="formInviteEmail">
-                <Form.Label>Email</Form.Label>
-                <Form.Control
-                  type="email"
-                  value={inviteEmail}
-                  onChange={e => setInviteEmail(e.target.value)}
-                />
+                <Form.Label>Email address</Form.Label>
+                <Form.Control type="email" placeholder="Enter email" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} />
               </Form.Group>
+
               <Form.Group controlId="formInviteName">
                 <Form.Label>Name</Form.Label>
-                <Form.Control
-                  type="text"
-                  value={inviteName}
-                  onChange={e => setInviteName(e.target.value)}
-                  style={{ marginTop: '10px' }}
-                />
+                <Form.Control type="text" placeholder="Enter name" value={inviteName} onChange={(e) => setInviteName(e.target.value)} />
               </Form.Group>
-              {/* Hide the invite code input box but still send the inviteCode in the request */}
-              <Form.Control type="hidden" value={inviteCode} />
+
+              <Form.Group controlId="formInviteCode">
+                <Form.Label>Invite Code</Form.Label>
+                <Form.Control type="text" readOnly value={inviteCode} />
+              </Form.Group>
             </Form>
           </Modal.Body>
           <Modal.Footer>
-            <Button variant="secondary" onClick={closeInviteModal}>
-              Close
-            </Button>
-            <Button variant="primary" onClick={handleSendInvite}>
+            <button variant="secondary" onClick={closeInviteModal}>
+              Cancel
+            </button>
+            <button variant="primary" onClick={handleSendInvite}>
               Send Invite
-            </Button>
+            </button>
           </Modal.Footer>
         </Modal>
       </div>
@@ -337,3 +340,4 @@ const Member = () => {
 };
 
 export default Member;
+

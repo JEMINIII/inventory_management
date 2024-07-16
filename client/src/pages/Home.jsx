@@ -7,6 +7,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
 import { notification } from "antd";
 import Modal from "react-bootstrap/Modal";
+import {DeleteOutlined,EditOutlined,SaveOutlined,CloseOutlined} from  '@ant-design/icons'
 // import TeamSelector from "../components/TeamSelector";
 import { TeamContext } from "../context/TeamContext";
 // import AddItemModal from "./AddItemModel";
@@ -33,6 +34,7 @@ export const Home = () => {
       .then((response) => {
         if (response.data.success) {
           setTeams(response.data.items);
+          
         } else {
           console.error("Failed to fetch teams");
         }
@@ -353,9 +355,10 @@ export const Home = () => {
               borderBottom: "2px black solid",
             }}
           >
-            <h2>Item List</h2>
+            <h2 style={{ marginBottom: 30 }}>Item List</h2>
             <button
-              onClick={() => setCreateModalShow(true)}>
+              onClick={() => setCreateModalShow(true)}
+              style={{ marginBottom: 30 }}>
               Add Item
             </button>
           </div>
@@ -457,7 +460,7 @@ export const Home = () => {
     <label htmlFor="team_id" className="form-label">
       Team
     </label>
-    <select
+    {/* <select
       className="form-control"
       value={teamId}
       onChange={handleTeamChange}
@@ -468,13 +471,12 @@ export const Home = () => {
           {team.name}
         </option>
       ))}
-    </select>
-    <input
-      type="text"
+    </select> */}
+    <input  
       className="form-control"
       id="team_id"
-      name="team_id"
-      value={formValues.team_id}
+      name="team_name"
+      value={teamId}
       readOnly
     />
   </div>
@@ -552,6 +554,7 @@ export const Home = () => {
                 <div style={{ color: "black", justifyContent: "center" }}>
                   {isEditing ? (
                     <>
+                    <div style={{ padding: "24px" ,display:'flex' ,justifyContent:'space-evenly' }}>
                       <h6
                         style={{
                           borderBottom: "3px black solid",
@@ -560,6 +563,12 @@ export const Home = () => {
                       >
                         Edit Item
                       </h6>
+                      
+                          <div onClick={handleUpdate}><SaveOutlined /></div>
+                          <div onClick={() => setIsEditing(false)}>
+                          <CloseOutlined />
+                          </div>
+                        </div>
                       <div
                         style={{
                           display: "flex",
@@ -671,12 +680,7 @@ export const Home = () => {
                           </tbody>
                         </table>
 
-                        <div style={{ padding: "24p", textAlign: "center" }}>
-                          <button onClick={handleUpdate}>Save</button>
-                          <button onClick={() => setIsEditing(false)}>
-                            Cancel
-                          </button>
-                        </div>
+                       
                       </div>
                     </>
                   ) : (
@@ -693,12 +697,7 @@ export const Home = () => {
                       >
                         Selected Item Details
 
-                        <button onClick={() => setIsEditing(true)}>
-                            Edit
-                          </button>
-                          <button onClick={() => setModalShow(true)}>
-                            Delete
-                          </button>
+                        
                       </h6>
                       
                       <div
@@ -710,7 +709,24 @@ export const Home = () => {
                           
                         }}
                       >
-                        <div>{selectedItem.product_name}</div>
+                        <div
+                        style={{
+                          borderBottom: "3px black solid",
+                          paddingBottom: "5px",
+                          display: "flex",
+                          justifyContent: "space-evenly",
+                          alignItems:'center'
+                        }}>
+                          <div>
+                          {selectedItem.product_name}
+                          </div>
+                        <div onClick={() => setIsEditing(true)}>
+                        <EditOutlined />
+                          </div>
+                          <div onClick={() => setModalShow(true)}>
+                          <DeleteOutlined />
+                          </div>
+                          </div>
                         <div
                           style={{
                             textAlign: "center",
@@ -811,15 +827,13 @@ export const Home = () => {
             </Card>
           </div>
         </div>
-      ) : (
-        <div>
-          <h3>{message}</h3>
-          <h3>Login Now</h3>
-          <Link to="/login" className="btn btn-primary">
-            hello
+        ) : (
+          <div>
+          <Link to="/login">
+            <button>Login</button>
           </Link>
         </div>
-      )}
+        )}
     </div>
     // </div>
   );

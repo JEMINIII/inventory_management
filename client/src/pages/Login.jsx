@@ -4,7 +4,7 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import { toast, ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
-import "./Login.css";
+import "./Login.css"; // Ensure this CSS file includes your styles
 
 const Login = () => {
   const [values, setValues] = useState({
@@ -12,15 +12,21 @@ const Login = () => {
     email: "",
     password: "",
   });
-  const [isSignUpActive, setIsSignUpActive] = useState(true); // Changed initial state to true
+  const [isSignUpActive, setIsSignUpActive] = useState(false);
   const [errors, setErrors] = useState({});
-  const [inviteCode, setInviteCode] = useState(""); // State to store invite code
+  const [inviteCode, setInviteCode] = useState("");
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const navigate = useNavigate();
   const location = useLocation();
 
   let errorTimeout;
 
   useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    window.addEventListener("resize", handleResize);
+
     const searchParams = new URLSearchParams(location.search);
     const code = searchParams.get("inviteCode");
     if (code) {
@@ -30,9 +36,12 @@ const Login = () => {
     if (errors) {
       errorTimeout = setTimeout(() => {
         setErrors({});
-      }, 3001);
+      }, 3000);
     }
-    return () => clearTimeout(errorTimeout);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      clearTimeout(errorTimeout);
+    };
   }, [errors, location.search]);
 
   const handleInput = (e) => {
@@ -43,13 +52,21 @@ const Login = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+  
+    // Determine the URL based on whether it's a sign-up or login action
     const url = isSignUpActive ? "http://localhost:8082/register" : "http://localhost:8082/login";
-    const payload = { ...values, inviteCode: isSignUpActive ? inviteCode : undefined };
-
+    
+    // Create the payload, conditionally adding inviteCode if it's a sign-up
+    const payload = { ...values };
+    if (isSignUpActive && inviteCode) {
+      payload.inviteCode = inviteCode;
+    }
+  
     axios
       .post(url, payload, { withCredentials: true })
       .then((res) => {
         if (res.data.errors) {
+          // Handle form errors and display error messages
           const errorMessages = res.data.errors.reduce((acc, error) => {
             acc[error.param] = error.msg;
             return acc;
@@ -58,6 +75,7 @@ const Login = () => {
           toast.error("Please check the form for errors.");
         } else {
           setErrors({});
+          // Handle successful responses for login and registration
           if (res.data.message === "Login successful") {
             Cookies.set("token", res.data.token, { expires: 1 });
             navigate("/");
@@ -74,11 +92,12 @@ const Login = () => {
         toast.error("An error occurred. Please try again.");
       });
   };
+  
 
   const toggleSignUp = () => {
     setIsSignUpActive(!isSignUpActive);
     setErrors({});
-    setInviteCode(""); // Clear invite code when switching forms
+    setInviteCode("");
   };
 
   return (
@@ -86,14 +105,8 @@ const Login = () => {
       <ToastContainer />
       <div className={`container ${isSignUpActive ? "right-panel-active" : ""}`} id="container">
         <div className="form-container sign-in-container">
-          <form onSubmit={handleSubmit}>
+          <form className='signin' onSubmit={handleSubmit}>
             <h1>Sign in</h1>
-            <div className="social-container">
-              <a href="#" className="social"><i className="fab fa-facebook-f"></i></a>
-              <a href="#" className="social"><i className="fab fa-google-plus-g"></i></a>
-              <a href="#" className="social"><i className="fab fa-linkedin-in"></i></a>
-            </div>
-            <span>or use your account</span>
             {errors.general && <p className="text-danger">{errors.general}</p>}
             <input
               type="email"
@@ -116,14 +129,8 @@ const Login = () => {
           </form>
         </div>
         <div className="form-container sign-up-container">
-          <form onSubmit={handleSubmit}>
+          <form className='signup' onSubmit={handleSubmit}>
             <h1>Create Account</h1>
-            <div className="social-container">
-              <a href="#" className="social"><i className="fab fa-facebook-f"></i></a>
-              <a href="#" className="social"><i className="fab fa-google-plus-g"></i></a>
-              <a href="#" className="social"><i className="fab fa-linkedin-in"></i></a>
-            </div>
-            <span>or use your email for registration</span>
             <input
               type="text"
               placeholder="Name"

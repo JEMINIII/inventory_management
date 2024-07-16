@@ -6,6 +6,7 @@ import { RightCircleOutlined, LeftCircleOutlined, UnorderedListOutlined, ArrowUp
 import { Button, Menu } from "antd";
 import axios from "axios";
 import { TeamContext } from "../context/TeamContext";
+import { MenuOutlined } from "@ant-design/icons";
 
 const iconComponents = {
   UnorderedListOutlined: UnorderedListOutlined,
@@ -17,7 +18,7 @@ const iconComponents = {
 };
 
 const Sidebar = () => {
-  const [menuCollapsed, setMenuCollapsed] = useState(false);
+  const [menuCollapsed, setMenuCollapsed] = useState(true);
   const toggleCollapsed = () => setMenuCollapsed(!menuCollapsed);
 
   const { SubMenu } = Menu;
@@ -27,6 +28,19 @@ const Sidebar = () => {
 
   const [menuItems, setMenuItems] = useState([]);
   const { teamId } = useContext(TeamContext);
+  const [auth, setAuth] = useState(false);
+
+  useEffect(() => {
+    axios.get("http://localhost:8082/api/users")
+      .then((res) => {
+        if (res.status === 200 && res.data.success === true) {
+          setAuth(true);
+        } else {
+          setAuth(false);
+        }
+      })
+      .catch((err) => console.error("Error fetching user data:", err));
+  }, []);
 
   useEffect(() => {
     if (teamId) {
@@ -52,8 +66,14 @@ const Sidebar = () => {
   const [openKeys, setOpenKeys] = useState([]);
   const handleOpenChange = (keys) => setOpenKeys(keys);
 
+  if (!auth) {
+    return null;
+  }
+
   return (
+    
     <div className="sidebar-container">
+      
       <Menu
         className="menu"
         style={{ backgroundColor: 'black', color: 'white' }}
@@ -64,10 +84,17 @@ const Sidebar = () => {
         openKeys={openKeys}
         onOpenChange={handleOpenChange}
       >
+        <div className="toggle-button">
+        <Button onClick={toggleCollapsed}>
+          <MenuOutlined />
+        </Button>
+      </div>
         {/* Team Selector Menu Item */}
         <Menu.Item key="teamSelector" icon={<TeamOutlined />}>
-          <TeamSelector />
-        </Menu.Item>
+  <TeamSelector />
+</Menu.Item>
+
+        
 
         {Object.values(nestedMenuItems).map((menuItem) =>
           menuItem.submenus.length > 0 ? (
