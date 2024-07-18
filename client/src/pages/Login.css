@@ -536,3 +536,15 @@ p {
   border-radius: 4px;
   transition: background-color 0.3s, opacity 0.3s;
 }
+
+.text-danger {
+  color: red;
+}
+
+input.error {
+  border: 1px solid red;
+}
+
+input.error::placeholder {
+  color: red;
+}

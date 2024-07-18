@@ -134,6 +134,55 @@ const initDatabase = async () => {
       await db.query(insertMenuData);
       console.log('Initial data inserted into menu table');
     }
+
+    const [rolesRows] = await db.query('SELECT COUNT(*) AS count FROM roles');
+    if (rolesRows[0].count === 0) {
+      const insertRolesData = `
+        INSERT INTO roles (id, name) VALUES
+        (1, 'admin'),
+        (2, 'manager'),
+        (3, 'user');
+      `;
+      await db.query(insertRolesData);
+      console.log('Initial data inserted into role table');
+    }
+
+    const [team] = await db.query('SELECT COUNT(*) AS count FROM team');
+    if (rolesRows[0].count === 0) {
+      const insertRolesData = `
+        INSERT INTO roles (id, name) VALUES
+        (1, 'TEAM-A'),
+        (2, 'TEAM-B'),
+        (3, 'TEAM-C');
+      `;
+      await db.query(insertRolesData);
+      console.log('Initial data inserted into role table');
+    }    
+
+    const [userResult] = await db.query(`
+      INSERT INTO users (name, email, password)
+      VALUES ('Jemini', 'jeminikarathiya16@gmail.com', '$2a$12$0qrjcwkLrxyaum/8f.WRsueyemwO3iD3OZLZhT3DV9VlPiLpOsph6')
+      ON DUPLICATE KEY UPDATE email=email;
+    `);
+
+
+    // const userId = userResult.insertId;
+
+    // if (userId) {
+    //   const [teams] = await db.query('SELECT id FROM team');
+    //   const [adminRole] = await db.query("SELECT id FROM roles WHERE name='Admin'");
+    //   const adminRoleId = adminRole[0].id;
+    
+    //   const teamMembersData = teams.map((team) => [team.id, userId, adminRoleId]);
+    
+    //   const insertTeamMembers = `
+    //     INSERT INTO team_members (team_id, user_id, role_id)
+    //     VALUES ? ON DUPLICATE KEY UPDATE role_id=role_id;
+    //   `;
+    
+    //   await db.query(insertTeamMembers, [teamMembersData]);
+    // }
+    
   } catch (error) {
     console.error('Error during database initialization:', error);
   }
