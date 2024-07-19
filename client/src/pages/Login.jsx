@@ -72,6 +72,7 @@ const Login = () => {
             return acc;
           }, {});
           setErrors(errorMessages);
+          console.log(errorMessages)
           toast.error("Please check the form for errors.");
         } else {
           setErrors({});
