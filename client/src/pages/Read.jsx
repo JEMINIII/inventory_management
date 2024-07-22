@@ -7,25 +7,22 @@ const Read = () => {
   const { id } = useParams();
   const [stock, setStock] = useState({});
   const [data, setData] = useState([]);
-  
-  
+
   useEffect(() => {
     axios
-      .get(`http://localhost:8082/products/read/${id}`)
+      .get(`http://37.60.244.17:8082/products/read/${id}`)
       .then((res) => {
         setStock(res.data);
-        
       })
       .catch((err) => {
         console.error("Request failed:", err.message); // Log the error message
         console.error("Server response:", err.response.data); // Log the server response
       });
   }, [id]);
-  
 
   const handleDelete = (id) => {
     axios
-      .delete("http://localhost:8082/delete/" + id)
+      .delete("http://37.60.244.17:8082/delete/" + id)
       .then((res) => {
         const updatedData = data.filter(
           (inventory) => inventory.product_id !== id
@@ -69,28 +66,28 @@ const Read = () => {
               <strong>Total Amount:</strong> {stock?.total_amount}
             </div>
             <div className="mb-3">
-              <strong>Image:</strong>{""}
-              {stock && <img
-              src={`http://localhost:8082/images/${stock.img}`}
-              style={{ maxWidth: "30%", height: "auto" }}
-              alt="Product"
-            />}
+              <strong>Image:</strong>
+              {""}
+              {stock && (
+                <img
+                  src={`http://37.60.244.17:8082/images/${stock.img}`}
+                  style={{ maxWidth: "30%", height: "auto" }}
+                  alt="Product"
+                />
+              )}
             </div>
 
             <div className="mt-3">
               <Link to="/" className="btn btn-primary me-2">
                 Back
               </Link>
-              <Link
-                to={`/edit/${id}`}
-                className="btn btn-info me-2"
-              >
+              <Link to={`/edit/${id}`} className="btn btn-info me-2">
                 Edit
               </Link>
               <button
                 onClick={() => {
                   handleDelete(id);
-                  window.location.href = '/'; 
+                  window.location.href = "/";
                 }}
                 className="btn btn-sm btn-danger"
               >

@@ -4,17 +4,25 @@ import upload from "../../routes/config/multerConfig.js";
 
 export const getAllTeam = async (req, res) => {
   try {
-    // Fetch all Team from the database
-    const q = "SELECT * FROM team";
-    const [rows] = await db.query(q);
+    const { orgId } = req.query;
 
-    // Return the Team in the response
+    // Ensure orgId is provided and valid
+    if (!orgId) {
+      return res.status(400).json({ error: "Organization ID is required" });
+    }
+
+    // Fetch teams based on orgId
+    const q = "SELECT * FROM team WHERE org_id = ?";
+    const [rows] = await db.query(q, [orgId]);
+
+    // Return the teams in the response
     res.json({ success: true, items: rows });
   } catch (error) {
     console.error("Error fetching teams:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
 
 
 

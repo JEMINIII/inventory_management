@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { validationResult } from "express-validator";
-import db from "../../models/db/DbModel.js";
+import db from '../../models/db/DbModel.js'
 import dotenv from "dotenv";
 dotenv.config();
 

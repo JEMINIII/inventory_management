@@ -1,7 +1,7 @@
-import nodemailer from 'nodemailer';
-import { readFile } from 'fs/promises';
-import { fileURLToPath } from 'url';
-import path from 'path';
+import nodemailer from "nodemailer";
+import { readFile } from "fs/promises";
+import { fileURLToPath } from "url";
+import path from "path";
 import db from "../../models/db/DbModel.js";
 
 const pool = db;
@@ -14,13 +14,15 @@ export const sendInviteEmail = async (req, res) => {
 
     if (!email || !name || !inviteCode) {
       console.log("Missing required fields:", { email, name, inviteCode });
-      return res.status(400).json({ status: "error", message: "All fields are required" });
+      return res
+        .status(400)
+        .json({ status: "error", message: "All fields are required" });
     }
 
     console.log(`Email: ${email}, Name: ${name}, InviteCode: ${inviteCode}`);
 
     // Check if the email already has an invite
-    const checkQuery = 'SELECT code FROM invitations WHERE email = ?';
+    const checkQuery = "SELECT code FROM invitations WHERE email = ?";
     const [rows] = await connection.execute(checkQuery, [email]);
 
     let existingInviteCode;
@@ -31,41 +33,52 @@ export const sendInviteEmail = async (req, res) => {
     // If there's already an invite code, use it; otherwise, use the new inviteCode
     const codeToSend = existingInviteCode || inviteCode;
 
-    const signupUrl = `http://localhost:3000/login?inviteCode=${codeToSend}`;
+    const signupUrl = `http://37.60.244.17:3000/login?inviteCode=${codeToSend}`;
 
     // Read the HTML template file
-    const templatePath = path.join(__dirname, 'invite-template.html');
-    const messageHtml = await readFile(templatePath, 'utf-8');
+    const templatePath = path.join(__dirname, "invite-template.html");
+    const messageHtml = await readFile(templatePath, "utf-8");
 
     const transporter = nodemailer.createTransport({
-      service: 'gmail',
+      service: "gmail",
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
-      }
+      },
     });
 
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: email,
-      subject: 'Invitation to Join Our Platform',
-      html: messageHtml.replace('${name}', name).replace('${inviteCode}', codeToSend).replace('${signupUrl}', signupUrl)
+      subject: "Invitation to Join Our Platform",
+      html: messageHtml
+        .replace("${name}", name)
+        .replace("${inviteCode}", codeToSend)
+        .replace("${signupUrl}", signupUrl),
     };
 
     transporter.sendMail(mailOptions, async (error, info) => {
       if (error) {
         console.error("Error sending email:", error);
-        return res.status(500).json({ status: "error", message: "Error sending invite email" });
+        return res
+          .status(500)
+          .json({ status: "error", message: "Error sending invite email" });
       } else {
-        console.log('Email sent: ' + info.response);
+        console.log("Email sent: " + info.response);
 
         // If there's no existing invite code, insert the new invitation details into the database
         if (!existingInviteCode) {
-          const query = 'INSERT INTO invitations (email, name, code, created_at) VALUES (?, ?, ?, NOW())';
+          const query =
+            "INSERT INTO invitations (email, name, code, created_at) VALUES (?, ?, ?, NOW())";
           await connection.execute(query, [email, name, inviteCode]);
         }
 
-        return res.status(200).json({ status: "success", message: "Invitation sent successfully!" });
+        return res
+          .status(200)
+          .json({
+            status: "success",
+            message: "Invitation sent successfully!",
+          });
       }
     });
   } catch (error) {

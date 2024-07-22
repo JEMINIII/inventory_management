@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { toast, ToastContainer } from "react-toastify";
-import 'react-toastify/dist/ReactToastify.css';
+import "react-toastify/dist/ReactToastify.css";
 import "./Login.css"; // Ensure this CSS file includes your styles
 
 const Login = () => {
@@ -52,16 +52,18 @@ const Login = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-  
+
     // Determine the URL based on whether it's a sign-up or login action
-    const url = isSignUpActive ? "http://localhost:8082/register" : "http://localhost:8082/login";
-    
+    const url = isSignUpActive
+      ? "http://37.60.244.17:8082/register"
+      : "http://37.60.244.17:8082/login";
+
     // Create the payload, conditionally adding inviteCode if it's a sign-up
     const payload = { ...values };
     if (isSignUpActive && inviteCode) {
       payload.inviteCode = inviteCode;
     }
-  
+
     axios
       .post(url, payload, { withCredentials: true })
       .then((res) => {
@@ -72,7 +74,7 @@ const Login = () => {
             return acc;
           }, {});
           setErrors(errorMessages);
-          console.log(errorMessages)
+          console.log(errorMessages);
           toast.error("Please check the form for errors.");
         } else {
           setErrors({});
@@ -84,16 +86,15 @@ const Login = () => {
             toast.success("User registered successfully. Please sign in.");
             setIsSignUpActive(false);
             setValues({ name: "", email: "", password: "" });
-            setInviteCode(""); 
+            setInviteCode("");
           }
         }
       })
       .catch((err) => {
-        console.error('Error:', err);
+        console.error("Error:", err);
         toast.error("An error occurred. Please try again.");
       });
   };
-  
 
   const toggleSignUp = () => {
     setIsSignUpActive(!isSignUpActive);
@@ -104,9 +105,12 @@ const Login = () => {
   return (
     <div className="body">
       <ToastContainer />
-      <div className={`container ${isSignUpActive ? "right-panel-active" : ""}`} id="container">
+      <div
+        className={`container ${isSignUpActive ? "right-panel-active" : ""}`}
+        id="container"
+      >
         <div className="form-container sign-in-container">
-          <form className='signin' onSubmit={handleSubmit}>
+          <form className="signin" onSubmit={handleSubmit}>
             <h1>Sign in</h1>
             {errors.general && <p className="text-danger">{errors.general}</p>}
             <input
@@ -124,13 +128,17 @@ const Login = () => {
               value={values.password}
               onChange={handleInput}
             />
-            {errors.password && <p className="text-danger">{errors.password}</p>}
-            <a href="#" className="forgot">Forgot your password?</a>
+            {errors.password && (
+              <p className="text-danger">{errors.password}</p>
+            )}
+            <a href="#" className="forgot">
+              Forgot your password?
+            </a>
             <button type="submit">Sign In</button>
           </form>
         </div>
         <div className="form-container sign-up-container">
-          <form className='signup' onSubmit={handleSubmit}>
+          <form className="signup" onSubmit={handleSubmit}>
             <h1>Create Account</h1>
             <input
               type="text"
@@ -155,7 +163,9 @@ const Login = () => {
               value={values.password}
               onChange={handleInput}
             />
-            {errors.password && <p className="text-danger">{errors.password}</p>}
+            {errors.password && (
+              <p className="text-danger">{errors.password}</p>
+            )}
             <input
               type="text"
               placeholder="Invitation Code"
@@ -171,13 +181,19 @@ const Login = () => {
           <div className="overlay">
             <div className="overlay-panel overlay-left">
               <h1>Welcome Back!</h1>
-              <p>To keep connected with us please login with your personal info</p>
-              <button onClick={toggleSignUp} id="signInBtn">Sign In</button>
+              <p>
+                To keep connected with us please login with your personal info
+              </p>
+              <button onClick={toggleSignUp} id="signInBtn">
+                Sign In
+              </button>
             </div>
             <div className="overlay-panel overlay-right">
               <h1>Hello, Friend!</h1>
               <p>Enter your personal details and start your journey with us</p>
-              <button onClick={toggleSignUp} id="signUpBtn">Sign Up</button>
+              <button onClick={toggleSignUp} id="signUpBtn">
+                Sign Up
+              </button>
             </div>
           </div>
         </div>

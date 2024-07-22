@@ -1,27 +1,28 @@
-import express from 'express';
-import cors from 'cors';
-import cookieParser from 'cookie-parser';
-import session from 'express-session';
-import nodemailer from 'nodemailer';
-import dotenv from 'dotenv';
-import authRoutes from './routes/auth/AuthRoute.js';
-import productRoutes from './routes/product/ProductRoute.js';
-import MemberRoute from './routes/team/TeamRoute.js';
-import userRoutes from './routes/user/UserRoute.js';
-import db from './models/db/DbModel.js';
-import { verifyUser } from './controllers/auth/AuthController.js';
-import roleRoutes from './routes/role/RoleRoute.js';
-import teamMembersRoutes from './routes/team_members/teamMembersRoutes.js';
-import inviteRoute from './routes/invite/inviteRoute.js';
-import SidebarRoute from './routes/sidebar/sidebarRoute.js';
-import initDatabase from './models/initDatabase/initDatabase.js';
+import express from "express";
+import cors from "cors";
+import cookieParser from "cookie-parser";
+import session from "express-session";
+import nodemailer from "nodemailer";
+import dotenv from "dotenv";
+import authRoutes from "./routes/auth/AuthRoute.js";
+import productRoutes from "./routes/product/ProductRoute.js";
+import MemberRoute from "./routes/team/TeamRoute.js";
+import userRoutes from "./routes/user/UserRoute.js";
+import db from "./models/db/DbModel.js";
+import { verifyUser } from "./controllers/auth/AuthController.js";
+import roleRoutes from "./routes/role/RoleRoute.js";
+import teamMembersRoutes from "./routes/team_members/teamMembersRoutes.js";
+import inviteRoute from "./routes/invite/inviteRoute.js";
+import SidebarRoute from "./routes/sidebar/sidebarRoute.js";
+import initDatabase from "./models/initDatabase/initDatabase.js";
+import organizationRoutes from "./routes/data/DataRoute.js";
 
 dotenv.config();
 
 const app = express();
 
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  service: "gmail",
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
@@ -31,16 +32,16 @@ const transporter = nodemailer.createTransport({
 app.use(express.json());
 app.use(
   cors({
-    origin: ['http://localhost:3000'],
-    methods: ['POST', 'GET', 'PUT', 'DELETE'],
+    origin: ["http://37.60.244.17:3000"],
+    methods: ["POST", "GET", "PUT", "DELETE"],
     credentials: true,
   })
 );
-app.use(express.static('public'));
+app.use(express.static("public"));
 app.use(cookieParser());
 app.use(
   session({
-    secret: 'secret',
+    secret: "secret",
     resave: false,
     saveUninitialized: false,
     cookie: {
@@ -50,41 +51,44 @@ app.use(
   })
 );
 
-app.use('/api', teamMembersRoutes);
-app.use('/', authRoutes);
-app.use('/products', productRoutes);
-app.use('/api', userRoutes);
-app.use('/', MemberRoute);
-app.use('/roles', roleRoutes);
-app.use('/api', inviteRoute);
-app.use('/', SidebarRoute);
+app.use("/api", teamMembersRoutes);
+app.use("/", authRoutes);
+app.use("/products", productRoutes);
+app.use("/api", userRoutes);
+app.use("/", MemberRoute);
+app.use("/roles", roleRoutes);
+app.use("/api", inviteRoute);
+app.use("/", SidebarRoute);
+app.use("/", organizationRoutes);
 
-app.post('/send-email', (req, res) => {
+app.post("/send-email", (req, res) => {
   const { email } = req.body;
   console.log(email);
   if (!email) {
-    return res.status(400).json({ status: 'error', error: 'Email is required' });
+    return res
+      .status(400)
+      .json({ status: "error", error: "Email is required" });
   }
 
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: email,
-    subject: 'Invitation to Join',
-    text: 'You are invited to join our platform.',
+    subject: "Invitation to Join",
+    text: "You are invited to join our platform.",
   };
 
   transporter.sendMail(mailOptions, (error, info) => {
     if (error) {
-      console.error('Error sending email:', error);
-      return res.status(500).json({ status: 'error', error: error.message });
+      console.error("Error sending email:", error);
+      return res.status(500).json({ status: "error", error: error.message });
     } else {
-      return res.status(200).json({ status: 'success', info });
+      return res.status(200).json({ status: "success", info });
     }
   });
 });
 
 initDatabase().then(() => {
   app.listen(8082, () => {
-    console.log('Server is running on port 8082');
+    console.log("Server is running on port 8082");
   });
 });

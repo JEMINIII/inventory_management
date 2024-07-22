@@ -1,15 +1,15 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { Modal, Button, Form, Input } from 'antd';
-import axios from 'axios';
-import { TeamContext } from '../context/TeamContext';
+import React, { useState, useEffect, useContext } from "react";
+import { Modal, Button, Form, Input } from "antd";
+import axios from "axios";
+import { TeamContext } from "../context/TeamContext";
 
 const AddItemModal = ({ isVisible, handleClose }) => {
   const [formValues, setFormValues] = useState({
-    product_name: '',
-    category: '',
-    price: '',
-    quantity: '',
-    total_amount: '',
+    product_name: "",
+    category: "",
+    price: "",
+    quantity: "",
+    total_amount: "",
   });
   const [formErrors, setFormErrors] = useState({});
   const { teamId } = useContext(TeamContext);
@@ -21,11 +21,13 @@ const AddItemModal = ({ isVisible, handleClose }) => {
 
   const validateForm = () => {
     const errors = {};
-    if (!formValues.product_name) errors.product_name = 'Product name is required';
-    if (!formValues.category) errors.category = 'Category is required';
-    if (!formValues.price) errors.price = 'Price is required';
-    if (!formValues.quantity) errors.quantity = 'Quantity is required';
-    if (!formValues.total_amount) errors.total_amount = 'Total amount is required';
+    if (!formValues.product_name)
+      errors.product_name = "Product name is required";
+    if (!formValues.category) errors.category = "Category is required";
+    if (!formValues.price) errors.price = "Price is required";
+    if (!formValues.quantity) errors.quantity = "Quantity is required";
+    if (!formValues.total_amount)
+      errors.total_amount = "Total amount is required";
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -33,7 +35,7 @@ const AddItemModal = ({ isVisible, handleClose }) => {
   const handleAddItem = async () => {
     if (validateForm()) {
       try {
-        const response = await axios.post('http://localhost:8082/products', {
+        const response = await axios.post("http://37.60.244.17:8082/products", {
           ...formValues,
           team_id: teamId,
         });
@@ -43,7 +45,7 @@ const AddItemModal = ({ isVisible, handleClose }) => {
           handleClose();
         }
       } catch (error) {
-        console.error('Error adding item:', error);
+        console.error("Error adding item:", error);
       }
     }
   };
@@ -63,20 +65,63 @@ const AddItemModal = ({ isVisible, handleClose }) => {
       ]}
     >
       <Form layout="vertical">
-        <Form.Item label="Product Name" validateStatus={formErrors.product_name ? 'error' : ''} help={formErrors.product_name}>
-          <Input name="product_name" value={formValues.product_name} onChange={handleInputChange} />
+        <Form.Item
+          label="Product Name"
+          validateStatus={formErrors.product_name ? "error" : ""}
+          help={formErrors.product_name}
+        >
+          <Input
+            name="product_name"
+            value={formValues.product_name}
+            onChange={handleInputChange}
+          />
         </Form.Item>
-        <Form.Item label="Category" validateStatus={formErrors.category ? 'error' : ''} help={formErrors.category}>
-          <Input name="category" value={formValues.category} onChange={handleInputChange} />
+        <Form.Item
+          label="Category"
+          validateStatus={formErrors.category ? "error" : ""}
+          help={formErrors.category}
+        >
+          <Input
+            name="category"
+            value={formValues.category}
+            onChange={handleInputChange}
+          />
         </Form.Item>
-        <Form.Item label="Price" validateStatus={formErrors.price ? 'error' : ''} help={formErrors.price}>
-          <Input name="price" type="number" value={formValues.price} onChange={handleInputChange} />
+        <Form.Item
+          label="Price"
+          validateStatus={formErrors.price ? "error" : ""}
+          help={formErrors.price}
+        >
+          <Input
+            name="price"
+            type="number"
+            value={formValues.price}
+            onChange={handleInputChange}
+          />
         </Form.Item>
-        <Form.Item label="Quantity" validateStatus={formErrors.quantity ? 'error' : ''} help={formErrors.quantity}>
-          <Input name="quantity" type="number" value={formValues.quantity} onChange={handleInputChange} />
+        <Form.Item
+          label="Quantity"
+          validateStatus={formErrors.quantity ? "error" : ""}
+          help={formErrors.quantity}
+        >
+          <Input
+            name="quantity"
+            type="number"
+            value={formValues.quantity}
+            onChange={handleInputChange}
+          />
         </Form.Item>
-        <Form.Item label="Total Amount" validateStatus={formErrors.total_amount ? 'error' : ''} help={formErrors.total_amount}>
-          <Input name="total_amount" type="number" value={formValues.total_amount} onChange={handleInputChange} />
+        <Form.Item
+          label="Total Amount"
+          validateStatus={formErrors.total_amount ? "error" : ""}
+          help={formErrors.total_amount}
+        >
+          <Input
+            name="total_amount"
+            type="number"
+            value={formValues.total_amount}
+            onChange={handleInputChange}
+          />
         </Form.Item>
       </Form>
     </Modal>

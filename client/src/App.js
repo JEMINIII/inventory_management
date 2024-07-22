@@ -18,6 +18,7 @@ import StockIn from "./pages/StockIn.jsx";
 import StockOut from "./pages/StockOut.jsx";
 import Team from "./pages/Team.jsx";
 import { TeamProvider } from "./context/TeamContext.js";
+import { OrganizationProvider } from "./context/OrgContext.js";
 const { Content } = AntLayout;
 
 const Layout = ({ toggleSidebar, isSidebarOpen }) => {
@@ -64,6 +65,7 @@ function App() {
 
   return (
     <div>
+      <OrganizationProvider>
       <TeamProvider>
         <BrowserRouter>
           <Routes>
@@ -85,6 +87,7 @@ function App() {
           </Routes>
         </BrowserRouter>
       </TeamProvider>
+      </OrganizationProvider>
     </div>
   );
 }

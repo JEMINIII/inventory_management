@@ -3,6 +3,10 @@ import db from "../db/DbModel.js";
 const initDatabase = async () => {
   try {
     // Create inventory table
+
+    await db.query(`CREATE DATABASE IF NOT EXISTS stock_management`)
+    // await db.query(`USE stock_management`);
+
     await db.query(`
       CREATE TABLE IF NOT EXISTS inventory (
         product_id int NOT NULL AUTO_INCREMENT,

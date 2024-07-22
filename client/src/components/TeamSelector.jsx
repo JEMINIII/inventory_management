@@ -1,36 +1,22 @@
-// File path: src/components/TeamSelector.js
-
 import React, { useState, useEffect, useContext } from 'react';
-import axios from 'axios';
 import { TeamContext } from '../context/TeamContext';
 import { Select } from "antd";
 
 const { Option } = Select;
 
-
 const TeamSelector = () => {
-  const { teamId, changeTeam } = useContext(TeamContext);
-  const [teams, setTeams] = useState([]);
+  const { teamId, teams, changeTeam } = useContext(TeamContext);
   const [selectedTeamName, setSelectedTeamName] = useState('');
-
+  console.log(selectedTeamName)
   useEffect(() => {
-    axios.get('http://localhost:8082/team')
-      .then((response) => {
-        if (response.data.success) {
-          setTeams(response.data.items);
-          // If teamId exists, find and set the team name
-          const selectedTeam = response.data.items.find(team => team.id === teamId);
-          if (selectedTeam) {
-            setSelectedTeamName(selectedTeam.name);
-          }
-        } else {
-          console.error("Failed to fetch teams");
-        }
-      })
-      .catch((error) => {
-        console.error("Error fetching teams:", error);
-      });
-  }, [teamId]);
+    // Update the selected team name when teams or teamId changes
+    const selectedTeam = teams.find(team => team.id === teamId);
+    if (selectedTeam) {
+      setSelectedTeamName(selectedTeam.name);
+    } else {
+      setSelectedTeamName('');
+    }
+  }, [teamId, teams]);
 
   const handleTeamChange = (value) => {
     const selectedTeam = teams.find(team => team.id === value);
@@ -44,7 +30,7 @@ const TeamSelector = () => {
       value={selectedTeamName || undefined} 
       style={{ width: 200 }} 
       onChange={handleTeamChange}
-      dropdownStyle={{ maxHeight: 200, overflowY: 'auto',background:'white' }}
+      dropdownStyle={{ maxHeight: 200, overflowY: 'auto', background: 'white' }}
       placeholder="Select Team"
       optionLabelProp="label" 
     >
