@@ -1,8 +1,9 @@
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
-import { validationResult } from "express-validator";
-import db from "../../models/db/DbModel.js";
-import dotenv from "dotenv";
+import bcrypt from 'bcryptjs';
+import dotenv from 'dotenv';
+import jwt from 'jsonwebtoken';
+
+import db from '../../models/db/DbModel.js';
+
 dotenv.config();
 
 const salt = 10;
@@ -79,7 +80,7 @@ export const loginUser = async (req, res) => {
       { expiresIn: "1h" }
     );
 
-    res.cookie("token", token, { httpOnly: true });
+    res.cookie("token", token, { httpOnly: true, sameSite: 'none', secure: true });
     res.json({ message: "Login successful", token });
   } catch (error) {
     console.error("Error logging in:", error);
