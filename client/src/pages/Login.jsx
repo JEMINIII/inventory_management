@@ -4,7 +4,9 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import { toast, ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
-import "./Login.css"; // Ensure this CSS file includes your styles
+import "./Login.css"; 
+
+const api_address = process.env.REACT_APP_API_ADDRESS;
 
 const Login = () => {
   const [values, setValues] = useState({
@@ -54,7 +56,7 @@ const Login = () => {
     e.preventDefault();
   
     // Determine the URL based on whether it's a sign-up or login action
-    const url = isSignUpActive ? "http://localhost:8082/register" : "http://localhost:8082/login";
+    const url = isSignUpActive ? `${api_address}/register` : `${api_address}/login`;
     
     // Create the payload, conditionally adding inviteCode if it's a sign-up
     const payload = { ...values };
@@ -72,7 +74,7 @@ const Login = () => {
             return acc;
           }, {});
           setErrors(errorMessages);
-          console.log(errorMessages)
+          console.log(errorMessages);
           toast.error("Please check the form for errors.");
         } else {
           setErrors({});
