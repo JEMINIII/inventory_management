@@ -4,9 +4,15 @@ import logo22 from "../images/5-removebg-preview.png";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import { MenuOutlined } from "@ant-design/icons";
-import { Button, Popover } from 'antd';
-import { SettingOutlined, LogoutOutlined, UserOutlined } from '@ant-design/icons';
-import './Header.css';
+import { Button, Popover } from "antd";
+import {
+  SettingOutlined,
+  LogoutOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
+import "./Header.css";
+
+const api_address = process.env.REACT_APP_API_ADDRESS;
 
 function Header({ toggleSidebar, isSidebarOpen }) {
   const [auth, setAuth] = useState(false);
@@ -14,7 +20,7 @@ function Header({ toggleSidebar, isSidebarOpen }) {
 
   useEffect(() => {
     axios
-      .get("http://localhost:8082/api/users")
+      .get(`${api_address}/api/users`)
       .then((res) => {
         console.log(res);
         if (res.status === 200) {
@@ -22,7 +28,7 @@ function Header({ toggleSidebar, isSidebarOpen }) {
           console.log(data);
           if (data.success === true) {
             setAuth(true);
-            setName(data.name);  // Assuming `data.name` contains the user's name
+            setName(data.name); // Assuming `data.name` contains the user's name
           } else {
             setAuth(false);
           }
@@ -35,7 +41,7 @@ function Header({ toggleSidebar, isSidebarOpen }) {
 
   const handleLogout = () => {
     axios
-      .get("http://localhost:8082/logout", { withCredentials: true })
+      .get(`${api_address}/logout`, { withCredentials: true })
       .then((res) => {
         window.location.href = "/login";
       })
@@ -51,15 +57,13 @@ function Header({ toggleSidebar, isSidebarOpen }) {
         <Link to="/profile">{name}</Link>
       </Button> */}
       <br />
-      <button type="text" icon={<LogoutOutlined />} onClick={handleLogout} >
-  Logout
-</button>
+      <button type="text" icon={<LogoutOutlined />} onClick={handleLogout}>
+        Logout
+      </button>
 
       <br />
-      
     </div>
   );
-
 
   return (
     <nav className="navbar">
@@ -72,15 +76,20 @@ function Header({ toggleSidebar, isSidebarOpen }) {
         <img src={logo22} alt="" />
       </div>
       <ul className="links">
-      {/* <li className="popover"> */}
-        <Popover style={{backgroundColor:'black'}} content={menuContent} trigger="click" placement="bottom">
-        <div style={{backgroundColor:'black',color:'white'}}>
-          <UserOutlined />
-        </div>
+        {/* <li className="popover"> */}
+        <Popover
+          style={{ backgroundColor: "black" }}
+          content={menuContent}
+          trigger="click"
+          placement="bottom"
+        >
+          <div style={{ backgroundColor: "black", color: "white" }}>
+            <UserOutlined />
+          </div>
           {/* <img className="logo22" src={Logo} alt="Logo" style={{ cursor: 'pointer' }} /> */}
         </Popover>
-      {/* </li> */}
-    </ul>
+        {/* </li> */}
+      </ul>
     </nav>
   );
 }

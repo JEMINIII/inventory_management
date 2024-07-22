@@ -53,34 +53,27 @@ export const registerUser = async (req, res) => {
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
-
     if (!email || !password) {
       return res.status(400).json({ error: "Email and password are required" });
     }
-
     const q = "SELECT * FROM users WHERE email = ?";
     const [rows] = await db.query(q, [email]);
-
     if (rows.length === 0) {
       return res.status(401).json({ error: "Invalid email or password" });
     }
-
     const match = await bcrypt.compare(
       password.toString(),
       rows[0].password.toString()
     );
-
     if (!match) {
       return res.status(401).json({ error: "Invalid email or password" });
     }
-
     const token = jwt.sign(
       { id: rows[0].id, email: rows[0].email },
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
-
-    res.cookie("token", token, { httpOnly: true, sameSite: 'none', secure: true });
+    res.cookie("token", token, { httpOnly: true,sameSite: 'none', secure: true });
     res.json({ message: "Login successful", token });
   } catch (error) {
     console.error("Error logging in:", error);

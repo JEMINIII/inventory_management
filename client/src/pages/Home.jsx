@@ -7,11 +7,16 @@ import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
 import { notification } from "antd";
 import Modal from "react-bootstrap/Modal";
-import {DeleteOutlined,EditOutlined,SaveOutlined,CloseOutlined} from  '@ant-design/icons'
+import {
+  DeleteOutlined,
+  EditOutlined,
+  SaveOutlined,
+  CloseOutlined,
+} from "@ant-design/icons";
 // import TeamSelector from "../components/TeamSelector";
 import { TeamContext } from "../context/TeamContext";
 // import AddItemModal from "./AddItemModel";
-
+const api_address = process.env.REACT_APP_API_ADDRESS;
 export const Home = () => {
   const [formValues, setFormValues] = useState({
     product_name: "",
@@ -26,15 +31,13 @@ export const Home = () => {
 
   // const { teamId, changeTeam } = useContext(TeamContext);
   const [teams, setTeams] = useState([]);
-  
 
   useEffect(() => {
     axios
-      .get("http://localhost:8082/team")
+      .get(`${api_address}/team`)
       .then((response) => {
         if (response.data.success) {
           setTeams(response.data.items);
-          
         } else {
           console.error("Failed to fetch teams");
         }
@@ -105,7 +108,7 @@ export const Home = () => {
   useEffect(() => {
     if (teamId) {
       axios
-        .get(`http://localhost:8082/products?team_id=${teamId}`)
+        .get(`${api_address}/products?team_id=${teamId}`)
         .then((res) => {
           if (res.data.success === true) {
             setAuth(true);
@@ -167,7 +170,7 @@ export const Home = () => {
     }
 
     axios
-      .post("http://localhost:8082/products/create", formData, {
+      .post( `${api_address}/products/create`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
           enctype: "multipart/form-data",
@@ -208,7 +211,7 @@ export const Home = () => {
   useEffect(() => {
     axios.defaults.withCredentials = true;
     axios
-      .get("http://localhost:8082/products")
+      .get(`${api_address}/products`)
       .then((res) => {
         if (res.data.success === true) {
           setAuth(true);
@@ -246,9 +249,7 @@ export const Home = () => {
 
   const deleteItem = (id) => {
     axios
-      .delete(
-        `http://localhost:8082/products/delete/${selectedItem.product_id}`
-      )
+      .delete(`${api_address}/products/delete/${selectedItem.product_id}`)
       .then(() => {
         const updatedData = data.filter(
           (inventory) => inventory.product_id !== id
@@ -269,9 +270,7 @@ export const Home = () => {
 
   const handleConfirmDelete = () => {
     axios
-      .delete(
-        `http://localhost:8082/products/delete/${selectedItem.product_id}`
-      )
+      .delete(`${api_address}/products/delete/${selectedItem.product_id}`)
       .then(() => {
         const updatedData = data.filter(
           (inventory) => inventory.product_id !== selectedItem.product_id
@@ -309,7 +308,7 @@ export const Home = () => {
   const handleUpdate = () => {
     axios
       .put(
-        `http://localhost:8082/products/edit/${selectedItem.product_id}`,
+        `${api_address}/products/edit/${selectedItem.product_id}`,
         editedItem
       )
       .then(() => {
@@ -358,109 +357,115 @@ export const Home = () => {
             <h2 style={{ marginBottom: 30 }}>Item List</h2>
             <button
               onClick={() => setCreateModalShow(true)}
-              style={{ marginBottom: 30 }}>
+              style={{ marginBottom: 30 }}
+            >
               Add Item
             </button>
           </div>
 
           <Modal
-  show={createModalShow}
-  onHide={() => setCreateModalShow(false)}
-  centered
->
-  <Modal.Header closeButton style={{display:"flex",flexDirection:'column'}}>
-    <Modal.Title>Add Item</Modal.Title>
-    
-  </Modal.Header>
-  <Modal.Body style={{ maxHeight: '600px', overflowY: 'auto', }}>
-  <form onSubmit={handleCreateSubmit} style={{alignItems:'normal'}}>
-  <div className="form-group">
-    <label htmlFor="product_name" className="form-label">
-      Product Name
-    </label>
-    <input
-      type="text"
-      className="form-control"
-      placeholder="Enter Product Name"
-      id="product_name"
-      name="product_name"
-      value={formValues.product_name}
-      onChange={handleCreateInputChange}
-    />
-    {formErrors.product_name && (
-      <p className="text-danger">{formErrors.product_name}</p>
-    )}
-  </div>
-  <div className="form-group">
-    <label htmlFor="category" className="form-label">
-      Category
-    </label>
-    <input
-      type="text"
-      className="form-control"
-      placeholder="Enter Product Category"
-      id="category"
-      name="category"
-      value={formValues.category}
-      onChange={handleCreateInputChange}
-    />
-    {formErrors.category && (
-      <p className="text-danger">{formErrors.category}</p>
-    )}
-  </div>
-  <div className="form-group">
-    <label htmlFor="price" className="form-label">
-      Price
-    </label>
-    <input
-      type="text"
-      className="form-control"
-      placeholder="Enter Product Price"
-      id="price"
-      name="price"
-      value={formValues.price}
-      onChange={handleCreateInputChange}
-    />
-    {formErrors.price && (
-      <p className="text-danger">{formErrors.price}</p>
-    )}
-  </div>
-  <div className="form-group">
-    <label htmlFor="quantity" className="form-label">
-      Quantity
-    </label>
-    <input
-      type="text"
-      className="form-control"
-      placeholder="Add Product Quantity"
-      id="quantity"
-      name="quantity"
-      value={formValues.quantity}
-      onChange={handleCreateInputChange}
-    />
-    {formErrors.quantity && (
-      <p className="text-danger">{formErrors.quantity}</p>
-    )}
-  </div>
-  <div className="form-group">
-    <label htmlFor="total_amount" className="form-label">
-      Total Amount
-    </label>
-    <input
-      type="text"
-      className="form-control"
-      placeholder="Total Amount"
-      id="total_amount"
-      name="total_amount"
-      value={formValues.total_amount}
-      readOnly
-    />
-  </div>
-  <div className="form-group">
-    <label htmlFor="team_id" className="form-label">
-      Team
-    </label>
-    {/* <select
+            show={createModalShow}
+            onHide={() => setCreateModalShow(false)}
+            centered
+          >
+            <Modal.Header
+              closeButton
+              style={{ display: "flex", flexDirection: "column" }}
+            >
+              <Modal.Title>Add Item</Modal.Title>
+            </Modal.Header>
+            <Modal.Body style={{ maxHeight: "600px", overflowY: "auto" }}>
+              <form
+                onSubmit={handleCreateSubmit}
+                style={{ alignItems: "normal" }}
+              >
+                <div className="form-group">
+                  <label htmlFor="product_name" className="form-label">
+                    Product Name
+                  </label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Enter Product Name"
+                    id="product_name"
+                    name="product_name"
+                    value={formValues.product_name}
+                    onChange={handleCreateInputChange}
+                  />
+                  {formErrors.product_name && (
+                    <p className="text-danger">{formErrors.product_name}</p>
+                  )}
+                </div>
+                <div className="form-group">
+                  <label htmlFor="category" className="form-label">
+                    Category
+                  </label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Enter Product Category"
+                    id="category"
+                    name="category"
+                    value={formValues.category}
+                    onChange={handleCreateInputChange}
+                  />
+                  {formErrors.category && (
+                    <p className="text-danger">{formErrors.category}</p>
+                  )}
+                </div>
+                <div className="form-group">
+                  <label htmlFor="price" className="form-label">
+                    Price
+                  </label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Enter Product Price"
+                    id="price"
+                    name="price"
+                    value={formValues.price}
+                    onChange={handleCreateInputChange}
+                  />
+                  {formErrors.price && (
+                    <p className="text-danger">{formErrors.price}</p>
+                  )}
+                </div>
+                <div className="form-group">
+                  <label htmlFor="quantity" className="form-label">
+                    Quantity
+                  </label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Add Product Quantity"
+                    id="quantity"
+                    name="quantity"
+                    value={formValues.quantity}
+                    onChange={handleCreateInputChange}
+                  />
+                  {formErrors.quantity && (
+                    <p className="text-danger">{formErrors.quantity}</p>
+                  )}
+                </div>
+                <div className="form-group">
+                  <label htmlFor="total_amount" className="form-label">
+                    Total Amount
+                  </label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Total Amount"
+                    id="total_amount"
+                    name="total_amount"
+                    value={formValues.total_amount}
+                    readOnly
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="team_id" className="form-label">
+                    Team
+                  </label>
+                  {/* <select
       className="form-control"
       value={teamId}
       onChange={handleTeamChange}
@@ -472,34 +477,33 @@ export const Home = () => {
         </option>
       ))}
     </select> */}
-    <input  
-      className="form-control"
-      id="team_id"
-      name="team_name"
-      value={teamId}
-      readOnly
-    />
-  </div>
-  <div className="form-group">
-    <label htmlFor="image" className="form-label">
-      Image
-    </label>
-    <input
-      type="file"
-      className="form-control"
-      id="image"
-      name="image"
-      accept="image/*"
-      onChange={handleFile}
-    />
-  </div>
-  <center>
-  <button>Submit</button>
-  </center>
-</form>
-
-  </Modal.Body>
-</Modal>
+                  <input
+                    className="form-control"
+                    id="team_id"
+                    name="team_name"
+                    value={teamId}
+                    readOnly
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="image" className="form-label">
+                    Image
+                  </label>
+                  <input
+                    type="file"
+                    className="form-control"
+                    id="image"
+                    name="image"
+                    accept="image/*"
+                    onChange={handleFile}
+                  />
+                </div>
+                <center>
+                  <button>Submit</button>
+                </center>
+              </form>
+            </Modal.Body>
+          </Modal>
 
           {/* <TeamSelector teamId={teamId} setTeamId={setTeamId} /> */}
           <div
@@ -554,21 +558,29 @@ export const Home = () => {
                 <div style={{ color: "black", justifyContent: "center" }}>
                   {isEditing ? (
                     <>
-                    <div style={{ padding: "24px" ,display:'flex' ,justifyContent:'space-evenly' }}>
-                      <h6
+                      <div
                         style={{
-                          borderBottom: "3px black solid",
-                          paddingBottom: "5px",
+                          padding: "24px",
+                          display: "flex",
+                          justifyContent: "space-evenly",
                         }}
                       >
-                        Edit Item
-                      </h6>
-                      
-                          <div onClick={handleUpdate}><SaveOutlined /></div>
-                          <div onClick={() => setIsEditing(false)}>
-                          <CloseOutlined />
-                          </div>
+                        <h6
+                          style={{
+                            borderBottom: "3px black solid",
+                            paddingBottom: "5px",
+                          }}
+                        >
+                          Edit Item
+                        </h6>
+
+                        <div onClick={handleUpdate}>
+                          <SaveOutlined />
                         </div>
+                        <div onClick={() => setIsEditing(false)}>
+                          <CloseOutlined />
+                        </div>
+                      </div>
                       <div
                         style={{
                           display: "flex",
@@ -679,69 +691,58 @@ export const Home = () => {
                             </tr>
                           </tbody>
                         </table>
-
-                       
                       </div>
                     </>
                   ) : (
                     <>
-                    
                       <h6
                         style={{
                           borderBottom: "3px black solid",
                           paddingBottom: "5px",
                           display: "flex",
                           justifyContent: "space-evenly",
-                          alignItems:'center'
+                          alignItems: "center",
                         }}
                       >
                         Selected Item Details
-
-                        
                       </h6>
-                      
+
                       <div
                         style={{
                           fontWeight: "bold",
                           fontSize: "40px",
                           textAlign: "center",
-                          
-                          
                         }}
                       >
                         <div
-                        style={{
-                          borderBottom: "3px black solid",
-                          paddingBottom: "5px",
-                          display: "flex",
-                          justifyContent: "space-evenly",
-                          alignItems:'center'
-                        }}>
-                          <div>
-                          {selectedItem.product_name}
-                          </div>
-                        <div onClick={() => setIsEditing(true)}>
-                        <EditOutlined />
+                          style={{
+                            borderBottom: "3px black solid",
+                            paddingBottom: "5px",
+                            display: "flex",
+                            justifyContent: "space-evenly",
+                            alignItems: "center",
+                          }}
+                        >
+                          <div>{selectedItem.product_name}</div>
+                          <div onClick={() => setIsEditing(true)}>
+                            <EditOutlined />
                           </div>
                           <div onClick={() => setModalShow(true)}>
-                          <DeleteOutlined />
+                            <DeleteOutlined />
                           </div>
-                          </div>
+                        </div>
                         <div
                           style={{
                             textAlign: "center",
                             display: "flex",
                           }}
                         >
-                          
                           <MyVerticallyCenteredModal
                             show={modalShow}
                             onHide={() => setModalShow(false)}
                           />
                         </div>
                       </div>
-
-                      
 
                       <table>
                         {showModal && (
@@ -796,7 +797,7 @@ export const Home = () => {
                             <td>
                               {selectedItem.img && (
                                 <img
-                                  src={`http://localhost:8082/images/${selectedItem.img}`}
+                                  src={`${api_address}/images/${selectedItem.img}`}
                                   alt={selectedItem.product_name}
                                   style={{
                                     maxWidth: "40%",
@@ -827,13 +828,13 @@ export const Home = () => {
             </Card>
           </div>
         </div>
-        ) : (
-          <div>
+      ) : (
+        <div>
           <Link to="/login">
             <button>Login</button>
           </Link>
         </div>
-        )}
+      )}
     </div>
     // </div>
   );

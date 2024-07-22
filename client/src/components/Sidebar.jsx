@@ -1,8 +1,17 @@
 import React, { useState, useEffect, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import TeamSelector from "./TeamSelector";
-import './Sidebar.css';
-import { RightCircleOutlined, LeftCircleOutlined, UnorderedListOutlined, ArrowUpOutlined, ArrowDownOutlined, CarryOutOutlined, MoneyCollectOutlined, TeamOutlined } from "@ant-design/icons";
+import "./Sidebar.css";
+import {
+  RightCircleOutlined,
+  LeftCircleOutlined,
+  UnorderedListOutlined,
+  ArrowUpOutlined,
+  ArrowDownOutlined,
+  CarryOutOutlined,
+  MoneyCollectOutlined,
+  TeamOutlined,
+} from "@ant-design/icons";
 import { Button, Menu } from "antd";
 import axios from "axios";
 import { TeamContext } from "../context/TeamContext";
@@ -16,6 +25,8 @@ const iconComponents = {
   MoneyCollectOutlined: MoneyCollectOutlined,
   TeamOutlined: TeamOutlined,
 };
+
+const api_address = process.env.REACT_APP_API_ADDRESS;
 
 const Sidebar = () => {
   const [menuCollapsed, setMenuCollapsed] = useState(true);
@@ -31,7 +42,8 @@ const Sidebar = () => {
   const [auth, setAuth] = useState(false);
 
   useEffect(() => {
-    axios.get("http://localhost:8082/api/users")
+    axios
+      .get(`${api_address}/api/users`)
       .then((res) => {
         if (res.status === 200 && res.data.success === true) {
           setAuth(true);
@@ -44,7 +56,8 @@ const Sidebar = () => {
 
   useEffect(() => {
     if (teamId) {
-      axios.get("http://localhost:8082/sidebar", { params: { teamId } })
+      axios
+        .get(`${api_address}/sidebar`, { params: { teamId } })
         .then((response) => setMenuItems(response.data))
         .catch((error) => console.error("Error fetching menu items:", error));
     } else {
@@ -71,12 +84,10 @@ const Sidebar = () => {
   }
 
   return (
-    
     <div className="sidebar-container">
-      
       <Menu
         className="menu"
-        style={{ backgroundColor: 'black', color: 'white' }}
+        style={{ backgroundColor: "black", color: "white" }}
         mode="inline"
         theme="dark"
         inlineCollapsed={menuCollapsed}
@@ -85,28 +96,34 @@ const Sidebar = () => {
         onOpenChange={handleOpenChange}
       >
         <div className="toggle-button">
-        <Button onClick={toggleCollapsed}>
-          <MenuOutlined />
-        </Button>
-      </div>
+          <Button onClick={toggleCollapsed}>
+            <MenuOutlined />
+          </Button>
+        </div>
         {/* Team Selector Menu Item */}
         <Menu.Item key="teamSelector" icon={<TeamOutlined />}>
-  <TeamSelector />
-</Menu.Item>
-
-        
+          <TeamSelector />
+        </Menu.Item>
 
         {Object.values(nestedMenuItems).map((menuItem) =>
           menuItem.submenus.length > 0 ? (
             <SubMenu
               key={menuItem.id}
-              icon={menuItem.icon ? React.createElement(iconComponents[menuItem.icon]) : null}
+              icon={
+                menuItem.icon
+                  ? React.createElement(iconComponents[menuItem.icon])
+                  : null
+              }
               title={menuItem.label}
             >
               {menuItem.submenus.map((submenu) => (
                 <Menu.Item
                   key={submenu.id}
-                  icon={submenu.icon ? React.createElement(iconComponents[submenu.icon]) : null}
+                  icon={
+                    submenu.icon
+                      ? React.createElement(iconComponents[submenu.icon])
+                      : null
+                  }
                 >
                   {submenu.label}
                   <Link to={submenu.route}></Link>
@@ -116,7 +133,11 @@ const Sidebar = () => {
           ) : (
             <Menu.Item
               key={menuItem.id}
-              icon={menuItem.icon ? React.createElement(iconComponents[menuItem.icon]) : null}
+              icon={
+                menuItem.icon
+                  ? React.createElement(iconComponents[menuItem.icon])
+                  : null
+              }
             >
               {menuItem.label}
               <Link to={menuItem.route}></Link>
