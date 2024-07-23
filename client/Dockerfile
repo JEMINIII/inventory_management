@@ -1,7 +1,6 @@
-FROM node:20.11.1
+FROM node:14.14.0-alpine
 WORKDIR /app
-COPY package.json package.json
-COPY package-lock.json package-lock.json
-RUN npm install
+COPY ./package.json ./
+RUN npm i
 COPY . .
-CMD [ "npm", "start" ]
+CMD ["npm", "run", "start"]
