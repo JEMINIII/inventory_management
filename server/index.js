@@ -1,20 +1,19 @@
-import express from 'express';
-import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import express from 'express';
 import session from 'express-session';
 import nodemailer from 'nodemailer';
-import dotenv from 'dotenv';
-import authRoutes from './routes/auth/AuthRoute.js';
-import productRoutes from './routes/product/ProductRoute.js';
-import MemberRoute from './routes/team/TeamRoute.js';
-import userRoutes from './routes/user/UserRoute.js';
-import db from './models/db/DbModel.js';
-import { verifyUser } from './controllers/auth/AuthController.js';
-import roleRoutes from './routes/role/RoleRoute.js';
-import teamMembersRoutes from './routes/team_members/teamMembersRoutes.js';
-import inviteRoute from './routes/invite/inviteRoute.js';
-import SidebarRoute from './routes/sidebar/sidebarRoute.js';
+
 import initDatabase from './models/initDatabase/initDatabase.js';
+import authRoutes from './routes/auth/AuthRoute.js';
+import inviteRoute from './routes/invite/inviteRoute.js';
+import productRoutes from './routes/product/ProductRoute.js';
+import roleRoutes from './routes/role/RoleRoute.js';
+import SidebarRoute from './routes/sidebar/sidebarRoute.js';
+import MemberRoute from './routes/team/TeamRoute.js';
+import teamMembersRoutes from './routes/team_members/teamMembersRoutes.js';
+import userRoutes from './routes/user/UserRoute.js';
 
 dotenv.config();
 
@@ -31,7 +30,7 @@ const transporter = nodemailer.createTransport({
 app.use(express.json());
 app.use(
   cors({
-    origin: ['http://localhost:3000'],
+    origin: ['http://37.60.244.17:3000'],
     methods: ['POST', 'GET', 'PUT', 'DELETE'],
     credentials: true,
   })
