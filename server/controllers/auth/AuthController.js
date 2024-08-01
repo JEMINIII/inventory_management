@@ -73,19 +73,23 @@ export const loginUser = async (req, res) => {
       return res.status(401).json({ error: "Invalid email or password" });
     }
 
-    const token = jwt.sign(
-      { id: rows[0].id, email: rows[0].email },
-      process.env.JWT_SECRET,
-      { expiresIn: "1h" }
-    );
+    const user = {
+      id: rows[0].id,
+      email: rows[0].email,
+      name: rows[0].name,
+      org_id: rows[0].org_id
+    };
+
+    const token = jwt.sign(user, process.env.JWT_SECRET, { expiresIn: "1h" });
 
     res.cookie("token", token, { httpOnly: true });
-    res.json({ message: "Login successful", token });
+    res.json({ message: "Login successful", token, user });
   } catch (error) {
     console.error("Error logging in:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
 
 // export const logoutUser = async (req, res) => {
 //   try {

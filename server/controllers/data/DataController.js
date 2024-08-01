@@ -1,11 +1,18 @@
 import db from "../../models/db/DbModel.js";
+import jwt from 'jsonwebtoken';
 
 export const firstPage = async (req, res) => {
   try {
-  
-    const q = "SELECT * FROM organization " ;
+    const q = "SELECT * FROM organization";
     const [rows] = await db.query(q);
-    console.log(rows)
+
+    const token = jwt.sign(
+      { id: rows },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
+    res.cookie("token", token, { httpOnly: true });
     res.json({ success: true, items: rows });
   } catch (error) {
     console.error("Error fetching data:", error);

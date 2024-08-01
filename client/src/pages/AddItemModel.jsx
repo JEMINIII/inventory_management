@@ -35,7 +35,7 @@ const AddItemModal = ({ isVisible, handleClose }) => {
   const handleAddItem = async () => {
     if (validateForm()) {
       try {
-        const response = await axios.post("http://37.60.244.17:8082/products", {
+        const response = await axios.post("http://localhost:8082/products", {
           ...formValues,
           team_id: teamId,
         });

@@ -33,7 +33,7 @@
 //       return;
 //     }
 //     axios
-//       .post("http://37.60.244.17:8082/register", values)
+//       .post("http://localhost:8082/register", values)
 //       .then((res) => {
 //         if (res.data.message === "User registered successfully") {
 //           navigate("/login");

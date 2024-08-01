@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Table, Form, Input, notification, Card } from "antd";
-import { Modal, Button } from "react-bootstrap";
+import { Table, Form, Input, notification, Card, Button } from "antd";
+import { Modal } from "react-bootstrap";
 import {
   SaveOutlined,
   CloseOutlined,
@@ -9,7 +9,7 @@ import {
   UploadOutlined,
   DeleteOutlined,
 } from "@ant-design/icons";
-import { Link } from "react-router-dom";
+import Cookies from 'js-cookie'; // For managing authentication tokens
 import "../pages/Login.css";
 
 const Team = () => {
@@ -17,54 +17,23 @@ const Team = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [auth, setAuth] = useState(false);
   const [message, setMessage] = useState("");
-  const [email, setEmail] = useState("");
+  const [teamName, setTeamName] = useState("");
   const [filteredData, setFilteredData] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editedItem, setEditedItem] = useState(null);
   const [editingTeamId, setEditingTeamId] = useState(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [teamName, setTeamName] = useState("");
-
-  const openCreateModal = () => {
-    setIsCreateModalOpen(true);
-  };
-
-  const closeCreateModal = () => {
-    setTeamName("");
-    setIsCreateModalOpen(false);
-  };
-
-  const handleCreate = () => {
-    axios
-      .post("http://37.60.244.17:8082/team/create", { name: teamName })
-      .then((response) => {
-        console.log("Team created:", response.data);
-        notification.success({ message: "Team created successfully" });
-        closeCreateModal();
-        axios
-          .get("http://37.60.244.17:8082/team")
-          .then((res) => {
-            if (res.data.success === true) {
-              setFilteredData(res.data.items);
-            } else {
-              setMessage(res.data.error);
-            }
-          })
-          .catch((err) => console.log(err));
-      })
-      .catch((error) => {
-        console.error("Error creating team:", error);
-        notification.error({ message: "Failed to create team" });
-      });
-  };
 
   useEffect(() => {
-    axios.defaults.withCredentials = true;
+    // Set token in headers
+    const token = Cookies.get('token');
+    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
     axios
-      .get("http://37.60.244.17:8082/team")
+      .get("http://localhost:8082/team")
       .then((res) => {
-        if (res.data.success === true) {
+        if (res.data.success) {
           setAuth(true);
           setName(res.data.name);
           setFilteredData(res.data.items);
@@ -73,8 +42,44 @@ const Team = () => {
           setMessage(res.data.error);
         }
       })
-      .catch((err) => console.log(err));
+      .catch((err) => {
+        console.error(err);
+        notification.error({ message: "Failed to fetch teams" });
+      });
   }, []);
+
+  const openCreateModal = () => setIsCreateModalOpen(true);
+
+  const closeCreateModal = () => {
+    setTeamName("");
+    setIsCreateModalOpen(false);
+  };
+
+  const handleCreate = () => {
+    axios
+      .post("http://localhost:8082/team/create", { name: teamName })
+      .then((response) => {
+        notification.success({ message: "Team created successfully" });
+        closeCreateModal();
+        // Fetch updated team list
+        axios.get("http://localhost:8082/team")
+          .then((res) => {
+            if (res.data.success) {
+              setFilteredData(res.data.items);
+            } else {
+              setMessage(res.data.error);
+            }
+          })
+          .catch((err) => {
+            console.error(err);
+            notification.error({ message: "Failed to fetch updated team list" });
+          });
+      })
+      .catch((error) => {
+        console.error("Error creating team:", error);
+        notification.error({ message: "Failed to create team" });
+      });
+  };
 
   const handleItemClick = (team) => {
     setSelectedItem(team);
@@ -93,10 +98,7 @@ const Team = () => {
   const handleUpdate = () => {
     if (selectedItem && selectedItem.id) {
       axios
-        .put(
-          `http://37.60.244.17:8082/team/edit/${selectedItem.id}`,
-          editedItem
-        )
+        .put(`http://localhost:8082/team/edit/${selectedItem.id}`, editedItem)
         .then(() => {
           const updatedData = filteredData.map((item) =>
             item.id === selectedItem.id ? editedItem : item
@@ -107,7 +109,10 @@ const Team = () => {
           setEditingTeamId(null);
           notification.success({ message: "Team updated successfully" });
         })
-        .catch((err) => console.log(err));
+        .catch((err) => {
+          console.error(err);
+          notification.error({ message: "Failed to update team" });
+        });
     }
   };
 
@@ -132,7 +137,7 @@ const Team = () => {
   const handleConfirmDelete = () => {
     if (selectedItem && selectedItem.id) {
       axios
-        .delete(`http://37.60.244.17:8082/team/delete/${selectedItem.id}`)
+        .delete(`http://localhost:8082/team/delete/${selectedItem.id}`)
         .then(() => {
           const updatedData = filteredData.filter(
             (team) => team.id !== selectedItem.id
@@ -143,7 +148,7 @@ const Team = () => {
           notification.success({ message: "Team deleted successfully" });
         })
         .catch((err) => {
-          console.log(err);
+          console.error(err);
           notification.error({ message: "Failed to delete team" });
         });
     }
@@ -177,36 +182,28 @@ const Team = () => {
       render: (text, record) =>
         editingTeamId === record.id ? (
           <div style={{ display: "flex", gap: "10px" }}>
-            <div>
-              <button onClick={handleUpdate} icon={<SaveOutlined />}>
-                Save
-              </button>
-            </div>
-            <div>
-              <button onClick={handleCancelEdit} icon={<CloseOutlined />}>
-                Cancel
-              </button>
-            </div>
+            <Button onClick={handleUpdate} icon={<SaveOutlined />}>
+              Save
+            </Button>
+            <Button onClick={handleCancelEdit} icon={<CloseOutlined />}>
+              Cancel
+            </Button>
           </div>
         ) : (
           <div style={{ display: "flex", gap: "10px" }}>
-            <div>
-              <button
-                onClick={() => handleEditClick(record.id)}
-                icon={<EditOutlined />}
-              >
-                Edit
-              </button>
-            </div>
-            <div>
-              <button
-                onClick={() => handleDelete(record.id)}
-                type="danger"
-                icon={<DeleteOutlined />}
-              >
-                Delete
-              </button>
-            </div>
+            <Button
+              onClick={() => handleEditClick(record.id)}
+              icon={<EditOutlined />}
+            >
+              Edit
+            </Button>
+            <Button
+              onClick={() => handleDelete(record.id)}
+              danger
+              icon={<DeleteOutlined />}
+            >
+              Delete
+            </Button>
           </div>
         ),
     },
@@ -232,14 +229,13 @@ const Team = () => {
             borderBottom: "2px black solid",
           }}
         >
-          <h2 style={{ marginBottom: 30 }}>Team</h2>
-          <button
-            style={{ marginBottom: 30 }}
-            onClick={openCreateModal}
+          <h2>Team</h2>
+          <Button
             icon={<UploadOutlined />}
+            onClick={openCreateModal}
           >
             Create Team
-          </button>
+          </Button>
         </div>
 
         <Card
@@ -255,8 +251,8 @@ const Team = () => {
             dataSource={filteredData}
             columns={columns}
             rowKey="id"
-            pagination={{ pageSize: 5 }} // Enable pagination with 5 items per page
-            scroll={false} // Disable scrolling
+            pagination={{ pageSize: 5 }}
+            scroll={false}
           />
 
           {/* Delete Modal */}
@@ -268,26 +264,29 @@ const Team = () => {
               <p>Are you sure you want to delete this team?</p>
             </Modal.Body>
             <Modal.Footer>
-              <button variant="secondary" onClick={handleCancelDelete}>
+              <Button variant="secondary" onClick={handleCancelDelete}>
                 Cancel
-              </button>
-              <button variant="danger" onClick={handleConfirmDelete}>
+              </Button>
+              <Button variant="primary" onClick={handleConfirmDelete}>
                 Delete
-              </button>
+              </Button>
             </Modal.Footer>
           </Modal>
 
-          {/* Create Modal */}
+          {/* Create Team Modal */}
           <Modal show={isCreateModalOpen} onHide={closeCreateModal} centered>
             <Modal.Header closeButton>
               <Modal.Title>Create Team</Modal.Title>
             </Modal.Header>
             <Modal.Body>
               <Form>
-                <Form.Item label="Team Name">
+                <Form.Item
+                  name="name"
+                  label="Team Name"
+                  rules={[{ required: true, message: "Please enter team name" }]}
+                >
                   <Input
                     type="text"
-                    placeholder="Enter team name"
                     value={teamName}
                     onChange={(e) => setTeamName(e.target.value)}
                   />
@@ -295,12 +294,12 @@ const Team = () => {
               </Form>
             </Modal.Body>
             <Modal.Footer>
-              <button variant="secondary" onClick={closeCreateModal}>
-                Close
-              </button>
-              <button variant="primary" onClick={handleCreate}>
+              <Button variant="secondary" onClick={closeCreateModal}>
+                Cancel
+              </Button>
+              <Button variant="primary" onClick={handleCreate}>
                 Create
-              </button>
+              </Button>
             </Modal.Footer>
           </Modal>
         </Card>

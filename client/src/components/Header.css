@@ -157,12 +157,13 @@ a {
 /* style.css */
 .org-container {
   left: 50%;
-  /* position: fixed; */
+  position: absolute;
   display: flex;
   flex-direction: row;
   /* align-items: center; */
   gap: 10px;
-  justify-content: space-between
+  justify-content: space-between;
+  color: white;
 }
 
 .org-container label {

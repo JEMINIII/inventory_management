@@ -20,8 +20,13 @@ export const createProduct = async (req, res) => {
   try {
     const { product_name, category, price, quantity, total_amount, team_id, user_id } = req.body;
     const img = req.file.filename;
-    const q = "INSERT INTO inventory (`product_name`, `category`, `price`, `quantity`, `total_amount`, `img`, `team_id`, `user_id`) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?)";
-    await db.query(q, [product_name, category, price, quantity, total_amount, img, team_id, user_id]);
+
+    // Check if team_id is provided and is a valid integer, otherwise set it to null
+    const teamIdValue = team_id ? parseInt(team_id, 10) : null;
+
+    const q = "INSERT INTO inventory (`product_name`, `category`, `price`, `quantity`, `total_amount`, `img`, `team_id`) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?)";
+    
+    await db.query(q, [product_name, category, price, quantity, total_amount, img, teamIdValue, user_id]);
 
     res.json({ message: "Product created successfully" });
   } catch (error) {
@@ -29,6 +34,7 @@ export const createProduct = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
 
 export const getProduct = async (req, res) => {
   try {
@@ -63,9 +69,9 @@ export const getProduct = async (req, res) => {
 export const updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
-    const { product_name, category, price, quantity, total_amount, team_id, user_id } = req.body;
-    const q = "UPDATE inventory SET `product_name`=?, `category`=?, `price`=?, `quantity`=?, `total_amount`=?, `team_id`=?, `user_id`=?, `updated_date`=CURRENT_TIMESTAMP WHERE product_id=?";
-    await db.query(q, [product_name, category, price, quantity, total_amount, team_id, user_id, id]);
+    const { product_name, category, price, quantity, total_amount, team_id } = req.body;
+    const q = "UPDATE inventory SET `product_name`=?, `category`=?, `price`=?, `quantity`=?, `total_amount`=?, `team_id`=?, `updated_date`=CURRENT_TIMESTAMP WHERE product_id=?";
+    await db.query(q, [product_name, category, price, quantity, total_amount, team_id, id]);
 
     res.json({ message: "Product updated successfully" });
   } catch (error) {

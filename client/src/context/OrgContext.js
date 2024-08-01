@@ -1,5 +1,6 @@
 // src/contexts/OrganizationContext.js
 import React, { createContext, useState, useContext, useEffect } from 'react';
+import Cookies from 'js-cookie';
 
 const OrganizationContext = createContext();
 
@@ -7,7 +8,7 @@ export const useOrganization = () => useContext(OrganizationContext);
 
 export const OrganizationProvider = ({ children }) => {
   const [selectedOrgId, setSelectedOrgId] = useState(() => {
-    const storedOrgId = localStorage.getItem('selectedOrgId');
+    const storedOrgId = Cookies.get('orgId');
     return storedOrgId ? JSON.parse(storedOrgId) : '1';
   });
 

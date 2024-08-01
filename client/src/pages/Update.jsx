@@ -17,7 +17,7 @@ const Update = () => {
 
   useEffect(() => {
     axios
-      .get("http://37.60.244.17:8082/products/read/" + id)
+      .get("http://localhost:8082/products/read/" + id)
       .then((res) => {
         setValues((prevValues) => ({
           ...prevValues,
@@ -34,7 +34,7 @@ const Update = () => {
   const handleUpdate = (e) => {
     e.preventDefault();
     axios
-      .put("http://37.60.244.17:8082/products/edit/" + id, values)
+      .put("http://localhost:8082/products/edit/" + id, values)
       .then((res) => {
         setShowSuccessToast(true);
         setTimeout(() => {

@@ -30,7 +30,7 @@ const Member = () => {
   const fetchTeamMembers = async (teamId) => {
     try {
       const response = await axios.get(
-        `http://37.60.244.17:8082/api/team_members/${teamId}`
+        `http://localhost:8082/api/team_members/${teamId}`
       );
       setAuth(true); // Assuming successful fetching means user is authenticated
       console.log("Fetched Team Members:", response.data.teamMembers);
@@ -74,7 +74,7 @@ const Member = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await axios.get("http://37.60.244.17:8082/api/users");
+      const response = await axios.get("http://localhost:8082/api/users");
       console.log("Fetched Users:", response.data.users);
       return response.data.users || [];
     } catch (error) {
@@ -85,7 +85,7 @@ const Member = () => {
 
   const fetchRoles = async () => {
     try {
-      const response = await axios.get("http://37.60.244.17:8082/roles");
+      const response = await axios.get("http://localhost:8082/roles");
       console.log("Fetched Roles:", response.data.items);
       return response.data.items || [];
     } catch (error) {
@@ -96,7 +96,7 @@ const Member = () => {
 
   const fetchTeams = async () => {
     try {
-      const response = await axios.get("http://37.60.244.17:8082/team");
+      const response = await axios.get("http://localhost:8082/team");
       console.log("Fetched Teams:", response.data.items);
       return response.data.items || [];
     } catch (error) {
@@ -135,7 +135,7 @@ const Member = () => {
     }
 
     axios
-      .post("http://37.60.244.17:8082/api/team_members", {
+      .post("http://localhost:8082/api/team_members", {
         user_id: selectedUser,
         role_id: selectedRole,
         team_id: teamId,
@@ -171,7 +171,7 @@ const Member = () => {
     }
 
     axios
-      .post("http://37.60.244.17:8082/api/invite", {
+      .post("http://localhost:8082/api/invite", {
         email: inviteEmail,
         name: inviteName,
         inviteCode,

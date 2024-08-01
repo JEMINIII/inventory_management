@@ -1,5 +1,6 @@
+// src/components/Sidebar.js
 import React, { useState, useEffect, useContext } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import TeamSelector from "./TeamSelector";
 import "./Sidebar.css";
 import {
@@ -11,11 +12,12 @@ import {
   CarryOutOutlined,
   MoneyCollectOutlined,
   TeamOutlined,
+  MenuOutlined,
 } from "@ant-design/icons";
 import { Button, Menu } from "antd";
 import axios from "axios";
+import Cookies from "js-cookie";
 import { TeamContext } from "../context/TeamContext";
-import { MenuOutlined } from "@ant-design/icons";
 
 const iconComponents = {
   UnorderedListOutlined: UnorderedListOutlined,
@@ -31,7 +33,6 @@ const Sidebar = () => {
   const toggleCollapsed = () => setMenuCollapsed(!menuCollapsed);
 
   const { SubMenu } = Menu;
-  const navigate = useNavigate();
   const [selectedMenuItem, setSelectedMenuItem] = useState(null);
   const handleMenuClick = (id) => setSelectedMenuItem(id);
 
@@ -40,26 +41,34 @@ const Sidebar = () => {
   const [auth, setAuth] = useState(false);
 
   useEffect(() => {
-    axios
-      .get("http://37.60.244.17:8082/api/users")
-      .then((res) => {
+    const fetchUserData = async () => {
+      try {
+        const res = await axios.get("http://localhost:8082/api/users", { withCredentials: true });
         if (res.status === 200 && res.data.success === true) {
           setAuth(true);
         } else {
           setAuth(false);
         }
-      })
-      .catch((err) => console.error("Error fetching user data:", err));
-  }, []);
+      } catch (err) {
+        console.error("Error fetching user data:", err);
+      }
+    };
 
+    fetchUserData();
+  }, []);
+  const token = Cookies.get("token") || localStorage.getItem("token");
   useEffect(() => {
-    if (teamId) {
+    const orgId = Cookies.get("orgId");
+    if (orgId) {
       axios
-        .get("http://37.60.244.17:8082/sidebar", { params: { teamId } })
+        .get("http://localhost:8082/sidebar", { params: { teamId, orgId },
+        headers: {
+    Authorization: `Bearer ${token}` // Set the token in the headers
+  } })
         .then((response) => setMenuItems(response.data))
         .catch((error) => console.error("Error fetching menu items:", error));
     } else {
-      setMenuItems([]); // Clear menu items if no team is selected
+      setMenuItems([]);
     }
   }, [teamId]);
 
@@ -89,7 +98,7 @@ const Sidebar = () => {
         mode="inline"
         theme="dark"
         inlineCollapsed={menuCollapsed}
-        onClick={({ id }) => handleMenuClick(id)}
+        onClick={({ key }) => handleMenuClick(key)}
         openKeys={openKeys}
         onOpenChange={handleOpenChange}
       >

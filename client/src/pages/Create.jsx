@@ -10,7 +10,6 @@ export const Create = () => {
     quantity: "",
     total_amount: "",
     team_id: "",
-    user_id: "",
     product_id: null,
   });
 
@@ -78,7 +77,7 @@ export const Create = () => {
     }
 
     axios
-      .post("http://37.60.244.17:8082/products/create", formData, {
+      .post("http://localhost:8082/products/create", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
           enctype: "multipart/form-data",

@@ -8,13 +8,11 @@ import db from "../../models/db/DbModel.js";
       const q = "SELECT * FROM users";
       const [rows] = await db.query(q);
       
-      // Assuming you have a way to determine the logged-in user and their role
-      // For example, using a user session or JWT token (This example assumes you have user information in req.user)
       const loggedInUser = req.user; // Get the logged-in user from the request
       const userRole = loggedInUser ? loggedInUser.role : null; // Get the user role
   
       // Return the users and the logged-in user's role in the response
-      res.json({ success: true, users: rows, name: loggedInUser.name, role: userRole });
+      res.json({ success: true, users: rows, name: loggedInUser.name,orgId:loggedInUser.org_id, role: userRole });
     } catch (error) {
       console.error("Error fetching users:", error);
       res.status(500).json({ error: "Internal server error" });

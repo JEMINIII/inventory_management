@@ -55,8 +55,8 @@ const Login = () => {
 
     // Determine the URL based on whether it's a sign-up or login action
     const url = isSignUpActive
-      ? "http://37.60.244.17:8082/register"
-      : "http://37.60.244.17:8082/login";
+      ? "http://localhost:8082/register"
+      : "http://localhost:8082/login";
 
     // Create the payload, conditionally adding inviteCode if it's a sign-up
     const payload = { ...values };

@@ -61,7 +61,7 @@ function StockIn() {
   useEffect(() => {
     if (teamId) {
       axios
-        .get(`http://37.60.244.17:8082/products?team_id=${teamId}`)
+        .get(`http://localhost:8082/products?team_id=${teamId}`)
         .then((res) => {
           if (res.data.success === true) {
             setAuth(true);
@@ -85,7 +85,7 @@ function StockIn() {
   useEffect(() => {
     axios.defaults.withCredentials = true;
     axios
-      .get("http://37.60.244.17:8082/products")
+      .get("http://localhost:8082/products")
       .then((res) => {
         // console.log(res.data)
 
@@ -132,7 +132,7 @@ function StockIn() {
       const existingItem = data.find((i) => i.product_id === item.product_id);
       const inventoryQuantity = existingItem ? existingItem.quantity : 0;
       axios
-        .put("http://37.60.244.17:8082/products/updateQuantity", {
+        .put("http://localhost:8082/products/updateQuantity", {
           productId: item.product_id,
           quantity: inventoryQuantity + item.quantity,
         })

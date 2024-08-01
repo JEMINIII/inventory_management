@@ -7,6 +7,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
 import { notification } from "antd";
 import Modal from "react-bootstrap/Modal";
+import Cookies from 'js-cookie';
 import {
   DeleteOutlined,
   EditOutlined,
@@ -25,7 +26,7 @@ export const Home = () => {
     quantity: "",
     total_amount: "",
     team_id: "",
-    user_id: "",
+   
     product_id: null,
   });
 
@@ -33,8 +34,15 @@ export const Home = () => {
   const [teams, setTeams] = useState([]);
 
   useEffect(() => {
+    // Get the token from cookies
+    const token = Cookies.get('token');
+
+    if (token) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    }
+
     axios
-      .get("http://37.60.244.17:8082/team")
+      .get("http://localhost:8082/team")
       .then((response) => {
         console.log(response.data);
         if (response.data.success) {
@@ -109,11 +117,17 @@ export const Home = () => {
   }, [setTeamId]);
 
   useEffect(() => {
+    const token = Cookies.get('token'); // Fetch the token from cookies
+
     if (teamId) {
       axios
-        .get(`http://37.60.244.17:8082/products?team_id=${teamId}`)
+        .get(`http://localhost:8082/products?team_id=${teamId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`, // Include the token in the request headers
+          },
+        })
         .then((res) => {
-          if (res.data.success === true) {
+          if (res.data.success) {
             setAuth(true);
             const sortedInventory = res.data.items.sort((a, b) =>
               a.product_name.localeCompare(b.product_name)
@@ -154,6 +168,8 @@ export const Home = () => {
     return (quantity * price).toFixed(2);
   };
 
+  const teamIdFromStorage = localStorage.getItem('selectedTeamId');
+
   const handleCreateSubmit = (e) => {
     e.preventDefault();
 
@@ -165,7 +181,7 @@ export const Home = () => {
     formData.append("price", formValues.price);
     formData.append("quantity", formValues.quantity);
     formData.append("total_amount", formValues.total_amount);
-    formData.append("team_id", formValues.team_id);
+    formData.append("team_id", teamIdFromStorage);
     formData.append("image", formValues.image);
 
     for (var key of formData.entries()) {
@@ -173,7 +189,7 @@ export const Home = () => {
     }
 
     axios
-      .post("http://37.60.244.17:8082/products/create", formData, {
+      .post("http://localhost:8082/products/create", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
           enctype: "multipart/form-data",
@@ -192,7 +208,7 @@ export const Home = () => {
           quantity: "",
           total_amount: "",
           team_id: "",
-          user_id: "",
+         
           product_id: null,
         });
       })
@@ -214,7 +230,7 @@ export const Home = () => {
   useEffect(() => {
     axios.defaults.withCredentials = true;
     axios
-      .get("http://37.60.244.17:8082/products")
+      .get("http://localhost:8082/products")
       .then((res) => {
         if (res.data.success === true) {
           setAuth(true);
@@ -253,7 +269,7 @@ export const Home = () => {
   const deleteItem = (id) => {
     axios
       .delete(
-        `http://37.60.244.17:8082/products/delete/${selectedItem.product_id}`
+        `http://localhost:8082/products/delete/${selectedItem.product_id}`
       )
       .then(() => {
         const updatedData = data.filter(
@@ -276,7 +292,7 @@ export const Home = () => {
   const handleConfirmDelete = () => {
     axios
       .delete(
-        `http://37.60.244.17:8082/products/delete/${selectedItem.product_id}`
+        `http://localhost:8082/products/delete/${selectedItem.product_id}`
       )
       .then(() => {
         const updatedData = data.filter(
@@ -315,7 +331,7 @@ export const Home = () => {
   const handleUpdate = () => {
     axios
       .put(
-        `http://37.60.244.17:8082/products/edit/${selectedItem.product_id}`,
+        `http://localhost:8082/products/edit/${selectedItem.product_id}`,
         editedItem
       )
       .then(() => {
@@ -804,7 +820,7 @@ export const Home = () => {
                             <td>
                               {selectedItem.img && (
                                 <img
-                                  src={`http://37.60.244.17:8082/images/${selectedItem.img}`}
+                                  src={`http://localhost:8082/images/${selectedItem.img}`}
                                   alt={selectedItem.product_name}
                                   style={{
                                     maxWidth: "40%",

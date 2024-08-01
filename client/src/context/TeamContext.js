@@ -5,7 +5,7 @@ import { useOrganization } from "./OrgContext";
 export const TeamContext = createContext();
 
 export const TeamProvider = ({ children }) => {
-  const { selectedOrgId } = useOrganization(); // Get selectedOrgId from OrganizationContext
+  const { selectedOrgId } = useOrganization(); 
 
   const [teamId, setTeamId] = useState(() => {
     const savedTeamId = localStorage.getItem("selectedTeamId");
@@ -31,9 +31,9 @@ export const TeamProvider = ({ children }) => {
     console.log("Selected Org ID:", selectedOrgId);
     if (selectedOrgId) {
       axios
-        .get(`http://37.60.244.17:8082/team?orgId=${selectedOrgId}`, {
+        .get(`http://localhost:8082/team?orgId=${selectedOrgId}`, {
           headers: {
-            Authorization: `Bearer YOUR_API_TOKEN_HERE`, // Add this if your API requires token-based authentication
+            Authorization: `Bearer YOUR_API_TOKEN_HERE`,
           },
         })
         .then((response) => {

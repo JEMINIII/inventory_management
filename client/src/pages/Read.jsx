@@ -10,7 +10,7 @@ const Read = () => {
 
   useEffect(() => {
     axios
-      .get(`http://37.60.244.17:8082/products/read/${id}`)
+      .get(`http://localhost:8082/products/read/${id}`)
       .then((res) => {
         setStock(res.data);
       })
@@ -22,7 +22,7 @@ const Read = () => {
 
   const handleDelete = (id) => {
     axios
-      .delete("http://37.60.244.17:8082/delete/" + id)
+      .delete("http://localhost:8082/delete/" + id)
       .then((res) => {
         const updatedData = data.filter(
           (inventory) => inventory.product_id !== id
@@ -70,7 +70,7 @@ const Read = () => {
               {""}
               {stock && (
                 <img
-                  src={`http://37.60.244.17:8082/images/${stock.img}`}
+                  src={`http://localhost:8082/images/${stock.img}`}
                   style={{ maxWidth: "30%", height: "auto" }}
                   alt="Product"
                 />
