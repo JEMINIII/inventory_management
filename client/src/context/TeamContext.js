@@ -1,12 +1,11 @@
-import React, { createContext, useState, useContext, useEffect } from "react";
+import React, { createContext, useState, useEffect } from "react";
 import axios from "axios";
-import { useOrganization } from "./OrgContext";
+import Cookies from 'js-cookie';
+import Team from "../pages/Team";
 
 export const TeamContext = createContext();
 
 export const TeamProvider = ({ children }) => {
-  const { selectedOrgId } = useOrganization(); 
-
   const [teamId, setTeamId] = useState(() => {
     const savedTeamId = localStorage.getItem("selectedTeamId");
     return savedTeamId ? parseInt(savedTeamId, 10) : null;
@@ -25,20 +24,30 @@ export const TeamProvider = ({ children }) => {
     localStorage.setItem("selectedTeamId", id);
     localStorage.setItem("selectedTeamName", name);
     console.log("Team changed:", { id, name });
+    console.log("Local Storage after change:", {
+      selectedTeamId: localStorage.getItem("selectedTeamId"),
+      selectedTeamName: localStorage.getItem("selectedTeamName"),
+    });
   };
 
   useEffect(() => {
+    const selectedOrgId = Cookies.get('orgId');
+    const token = Cookies.get('token');
+
     console.log("Selected Org ID:", selectedOrgId);
+    console.log("Retrieved token:", token);
+
     if (selectedOrgId) {
       axios
         .get(`http://localhost:8082/team?orgId=${selectedOrgId}`, {
           headers: {
-            Authorization: `Bearer YOUR_API_TOKEN_HERE`,
+            Authorization: `Bearer ${token}`,
           },
         })
         .then((response) => {
           if (response.data.success) {
             setTeams(response.data.items);
+            console.log(response.data);
           } else {
             console.error(
               "Failed to fetch teams:",
@@ -50,10 +59,10 @@ export const TeamProvider = ({ children }) => {
           console.error("Error fetching teams:", error);
         });
     } else {
-      // Optional: Clear teams if no organization is selected
       setTeams([]);
+      console.log("No selectedOrgId or token found.");
     }
-  }, [selectedOrgId]);
+  }, []);
 
   useEffect(() => {
     const savedTeamId = localStorage.getItem("selectedTeamId");

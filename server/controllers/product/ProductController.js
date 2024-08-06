@@ -24,7 +24,7 @@ export const createProduct = async (req, res) => {
     // Check if team_id is provided and is a valid integer, otherwise set it to null
     const teamIdValue = team_id ? parseInt(team_id, 10) : null;
 
-    const q = "INSERT INTO inventory (`product_name`, `category`, `price`, `quantity`, `total_amount`, `img`, `team_id`) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?)";
+    const q = "INSERT INTO inventory (`product_name`, `category`, `price`, `quantity`, `total_amount`, `img`, `team_id`) VALUES ( ?, ?, ?, ?, ?, ?, ?)";
     
     await db.query(q, [product_name, category, price, quantity, total_amount, img, teamIdValue, user_id]);
 

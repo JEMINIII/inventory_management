@@ -1,4 +1,3 @@
-// src/contexts/OrganizationContext.js
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import Cookies from 'js-cookie';
 
@@ -9,24 +8,19 @@ export const useOrganization = () => useContext(OrganizationContext);
 export const OrganizationProvider = ({ children }) => {
   const [selectedOrgId, setSelectedOrgId] = useState(() => {
     const storedOrgId = Cookies.get('orgId');
-    return storedOrgId ? JSON.parse(storedOrgId) : '1';
-  });
-
-  const [selectedOrg, setSelectedOrg] = useState(() => {
-    const storedOrg = localStorage.getItem('selectedOrg');
-    return storedOrg ? JSON.parse(storedOrg) : { id: '1', name: 'Default Organization' }; // Adjust default value as needed
+    return storedOrgId ? JSON.parse(storedOrgId) : null;
   });
 
   useEffect(() => {
-    localStorage.setItem('selectedOrgId', JSON.stringify(selectedOrgId));
+    if (selectedOrgId) {
+      Cookies.set('orgId', JSON.stringify(selectedOrgId));
+    } else {
+      Cookies.remove('orgId');
+    }
   }, [selectedOrgId]);
 
-  useEffect(() => {
-    localStorage.setItem('selectedOrg', JSON.stringify(selectedOrg));
-  }, [selectedOrg]);
-
   return (
-    <OrganizationContext.Provider value={{ selectedOrgId, setSelectedOrgId, selectedOrg, setSelectedOrg }}>
+    <OrganizationContext.Provider value={{ selectedOrgId, setSelectedOrgId }}>
       {children}
     </OrganizationContext.Provider>
   );

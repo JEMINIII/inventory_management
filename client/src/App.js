@@ -8,7 +8,7 @@ import Update from "./pages/Update.jsx";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
 import "./style.css";
-import Header from "./components/Header.jsx";
+import Header from "./components/Header.jsx"
 import Footer from "./components/Footer.jsx";
 import "./style.scss";
 import Sidebar from "./components/Sidebar.jsx";
@@ -24,9 +24,7 @@ const { Content } = AntLayout;
 const Layout = ({ toggleSidebar, isSidebarOpen }) => {
   return (
     <AntLayout style={{ background: "#ffffff" }}>
-  
-  <Content> 
-    <Header toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
+  <Header toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
     <div
       style={{
         display: "flex",
@@ -45,12 +43,16 @@ const Layout = ({ toggleSidebar, isSidebarOpen }) => {
           overflow: "auto",
         }}
       >
+        
+  <Content> 
+    
         <div>
           <Outlet />
         </div>
-      </div>
-    </div>
+      
   </Content>
+  </div>
+        </div>
 </AntLayout>
 
   );

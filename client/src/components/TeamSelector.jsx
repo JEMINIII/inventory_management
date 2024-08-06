@@ -7,22 +7,25 @@ const { Option } = Select;
 const TeamSelector = () => {
   const { teamId, teams, changeTeam } = useContext(TeamContext);
   const [selectedTeamName, setSelectedTeamName] = useState('');
-  console.log(selectedTeamName)
+
   useEffect(() => {
-    // Update the selected team name when teams or teamId changes
-    const selectedTeam = teams.find(team => team.id === teamId);
-    if (selectedTeam) {
-      setSelectedTeamName(selectedTeam.name);
-    } else {
-      setSelectedTeamName('');
+    // Set default teamId to the first team if no teamId is set
+    if (!teamId && teams.length > 0) {
+      const firstTeam = teams[0];
+      changeTeam(firstTeam.id, firstTeam.name);
     }
+  }, [teams, teamId, changeTeam]);
+
+  useEffect(() => {
+    // Update the selected team name based on the current teamId
+    const selectedTeam = teams.find(team => team.id === teamId);
+    setSelectedTeamName(selectedTeam ? selectedTeam.name : '');
   }, [teamId, teams]);
 
   const handleTeamChange = (value) => {
     const selectedTeam = teams.find(team => team.id === value);
-    changeTeam(value);
+    changeTeam(value, selectedTeam ? selectedTeam.name : '');
     setSelectedTeamName(selectedTeam ? selectedTeam.name : '');
-    console.log(value);
   };
 
   return (
@@ -32,7 +35,7 @@ const TeamSelector = () => {
       onChange={handleTeamChange}
       dropdownStyle={{ maxHeight: 200, overflowY: 'auto', background: 'white' }}
       placeholder="Select Team"
-      optionLabelProp="label" 
+      optionLabelProp="label"
     >
       {teams.map((team) => (
         <Option 

@@ -56,21 +56,23 @@ const Sidebar = () => {
 
     fetchUserData();
   }, []);
-  const token = Cookies.get("token") || localStorage.getItem("token");
+  const token = Cookies.get("token");
+  const orgId = Cookies.get("orgId");
   useEffect(() => {
-    const orgId = Cookies.get("orgId");
     if (orgId) {
       axios
-        .get("http://localhost:8082/sidebar", { params: { teamId, orgId },
-        headers: {
-    Authorization: `Bearer ${token}` // Set the token in the headers
-  } })
+        .get("http://localhost:8082/sidebar", {
+          params: { teamId, orgId },
+          headers: {
+            Authorization: `Bearer ${token}` // Include token in headers
+          }
+        })
         .then((response) => setMenuItems(response.data))
         .catch((error) => console.error("Error fetching menu items:", error));
     } else {
       setMenuItems([]);
     }
-  }, [teamId]);
+  }, [teamId, orgId, token]);
 
   const nestedMenuItems = {};
   menuItems.forEach((item) => {

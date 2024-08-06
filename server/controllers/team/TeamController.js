@@ -2,7 +2,7 @@ import db from "../../models/db/DbModel.js";
 
 export const getAllTeam = async (req, res) => {
   try {
-    const { orgId } = req.query;
+    const { orgId } = req.cookies;
 
     // Ensure orgId is provided and valid
     if (!orgId) {

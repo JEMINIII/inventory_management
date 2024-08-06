@@ -26,34 +26,36 @@ export const Home = () => {
     quantity: "",
     total_amount: "",
     team_id: "",
-   
+    // user_id: "",
     product_id: null,
   });
-
   // const { teamId, changeTeam } = useContext(TeamContext);
   const [teams, setTeams] = useState([]);
-
+  const [organization, setOrganization] = useState(null);
+  
   useEffect(() => {
-    // Get the token from cookies
     const token = Cookies.get('token');
-
     if (token) {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     }
+    
+          const orgId = Cookies.get('orgId');
 
-    axios
-      .get("http://localhost:8082/team")
-      .then((response) => {
-        console.log(response.data);
-        if (response.data.success) {
-          setTeams(response.data.items);
-        } else {
-          console.error("Failed to fetch teams");
-        }
-      })
-      .catch((error) => {
-        console.error("Error fetching teams:", error);
-      });
+          
+              axios
+                .get(`http://localhost:8082/team?orgId=${orgId}`)
+                .then((teamResponse) => {
+                  console.log("Teams data:", teamResponse.data);
+                  if (teamResponse.data.success) {
+                    setTeams(teamResponse.data.items);
+                  } else {
+                    console.error("Failed to fetch teams");
+                  }
+                })
+                .catch((error) => {
+                  console.error("Error fetching teams:", error);
+                });
+            
   }, []);
 
   const handleTeamChange = (e) => {
@@ -208,7 +210,7 @@ export const Home = () => {
           quantity: "",
           total_amount: "",
           team_id: "",
-         
+          // user_id: "",
           product_id: null,
         });
       })
