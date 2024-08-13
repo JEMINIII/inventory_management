@@ -1,4 +1,3 @@
-// src/components/Sidebar.js
 import React, { useState, useEffect, useContext } from "react";
 import { Link } from "react-router-dom";
 import TeamSelector from "./TeamSelector";
@@ -43,7 +42,9 @@ const Sidebar = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const res = await axios.get("http://localhost:8082/api/users", { withCredentials: true });
+        const res = await axios.get("http://localhost:8082/api/users", {
+          withCredentials: true,
+        });
         if (res.status === 200 && res.data.success === true) {
           setAuth(true);
         } else {
@@ -57,22 +58,23 @@ const Sidebar = () => {
     fetchUserData();
   }, []);
   const token = Cookies.get("token");
-  const orgId = Cookies.get("orgId");
+
+  const orgId = localStorage.getItem("orgId");
   useEffect(() => {
     if (orgId) {
       axios
         .get("http://localhost:8082/sidebar", {
           params: { teamId, orgId },
           headers: {
-            Authorization: `Bearer ${token}` // Include token in headers
-          }
+            Authorization: `Bearer ${token}`,
+          },
         })
         .then((response) => setMenuItems(response.data))
         .catch((error) => console.error("Error fetching menu items:", error));
     } else {
       setMenuItems([]);
     }
-  }, [teamId, orgId, token]);
+  }, [teamId, orgId]);
 
   const nestedMenuItems = {};
   menuItems.forEach((item) => {
@@ -109,10 +111,17 @@ const Sidebar = () => {
             <MenuOutlined />
           </Button>
         </div>
-        {/* Team Selector Menu Item */}
-        <Menu.Item key="teamSelector" icon={<TeamOutlined />}>
-          <TeamSelector />
-        </Menu.Item>
+
+        {/* Team Selector as a SubMenu */}
+        <SubMenu
+          key="teamSelector"
+          icon={<TeamOutlined />}
+          title="Select Team"
+        >
+          <div style={{ padding: "10px" }}>
+            <TeamSelector />
+          </div>
+        </SubMenu>
 
         {Object.values(nestedMenuItems).map((menuItem) =>
           menuItem.submenus.length > 0 ? (

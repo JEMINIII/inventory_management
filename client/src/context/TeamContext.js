@@ -1,11 +1,11 @@
 import React, { createContext, useState, useEffect } from "react";
 import axios from "axios";
 import Cookies from 'js-cookie';
-import Team from "../pages/Team";
 
 export const TeamContext = createContext();
 
 export const TeamProvider = ({ children }) => {
+  // State to store team ID and name
   const [teamId, setTeamId] = useState(() => {
     const savedTeamId = localStorage.getItem("selectedTeamId");
     return savedTeamId ? parseInt(savedTeamId, 10) : null;
@@ -16,28 +16,30 @@ export const TeamProvider = ({ children }) => {
     return savedTeamName || null;
   });
 
+  // State to store the list of teams
   const [teams, setTeams] = useState([]);
 
+  // State to store the sidebar items
+  const [sidebarItems, setSidebarItems] = useState([]);
+
+  // Function to change the current team
   const changeTeam = (id, name) => {
-    setTeamId(id);
-    setTeamName(name);
-    localStorage.setItem("selectedTeamId", id);
-    localStorage.setItem("selectedTeamName", name);
-    console.log("Team changed:", { id, name });
-    console.log("Local Storage after change:", {
-      selectedTeamId: localStorage.getItem("selectedTeamId"),
-      selectedTeamName: localStorage.getItem("selectedTeamName"),
-    });
+    if (teamId !== id || teamName !== name) {
+      setTeamId(id);
+      setTeamName(name);
+      localStorage.setItem("selectedTeamId", id);
+      localStorage.setItem("selectedTeamName", name);
+      console.log("Team changed:", { id, name });
+    }
   };
 
+  // Fetch teams and set default team if needed
   useEffect(() => {
     const selectedOrgId = Cookies.get('orgId');
     const token = Cookies.get('token');
 
-    console.log("Selected Org ID:", selectedOrgId);
-    console.log("Retrieved token:", token);
-
     if (selectedOrgId) {
+      
       axios
         .get(`http://localhost:8082/team?orgId=${selectedOrgId}`, {
           headers: {
@@ -46,13 +48,17 @@ export const TeamProvider = ({ children }) => {
         })
         .then((response) => {
           if (response.data.success) {
-            setTeams(response.data.items);
-            console.log(response.data);
+            const fetchedTeams = response.data.items;
+            setTeams(fetchedTeams);
+            console.log("Teams fetched:", fetchedTeams);
+
+            // Set default team after fetching if none is set
+            if (!teamId && fetchedTeams.length > 0) {
+              const firstTeam = fetchedTeams[0];
+              changeTeam(firstTeam.id, firstTeam.name);
+            }
           } else {
-            console.error(
-              "Failed to fetch teams:",
-              response.data.message || "Unknown error"
-            );
+            console.error("Failed to fetch teams:", response.data.message || "Unknown error");
           }
         })
         .catch((error) => {
@@ -62,21 +68,47 @@ export const TeamProvider = ({ children }) => {
       setTeams([]);
       console.log("No selectedOrgId or token found.");
     }
-  }, []);
+  }, [teamId, teamName]); // Depend on teamId and teamName to avoid unnecessary re-renders
 
+  // Fetch sidebar items based on the selected team
   useEffect(() => {
-    const savedTeamId = localStorage.getItem("selectedTeamId");
-    const savedTeamName = localStorage.getItem("selectedTeamName");
-    console.log("Loaded from localStorage:", { savedTeamId, savedTeamName });
-  }, []);
+    const selectedOrgId = Cookies.get('orgId');
+    const token = Cookies.get('token');
 
+    if (teamId && selectedOrgId) {
+      
+      axios
+        .get(`http://localhost:8082/sidebar?teamId=${teamId}&orgId=${selectedOrgId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+        
+        .then((response) => {
+          console.log(response.data)
+          if (response.data) {
+            const fetchedSidebarItems = response.data;
+            setSidebarItems(fetchedSidebarItems);
+            console.log("Sidebar items fetched:", fetchedSidebarItems);
+          } else {
+            console.error("Failed to fetch sidebar items:", response.data.message || "Unknown error");
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching sidebar items:", error);
+        });
+    }
+  }, [teamId]); // Depend on teamId to fetch sidebar items when team changes
+
+  // Provide the context value to children components
   const value = {
     teamId,
     teamName,
     teams,
+    sidebarItems, // Added sidebarItems to the context value
     changeTeam,
     setTeamId,
-    setTeamName,
+    setTeamName
   };
 
   return <TeamContext.Provider value={value}>{children}</TeamContext.Provider>;

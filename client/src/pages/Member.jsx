@@ -196,7 +196,7 @@ const Member = () => {
   const handleTeamChange = (e) => {
     const newTeamId = e.target.value;
     setSelectedTeam(newTeamId);
-    localStorage.setItem("selectedTeamId", newTeamId);
+    // localStorage.setItem("selectedTeamId", newTeamId);
 
     // Fetch team members for the selected team
     fetchTeamMembers(newTeamId).then((data) => {

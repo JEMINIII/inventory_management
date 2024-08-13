@@ -1,4 +1,3 @@
-// src/components/Header.js
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { UserOutlined, LogoutOutlined } from "@ant-design/icons";
@@ -10,6 +9,7 @@ import Cookies from "js-cookie";
 function Header({ toggleSidebar, isSidebarOpen }) {
   const [auth, setAuth] = useState(false);
   const [name, setName] = useState("");
+  const [orgName, setOrgName] = useState(localStorage.getItem("orgName") || "");
 
   useEffect(() => {
     // Fetch user data
@@ -25,16 +25,26 @@ function Header({ toggleSidebar, isSidebarOpen }) {
 
             const orgId = data.orgId;
             if (orgId) {
+              // Store orgId in both localStorage and cookies
+              localStorage.setItem("orgId", orgId);
               Cookies.set("orgId", orgId);
+
               axios
                 .get("http://localhost:8082/org")
                 .then((orgRes) => {
                   console.log(orgRes);
                   if (orgRes.status === 200) {
                     const orgData = orgRes.data.items;
-                    const organization = orgData.find((org) => org.id === orgId);
+                    const organization = orgData.find(
+                      (org) => org.id === orgId
+                    );
                     if (organization) {
+                      // Store orgName in both localStorage and cookies
+                      localStorage.setItem("orgName", organization.name);
                       Cookies.set("orgName", organization.name);
+
+                      // Update state to trigger re-render
+                      setOrgName(organization.name);
                     } else {
                       console.log("Organization not found");
                     }
@@ -62,8 +72,14 @@ function Header({ toggleSidebar, isSidebarOpen }) {
     axios
       .get("http://localhost:8082/logout", { withCredentials: true })
       .then(() => {
+        // Remove orgId and orgName from both localStorage and cookies
+        localStorage.removeItem("orgId");
+        localStorage.removeItem("orgName");
+        localStorage.removeItem("selectedTeamName");
+        localStorage.removeItem("selectedTeamId");
         Cookies.remove("orgId");
         Cookies.remove("orgName");
+
         window.location.href = "/login";
       })
       .catch((err) => console.error("Error during logout:", err));
@@ -72,8 +88,6 @@ function Header({ toggleSidebar, isSidebarOpen }) {
   if (!auth) {
     return null;
   }
-
-  const orgName = Cookies.get("orgName");
 
   const menuContent = (
     <div>

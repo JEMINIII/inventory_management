@@ -1,18 +1,13 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Card, InputNumber, Alert, Table, Pagination } from "antd";
+import { Card, Input, Table, Pagination,InputNumber } from "antd";
 import axios from "axios";
-import { Link, useNavigate } from "react-router-dom";
-import { Button, notification } from "antd";
+import { useNavigate } from "react-router-dom";
 import Modal from "react-bootstrap/Modal";
-import Row from "react-bootstrap/Row";
-import Col from "react-bootstrap/Col";
 import Toast from "react-bootstrap/Toast";
 import { TeamContext } from "../context/TeamContext";
-import "../pages/Login.css";
-import { CloseOutlined } from "@ant-design/icons";
+import { CloseOutlined, SearchOutlined } from "@ant-design/icons";
 
 function StockIn() {
-  // const [modalShow, setModalShow] = useState(false);
   const [data, setData] = useState([]);
   const [auth, setAuth] = useState(false);
   const [message, setMessage] = useState("");
@@ -23,32 +18,6 @@ function StockIn() {
   const [modalShow, setModalShow] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const { teamId, setTeamId } = useContext(TeamContext);
-  const [items, setItems] = useState([]);
-
-  const MyVerticallyCenteredModal = ({ handleUpdateClick, ...props }) => (
-    <Modal
-      {...props}
-      size="lg"
-      aria-labelledby="contained-modal-title-vcenter"
-      centered
-    >
-      <Modal.Header closeButton>
-        <Modal.Title id="contained-modal-title-vcenter">
-          Are you sure ?
-        </Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
-        <h6>Do you really want to update the quantity ?</h6>
-      </Modal.Body>
-      <Modal.Footer>
-        <button type="primary" onClick={handleUpdateClick}>
-          Yes
-        </button>
-        <button onClick={props.onHide}>No</button>
-      </Modal.Footer>
-    </Modal>
-  );
-
   const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth <= 800);
 
   useEffect(() => {
@@ -63,12 +32,11 @@ function StockIn() {
       axios
         .get(`http://localhost:8082/products?team_id=${teamId}`)
         .then((res) => {
-          if (res.data.success === true) {
+          if (res.data.success) {
             setAuth(true);
             const sortedInventory = res.data.items.sort((a, b) =>
               a.product_name.localeCompare(b.product_name)
             );
-            setItems(res.data.items);
             setData(sortedInventory);
             setFilteredData(sortedInventory);
           } else {
@@ -83,13 +51,18 @@ function StockIn() {
   }, [teamId]);
 
   useEffect(() => {
+    const filtered = data.filter((item) =>
+      item.product_name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    setFilteredData(filtered);
+  }, [searchQuery, data]);
+
+  useEffect(() => {
     axios.defaults.withCredentials = true;
     axios
       .get("http://localhost:8082/products")
       .then((res) => {
-        // console.log(res.data)
-
-        if (res.data.success === true) {
+        if (res.data.success) {
           setAuth(true);
           const sortedInventory = res.data.items.sort((a, b) =>
             a.product_name.localeCompare(b.product_name)
@@ -102,8 +75,7 @@ function StockIn() {
         }
       })
       .catch((err) => {
-        console.log(err.response.data); // Log the error response data
-        console.error(err); // Log the full error object for further investigation
+        console.error(err);
       });
   }, []);
 
@@ -128,25 +100,53 @@ function StockIn() {
   };
 
   const handleUpdateClick = () => {
+    // Create a new array to hold the updated items
+    const updatedItems = [...selectedItems];
+  
+    // Iterate over each selected item
     selectedItems.forEach((item) => {
       const existingItem = data.find((i) => i.product_id === item.product_id);
       const inventoryQuantity = existingItem ? existingItem.quantity : 0;
+  
+      // Update the item quantity in the backend
       axios
         .put("http://localhost:8082/products/updateQuantity", {
           productId: item.product_id,
           quantity: inventoryQuantity + item.quantity,
         })
-        .then((res) => {
+        .then(() => {
           console.log("Quantity updated successfully");
-          setShowToast(true); // Show the toast message
+          
+          // Update the local state with the new quantity
+          setData((prevData) =>
+            prevData.map((i) =>
+              i.product_id === item.product_id
+                ? { ...i, quantity: inventoryQuantity + item.quantity }
+                : i
+            )
+          );
+  
+          // Optionally update filteredData if necessary
+          setFilteredData((prevFilteredData) =>
+            prevFilteredData.map((i) =>
+              i.product_id === item.product_id
+                ? { ...i, quantity: inventoryQuantity + item.quantity }
+                : i
+            )
+          );
         })
         .catch((err) => {
           console.error("Failed to update quantity:", err);
         });
     });
-    setShowToast(false);
-    window.location.href = window.location.href;
+  
+    // Reset selected items
+    setSelectedItems([]);
+  
+    // Show toast notification
+    setShowToast(true);
   };
+  
 
   useEffect(() => {
     const handleResize = () => {
@@ -202,7 +202,6 @@ function StockIn() {
             justifyContent: "space-between",
             marginBottom: 30,
             marginTop: 30,
-            // height: "calc(100vh - 64px)",
             borderBottom: "2px black solid",
           }}
         >
@@ -224,10 +223,21 @@ function StockIn() {
               overflowY: "auto",
             }}
           >
+
+            <div style={{ textAlign: "left", marginBottom: 20 }}>
+              <Input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search products..."
+                prefix={<SearchOutlined />} 
+              />
+            </div>
+
             <div className="table-responsive">
               <Table
                 columns={columns}
-                dataSource={data.filter(
+                dataSource={filteredData.filter(
                   (inventory) => inventory.team_id === parseInt(teamId)
                 )}
                 onRow={onRowClick}
@@ -235,6 +245,7 @@ function StockIn() {
                 pagination={{ pageSize: 5 }}
               />
             </div>
+
             <Toast
               onClose={() => setShowToast(false)}
               show={showToast}
@@ -298,51 +309,34 @@ function StockIn() {
                           onChange={(value) =>
                             handleQuantityChange(item.product_id, value)
                           }
-                          style={{
-                            fontWeight: "bold",
-                            border: "3px black solid",
-                            fontWeight: "bold",
-                            marginRight: "10px",
-                          }}
                         />
-
-                        <CloseOutlined
+                        <button
                           onClick={() => handleCloseRow(item.product_id)}
-                          style={{ color: "Black", cursor: "pointer" }}
-                        />
+                          style={{ marginLeft: 10 }}
+                        >
+                          <CloseOutlined />
+                        </button>
                       </div>
-                      {/* <p style={{ marginBottom: 0 }}>Latest Quantity: {inventoryQuantity + item.quantity}</p> */}
                     </div>
                   );
                 })}
 
-                <center style={{ paddingTop: "20px" }}>
-                  <button
-                    style={{ borderRadius: "50px" }}
-                    onClick={() => setModalShow(true)}
-                  >
-                    Update
-                  </button>
-                  <MyVerticallyCenteredModal
-                    show={modalShow}
-                    onHide={() => setModalShow(false)}
-                    handleUpdateClick={handleUpdateClick}
-                  />
-                </center>
+                <button
+                  onClick={handleUpdateClick}
+                  style={{
+                    border: "none",
+                    backgroundColor: "#006400",
+                    color: "white",
+                    padding: "10px",
+                    borderRadius: "5px",
+                    marginTop: "10px",
+                  }}
+                >
+                  Update
+                </button>
               </div>
             ) : (
-              <div
-                style={{
-                  padding: "24px",
-                  paddingTop: "103px",
-                  color: "#ccc",
-                  textAlign: "center",
-                }}
-              >
-                To view inventory details,
-                <br /> you can group items by attribute or <br />
-                select them individually from the list on the left.
-              </div>
+              <div>No items selected</div>
             )}
           </Card>
         </div>

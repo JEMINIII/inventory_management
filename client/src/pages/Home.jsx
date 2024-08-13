@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import axios from "axios";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { Table, Button, Card } from "antd";
+import { SearchOutlined } from '@ant-design/icons';
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
@@ -33,30 +34,7 @@ export const Home = () => {
   const [teams, setTeams] = useState([]);
   const [organization, setOrganization] = useState(null);
   
-  useEffect(() => {
-    const token = Cookies.get('token');
-    if (token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    }
-    
-          const orgId = Cookies.get('orgId');
-
-          
-              axios
-                .get(`http://localhost:8082/team?orgId=${orgId}`)
-                .then((teamResponse) => {
-                  console.log("Teams data:", teamResponse.data);
-                  if (teamResponse.data.success) {
-                    setTeams(teamResponse.data.items);
-                  } else {
-                    console.error("Failed to fetch teams");
-                  }
-                })
-                .catch((error) => {
-                  console.error("Error fetching teams:", error);
-                });
-            
-  }, []);
+  
 
   const handleTeamChange = (e) => {
     const selectedTeamId = e.target.value;
@@ -110,43 +88,15 @@ export const Home = () => {
   const navigate = useNavigate();
   const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth <= 800);
 
-  useEffect(() => {
-    const storedTeamId = localStorage.getItem("selectedTeamId");
-    console.log(storedTeamId);
-    if (storedTeamId) {
-      setTeamId(storedTeamId);
-    }
-  }, [setTeamId]);
+  // useEffect(() => {
+  //   const storedTeamId = localStorage.getItem("selectedTeamId");
+  //   console.log(storedTeamId);
+  //   if (storedTeamId) {
+  //     setTeamId(storedTeamId);
+  //   }
+  // }, [setTeamId]);
 
-  useEffect(() => {
-    const token = Cookies.get('token'); // Fetch the token from cookies
-
-    if (teamId) {
-      axios
-        .get(`http://localhost:8082/products?team_id=${teamId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`, // Include the token in the request headers
-          },
-        })
-        .then((res) => {
-          if (res.data.success) {
-            setAuth(true);
-            const sortedInventory = res.data.items.sort((a, b) =>
-              a.product_name.localeCompare(b.product_name)
-            );
-            setItems(res.data.items);
-            setData(sortedInventory);
-            setFilteredData(sortedInventory);
-          } else {
-            setAuth(false);
-            setMessage(res.data.error);
-          }
-        })
-        .catch((err) => {
-          console.error(err);
-        });
-    }
-  }, [teamId]);
+  
 
   const handleCreateInputChange = (e) => {
     const { name, value } = e.target;
@@ -268,6 +218,16 @@ export const Home = () => {
     setFilteredData(filtered);
   }, [searchQuery, data]);
 
+
+
+
+  // useEffect(() => {
+  //   const filtered = data.filter((item) =>
+  //     item.product_name.toLowerCase().includes(searchQuery.toLowerCase())
+  //   );
+  //   setFilteredData(filtered);
+  // }, [searchQuery, data]);
+
   const deleteItem = (id) => {
     axios
       .delete(
@@ -380,6 +340,9 @@ export const Home = () => {
             }}
           >
             <h2 style={{ marginBottom: 30 }}>Item List</h2>
+
+            
+
             <button
               onClick={() => setCreateModalShow(true)}
               style={{ marginBottom: 30 }}
@@ -387,6 +350,8 @@ export const Home = () => {
               Add Item
             </button>
           </div>
+
+         
 
           <Modal
             show={createModalShow}
@@ -547,6 +512,16 @@ export const Home = () => {
                 overflowY: "auto",
               }}
             >
+
+              <div style={{ textAlign: "left" }}>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search products..."
+                prefix={<SearchOutlined />} 
+              />
+            </div>
               <div className="table-responsive">
                 <Table
                   dataSource={filteredData.filter(
@@ -600,10 +575,10 @@ export const Home = () => {
                         </h6>
 
                         <div onClick={handleUpdate}>
-                          <SaveOutlined />
+                          <SaveOutlined  style={{ fontSize: '20px' }}/>
                         </div>
                         <div onClick={() => setIsEditing(false)}>
-                          <CloseOutlined />
+                          <CloseOutlined style={{ fontSize: '20px'}} />
                         </div>
                       </div>
                       <div
@@ -750,12 +725,12 @@ export const Home = () => {
                         >
                           <div>{selectedItem.product_name}</div>
                           <div onClick={() => setIsEditing(true)}>
-                            <EditOutlined />
+                            <EditOutlined style={{ fontSize: '24px' }} />
                           </div>
                           <div onClick={() => setModalShow(true)}>
-                            <DeleteOutlined />
+                            <DeleteOutlined style={{ fontSize: '24px' }} />
                           </div>
-                        </div>
+                          </div>
                         <div
                           style={{
                             textAlign: "center",

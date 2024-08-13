@@ -31,11 +31,11 @@ const TeamSelector = () => {
   return (
     <Select 
       value={selectedTeamName || undefined} 
-      style={{ width: 200 }} 
+      className="team-selector"
       onChange={handleTeamChange}
-      dropdownStyle={{ maxHeight: 200, overflowY: 'auto', background: 'white' }}
       placeholder="Select Team"
       optionLabelProp="label"
+      dropdownStyle={{ maxHeight: 200, overflowY: 'auto' }}
     >
       {teams.map((team) => (
         <Option 
