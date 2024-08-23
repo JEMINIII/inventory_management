@@ -60,6 +60,31 @@ const Sidebar = () => {
   const token = Cookies.get("token");
 
   const orgId = localStorage.getItem("orgId");
+  // useEffect(() => {
+  //   const selectedOrgId = Cookies.get('orgId'); // Ensure orgId is fetched from cookies
+  //   const token = Cookies.get('token'); // Ensure token is fetched from cookies
+  
+  //   if (teamId && selectedOrgId && token) {
+  //     axios
+  //       .get("http://localhost:8082/sidebar", {
+  //         params: { teamId, orgId: selectedOrgId }, // Use params object
+  //         headers: {
+  //           Authorization: `Bearer ${token}`, // Pass the token in the headers
+  //         },
+  //       })
+  //       .then((response) => {
+  //         setMenuItems(response.data);
+  //         console.log("Sidebar items fetched:", response.data);
+  //       })
+  //       .catch((error) => {
+  //         console.error("Error fetching sidebar items:", error.response || error.message);
+  //       });
+  //   } else {
+  //     setMenuItems([]);
+  //     console.log("Missing required parameters for fetching sidebar items.");
+  //   }
+  // }, [teamId, orgId]);
+  
   useEffect(() => {
     if (orgId) {
       axios
@@ -70,6 +95,7 @@ const Sidebar = () => {
           },
         })
         .then((response) => setMenuItems(response.data))
+        
         .catch((error) => console.error("Error fetching menu items:", error));
     } else {
       setMenuItems([]);

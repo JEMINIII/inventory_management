@@ -8,24 +8,29 @@ const TeamSelector = () => {
   const { teamId, teams, changeTeam } = useContext(TeamContext);
   const [selectedTeamName, setSelectedTeamName] = useState('');
 
+  // Set the default team if none is selected
   useEffect(() => {
-    // Set default teamId to the first team if no teamId is set
     if (!teamId && teams.length > 0) {
       const firstTeam = teams[0];
       changeTeam(firstTeam.id, firstTeam.name);
     }
   }, [teams, teamId, changeTeam]);
 
+  // Update selectedTeamName when teamId or teams change
   useEffect(() => {
-    // Update the selected team name based on the current teamId
     const selectedTeam = teams.find(team => team.id === teamId);
-    setSelectedTeamName(selectedTeam ? selectedTeam.name : '');
+    if (selectedTeam) {
+      setSelectedTeamName(selectedTeam.name);
+    } else {
+      setSelectedTeamName(''); // Clear the name if no matching team is found
+    }
   }, [teamId, teams]);
 
   const handleTeamChange = (value) => {
     const selectedTeam = teams.find(team => team.id === value);
-    changeTeam(value, selectedTeam ? selectedTeam.name : '');
-    setSelectedTeamName(selectedTeam ? selectedTeam.name : '');
+    if (selectedTeam) {
+      changeTeam(selectedTeam.id, selectedTeam.name);
+    }
   };
 
   return (

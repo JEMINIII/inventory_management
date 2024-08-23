@@ -3,8 +3,9 @@ import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { toast, ToastContainer } from "react-toastify";
+import { useGoogleLogin } from "@react-oauth/google";
 import "react-toastify/dist/ReactToastify.css";
-import "./Login.css"; // Ensure this CSS file includes your styles
+import "./Login.css";
 
 const Login = () => {
   const [values, setValues] = useState({
@@ -16,16 +17,16 @@ const Login = () => {
   const [errors, setErrors] = useState({});
   const [inviteCode, setInviteCode] = useState("");
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-
-  let errorTimeout;
 
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
     };
     window.addEventListener("resize", handleResize);
+    handleResize();
 
     const searchParams = new URLSearchParams(location.search);
     const code = searchParams.get("inviteCode");
@@ -33,16 +34,8 @@ const Login = () => {
       setInviteCode(code);
     }
 
-    if (errors) {
-      errorTimeout = setTimeout(() => {
-        setErrors({});
-      }, 3000);
-    }
-    return () => {
-      window.removeEventListener("resize", handleResize);
-      clearTimeout(errorTimeout);
-    };
-  }, [errors, location.search]);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [location.search]);
 
   const handleInput = (e) => {
     const { name, value } = e.target;
@@ -52,13 +45,12 @@ const Login = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setLoading(true);
 
-    // Determine the URL based on whether it's a sign-up or login action
     const url = isSignUpActive
       ? "http://localhost:8082/register"
       : "http://localhost:8082/login";
 
-    // Create the payload, conditionally adding inviteCode if it's a sign-up
     const payload = { ...values };
     if (isSignUpActive && inviteCode) {
       payload.inviteCode = inviteCode;
@@ -68,20 +60,18 @@ const Login = () => {
       .post(url, payload, { withCredentials: true })
       .then((res) => {
         if (res.data.errors) {
-          // Handle form errors and display error messages
           const errorMessages = res.data.errors.reduce((acc, error) => {
             acc[error.param] = error.msg;
             return acc;
           }, {});
           setErrors(errorMessages);
-          console.log(errorMessages);
           toast.error("Please check the form for errors.");
         } else {
           setErrors({});
-          // Handle successful responses for login and registration
           if (res.data.message === "Login successful") {
             Cookies.set("token", res.data.token, { expires: 1 });
-            navigate("/");
+            Cookies.set("orgId", res.data.orgId, { expires: 1 });
+            navigate("/", { replace: true });
           } else if (res.data.message === "User registered successfully") {
             toast.success("User registered successfully. Please sign in.");
             setIsSignUpActive(false);
@@ -93,7 +83,8 @@ const Login = () => {
       .catch((err) => {
         console.error("Error:", err);
         toast.error("An error occurred. Please try again.");
-      });
+      })
+      .finally(() => setLoading(false));
   };
 
   const toggleSignUp = () => {
@@ -101,6 +92,28 @@ const Login = () => {
     setErrors({});
     setInviteCode("");
   };
+
+  // Google login integration
+  const googleLogin = useGoogleLogin({
+    flow: "auth-code",  // Use auth-code flow instead of implicit
+    redirectUri: "http://localhost:8082/auth/google/callback",  // Use a redirect URI
+    onSuccess: async (codeResponse) => {
+      try {
+        // Redirect to your server's OAuth route
+        window.location.href = "http://localhost:8082/auth/google";
+      } catch (error) {
+        console.error("Google login failed:", error);
+        toast.error("An error occurred with Google login. Please try again.");
+      }
+    },
+    onError: (error) => {
+      console.log("Google Login Failed:", error);
+      toast.error("Google login failed.");
+    },
+  });
+  
+  
+
 
   return (
     <div className="body">
@@ -134,7 +147,17 @@ const Login = () => {
             <a href="#" className="forgot">
               Forgot your password?
             </a>
-            <button type="submit">Sign In</button>
+            <button type="submit" disabled={loading}>
+              {loading ? "Loading..." : "Sign In"}
+            </button>
+            <button
+              type="button"
+              onClick={() => googleLogin()}
+              className="google-btn"
+              disabled={loading}
+            >
+              {loading ? "Loading..." : "Sign in with Google"}
+            </button>
           </form>
         </div>
         <div className="form-container sign-up-container">
@@ -172,9 +195,11 @@ const Login = () => {
               name="inviteCode"
               value={inviteCode}
               onChange={(e) => setInviteCode(e.target.value)}
-              disabled
+              disabled={!isSignUpActive}
             />
-            <button type="submit">Sign Up</button>
+            <button type="submit" disabled={loading}>
+              {loading ? "Loading..." : "Sign Up"}
+            </button>
           </form>
         </div>
         <div className="overlay-container">

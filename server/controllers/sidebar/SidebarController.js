@@ -9,8 +9,8 @@ export const getSidebarMenuItems = async (req, res) => {
     }
 
     const userId = req.user.id;
-    const { teamId } = req.query;
-
+    const teamId = req.query.teamId;
+    console.log(req.query);
     console.log('User ID:', userId);
     console.log('Selected Team ID:', teamId);
     

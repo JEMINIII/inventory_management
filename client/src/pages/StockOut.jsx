@@ -21,8 +21,9 @@ function StockOut() {
   const [selectedItems, setSelectedItems] = useState([]);
   const navigate = useNavigate();
   const [modalShow, setModalShow] = useState(false);
+  const { teamId, setTeamId } = useContext(TeamContext);
   const [showToast, setShowToast] = useState(false);
-  const { teamId, setTeamId, changeTeam } = useContext(TeamContext);
+  // const { teamId, setTeamId, changeTeam } = useContext(TeamContext);
   const [items, setItems] = useState([]);
   const MyVerticallyCenteredModal = (props) => (
     <Modal
@@ -49,15 +50,28 @@ function StockOut() {
   useEffect(() => {
     const storedTeamId = localStorage.getItem("selectedTeamId");
     if (storedTeamId) {
-      changeTeam(storedTeamId); // use changeTeam to update context
+      setTeamId(storedTeamId);
     }
-  }, [changeTeam]);
+  }, [setTeamId]);
 
   useEffect(() => {
+    const storedTeamId = localStorage.getItem("selectedTeamId");
+    if (storedTeamId) {
+      console.log("Stored Team ID:", storedTeamId); // Debugging log
+      setTeamId(storedTeamId);
+    } else {
+      console.log("No Team ID found in localStorage");
+    }
+  }, [setTeamId]);
+  
+  useEffect(() => {
+    console.log("Current Team ID:", teamId); // Debugging log
+  
     if (teamId) {
       axios
         .get(`http://localhost:8082/products?team_id=${teamId}`)
         .then((res) => {
+          console.log("Product Data Response:", res.data); // Debugging log
           if (res.data.success === true) {
             setAuth(true);
             const sortedInventory = res.data.items.sort((a, b) =>
@@ -72,10 +86,18 @@ function StockOut() {
           }
         })
         .catch((err) => {
-          console.error(err);
+          console.error("Error fetching products:", err); // Debugging log
         });
     }
   }, [teamId]);
+  
+
+  useEffect(() => {
+    const filtered = data.filter((item) =>
+      item.product_name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    setFilteredData(filtered);
+  }, [searchQuery, data]);
 
   useEffect(() => {
     axios.defaults.withCredentials = true;
@@ -217,15 +239,24 @@ function StockOut() {
               overflowY: "auto",
             }}
           >
+            <div style={{ textAlign: "left" }}>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search products..."
+                // prefix={<SearchOutlined />} 
+              />
+            </div>
             <div className="table-responsive">
               <Table
                 columns={columns}
-                dataSource={data.filter(
+                dataSource={filteredData.filter(
                   (inventory) => inventory.team_id === parseInt(teamId)
                 )}
                 onRow={onRowClick}
                 rowKey="product_id"
-                pagination={{ pageSize: 10 }}
+                pagination={{ pageSize: 8 }}
               />
             </div>
             <Toast

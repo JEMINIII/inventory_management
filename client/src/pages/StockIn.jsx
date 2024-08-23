@@ -1,13 +1,19 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Card, Input, Table, Pagination,InputNumber } from "antd";
+import { Card, InputNumber, Alert, Table, Pagination } from "antd";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { Button, notification } from "antd";
 import Modal from "react-bootstrap/Modal";
+import Row from "react-bootstrap/Row";
+import Col from "react-bootstrap/Col";
 import Toast from "react-bootstrap/Toast";
 import { TeamContext } from "../context/TeamContext";
-import { CloseOutlined, SearchOutlined } from "@ant-design/icons";
+import "../pages/Login.css";
+import { CloseOutlined } from "@ant-design/icons";
+import { SearchOutlined } from '@ant-design/icons';
 
 function StockIn() {
+  // const [modalShow, setModalShow] = useState(false);
   const [data, setData] = useState([]);
   const [auth, setAuth] = useState(false);
   const [message, setMessage] = useState("");
@@ -18,25 +24,70 @@ function StockIn() {
   const [modalShow, setModalShow] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const { teamId, setTeamId } = useContext(TeamContext);
-  const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth <= 800);
+  const [items, setItems] = useState([]);
 
+  const MyVerticallyCenteredModal = ({ handleUpdateClick, ...props }) => (
+    <Modal
+      {...props}
+      size="lg"
+      aria-labelledby="contained-modal-title-vcenter"
+      centered
+    >
+      <Modal.Header closeButton>
+        <Modal.Title id="contained-modal-title-vcenter">
+          Are you sure ?
+        </Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <h6>Do you really want to update the quantity ?</h6>
+      </Modal.Body>
+      <Modal.Footer>
+        <button type="primary" onClick={handleUpdateClick}>
+          Yes
+        </button>
+        <button onClick={props.onHide}>No</button>
+      </Modal.Footer>
+    </Modal>
+  );
+  const [formValues, setFormValues] = useState({
+    product_name: "",
+    category: "",
+    price: "",
+    quantity: "",
+    total_amount: "",
+    team_id: "",
+    // user_id: "",
+    product_id: null,
+  });
+  const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth <= 800);
+  // const handleTeamChange = (e) => {
+  //   const selectedTeamId = e.target.value;
+  //   console.log(e.target.value);
+  //   setTeamId(selectedTeamId);
+  //   setFormValues((prevFormValues) => ({
+  //     ...prevFormValues,
+  //     team_id: selectedTeamId,
+  //   }));
+  // };
   useEffect(() => {
     const storedTeamId = localStorage.getItem("selectedTeamId");
     if (storedTeamId) {
       setTeamId(storedTeamId);
     }
   }, [setTeamId]);
+  const teamIdFromStorage = localStorage.getItem('selectedTeamId');
 
   useEffect(() => {
     if (teamId) {
       axios
         .get(`http://localhost:8082/products?team_id=${teamId}`)
         .then((res) => {
-          if (res.data.success) {
+          if (res.data.success === true) {
             setAuth(true);
             const sortedInventory = res.data.items.sort((a, b) =>
               a.product_name.localeCompare(b.product_name)
             );
+            setItems(res.data.items);
             setData(sortedInventory);
             setFilteredData(sortedInventory);
           } else {
@@ -47,9 +98,13 @@ function StockIn() {
         .catch((err) => {
           console.error(err);
         });
+    } else {
+      console.warn("No team ID set");
     }
   }, [teamId]);
+  
 
+  
   useEffect(() => {
     const filtered = data.filter((item) =>
       item.product_name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -57,25 +112,29 @@ function StockIn() {
     setFilteredData(filtered);
   }, [searchQuery, data]);
 
+  
   useEffect(() => {
     axios.defaults.withCredentials = true;
     axios
       .get("http://localhost:8082/products")
       .then((res) => {
-        if (res.data.success) {
+        // console.log(res.data)
+
+        if (res.data.success === true) {
           setAuth(true);
           const sortedInventory = res.data.items.sort((a, b) =>
             a.product_name.localeCompare(b.product_name)
           );
           setData(sortedInventory);
-          setFilteredData(sortedInventory);
+          // setFilteredData(sortedInventory);
         } else {
           setAuth(false);
           setMessage(res.data.error);
         }
       })
       .catch((err) => {
-        console.error(err);
+        console.log(err.response.data); // Log the error response data
+        console.error(err); // Log the full error object for further investigation
       });
   }, []);
 
@@ -100,24 +159,19 @@ function StockIn() {
   };
 
   const handleUpdateClick = () => {
-    // Create a new array to hold the updated items
-    const updatedItems = [...selectedItems];
-  
-    // Iterate over each selected item
     selectedItems.forEach((item) => {
       const existingItem = data.find((i) => i.product_id === item.product_id);
       const inventoryQuantity = existingItem ? existingItem.quantity : 0;
   
-      // Update the item quantity in the backend
       axios
         .put("http://localhost:8082/products/updateQuantity", {
           productId: item.product_id,
           quantity: inventoryQuantity + item.quantity,
         })
-        .then(() => {
+        .then((res) => {
           console.log("Quantity updated successfully");
+  
           
-          // Update the local state with the new quantity
           setData((prevData) =>
             prevData.map((i) =>
               i.product_id === item.product_id
@@ -126,7 +180,6 @@ function StockIn() {
             )
           );
   
-          // Optionally update filteredData if necessary
           setFilteredData((prevFilteredData) =>
             prevFilteredData.map((i) =>
               i.product_id === item.product_id
@@ -134,17 +187,19 @@ function StockIn() {
                 : i
             )
           );
+  
+          // Show the success toast
+          setShowToast(true);
+  
+          // Optionally, hide the toast after a few seconds
+          setTimeout(() => {
+            setShowToast(false);
+          }, 3000); // Adjust the time as needed
         })
         .catch((err) => {
           console.error("Failed to update quantity:", err);
         });
     });
-  
-    // Reset selected items
-    setSelectedItems([]);
-  
-    // Show toast notification
-    setShowToast(true);
   };
   
 
@@ -202,6 +257,7 @@ function StockIn() {
             justifyContent: "space-between",
             marginBottom: 30,
             marginTop: 30,
+            // height: "calc(100vh - 64px)",
             borderBottom: "2px black solid",
           }}
         >
@@ -214,6 +270,8 @@ function StockIn() {
             flexDirection: isSmallScreen ? "column" : "row",
           }}
         >
+          
+
           <Card
             className="mb-3"
             style={{
@@ -223,14 +281,13 @@ function StockIn() {
               overflowY: "auto",
             }}
           >
-
-            <div style={{ textAlign: "left", marginBottom: 20 }}>
-              <Input
+            <div style={{ textAlign: "left" }}>
+              <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search products..."
-                prefix={<SearchOutlined />} 
+                // prefix={<SearchOutlined />} 
               />
             </div>
 
@@ -242,10 +299,9 @@ function StockIn() {
                 )}
                 onRow={onRowClick}
                 rowKey="product_id"
-                pagination={{ pageSize: 5 }}
+                pagination={{ pageSize: 8}}
               />
             </div>
-
             <Toast
               onClose={() => setShowToast(false)}
               show={showToast}
@@ -309,34 +365,51 @@ function StockIn() {
                           onChange={(value) =>
                             handleQuantityChange(item.product_id, value)
                           }
+                          style={{
+                            fontWeight: "bold",
+                            border: "3px black solid",
+                            fontWeight: "bold",
+                            marginRight: "10px",
+                          }}
                         />
-                        <button
+
+                        <CloseOutlined
                           onClick={() => handleCloseRow(item.product_id)}
-                          style={{ marginLeft: 10 }}
-                        >
-                          <CloseOutlined />
-                        </button>
+                          style={{ color: "Black", cursor: "pointer" }}
+                        />
                       </div>
+                      {/* <p style={{ marginBottom: 0 }}>Latest Quantity: {inventoryQuantity + item.quantity}</p> */}
                     </div>
                   );
                 })}
 
-                <button
-                  onClick={handleUpdateClick}
-                  style={{
-                    border: "none",
-                    backgroundColor: "#006400",
-                    color: "white",
-                    padding: "10px",
-                    borderRadius: "5px",
-                    marginTop: "10px",
-                  }}
-                >
-                  Update
-                </button>
+                <center style={{ paddingTop: "20px" }}>
+                  <button
+                    style={{ borderRadius: "50px" }}
+                    onClick={() => setModalShow(true)}
+                  >
+                    Update
+                  </button>
+                  <MyVerticallyCenteredModal
+                    show={modalShow}
+                    onHide={() => setModalShow(false)}
+                    handleUpdateClick={handleUpdateClick}
+                  />
+                </center>
               </div>
             ) : (
-              <div>No items selected</div>
+              <div
+                style={{
+                  padding: "24px",
+                  paddingTop: "103px",
+                  color: "#ccc",
+                  textAlign: "center",
+                }}
+              >
+                To view inventory details,
+                <br /> you can group items by attribute or <br />
+                select them individually from the list on the left.
+              </div>
             )}
           </Card>
         </div>

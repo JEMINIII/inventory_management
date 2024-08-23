@@ -36,15 +36,15 @@ export const Home = () => {
   
   
 
-  const handleTeamChange = (e) => {
-    const selectedTeamId = e.target.value;
-    console.log(e.target.value);
-    setTeamId(selectedTeamId);
-    setFormValues((prevFormValues) => ({
-      ...prevFormValues,
-      team_id: selectedTeamId,
-    }));
-  };
+  // const handleTeamChange = (e) => {
+  //   const selectedTeamId = e.target.value;
+  //   console.log(e.target.value);
+  //   setTeamId(selectedTeamId);
+  //   setFormValues((prevFormValues) => ({
+  //     ...prevFormValues,
+  //     team_id: selectedTeamId,
+  //   }));
+  // };
   const { id } = useParams();
   const [data, setData] = useState([]);
   const [auth, setAuth] = useState(false);
@@ -528,7 +528,7 @@ export const Home = () => {
                     (inventory) => inventory.team_id === parseInt(teamId)
                   )}
                   rowKey="product_id"
-                  pagination={{ pageSize: 10 }}
+                  pagination={{ pageSize: 8 }}
                   onRow={onRowClick}
                 >
                   <Column
