@@ -1,107 +1,188 @@
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
-import React,{useState} from "react";
-import { Link, useNavigate } from "react-router-dom";
+import Cookies from "js-cookie";
+import { toast, ToastContainer } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
+import "./Login.css"; 
+
+const api_address = process.env.REACT_APP_API_ADDRESS;
 
 const Login = () => {
   const [values, setValues] = useState({
+    name: "",
     email: "",
     password: "",
   });
+  const [isSignUpActive, setIsSignUpActive] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [inviteCode, setInviteCode] = useState("");
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const navigate = useNavigate();
-  axios.defaults.withCredentials=true;
-  const [backendError,setBackendError] = useState([])
+  const location = useLocation();
+
+  let errorTimeout;
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    window.addEventListener("resize", handleResize);
+
+    const searchParams = new URLSearchParams(location.search);
+    const code = searchParams.get("inviteCode");
+    if (code) {
+      setInviteCode(code);
+    }
+
+    if (errors) {
+      errorTimeout = setTimeout(() => {
+        setErrors({});
+      }, 3000);
+    }
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      clearTimeout(errorTimeout);
+    };
+  }, [errors, location.search]);
+
+  const handleInput = (e) => {
+    const { name, value } = e.target;
+    setValues((prev) => ({ ...prev, [name]: value }));
+    setErrors({});
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!values.email || !values.password) {
-      alert("Please fill in all fields");
-      return
+  
+    // Determine the URL based on whether it's a sign-up or login action
+    const url = isSignUpActive ? `${api_address}/register` : `${api_address}/login`;
+    
+    // Create the payload, conditionally adding inviteCode if it's a sign-up
+    const payload = { ...values };
+    if (isSignUpActive && inviteCode) {
+      payload.inviteCode = inviteCode;
     }
+  
     axios
-      .post("http://localhost:8082/login", values)
+      .post(url, payload, { withCredentials: true })
       .then((res) => {
         if (res.data.errors) {
-            setBackendError(res.data.errors);
-                }
-        else {
-          setBackendError([]);
-        if (res.data.Status === "success") {
-                  navigate("/");
-                }
-        else {
-                  alert("no record existed");
-                }
-    }})
-      .catch((err) => console.log(err));
+          // Handle form errors and display error messages
+          const errorMessages = res.data.errors.reduce((acc, error) => {
+            acc[error.param] = error.msg;
+            return acc;
+          }, {});
+          setErrors(errorMessages);
+          console.log(errorMessages);
+          toast.error("Please check the form for errors.");
+        } else {
+          setErrors({});
+          // Handle successful responses for login and registration
+          if (res.data.message === "Login successful") {
+            Cookies.set("token", res.data.token, { expires: 1 });
+            navigate("/");
+          } else if (res.data.message === "User registered successfully") {
+            toast.success("User registered successfully. Please sign in.");
+            setIsSignUpActive(false);
+            setValues({ name: "", email: "", password: "" });
+            setInviteCode(""); 
+          }
+        }
+      })
+      .catch((err) => {
+        console.error('Error:', err);
+        toast.error("An error occurred. Please try again.");
+      });
   };
-  const handleInput = (e)=>{
-    setValues(prev => ({...prev, [e.target.name]:[e.target.value]}))
-  }
+  
+
+  const toggleSignUp = () => {
+    setIsSignUpActive(!isSignUpActive);
+    setErrors({});
+    setInviteCode("");
+  };
 
   return (
-    <div className="d-flex justify-content-center align-items-center bg-light vh-100">
-      <div className="bg-white p-3 rounded w-25 border border shadow">
-        <div style={{ textAlign: "center", marginBottom: "1rem" }}>
-          <h2
-            style={{
-              fontFamily: "'Roboto', sans-serif",
-              fontSize: "1.5rem",
-              fontWeight: "bold",
-              backgroundImage:
-                "linear-gradient(to right, #e66465, #9198e5, #e66465, #9198e5, #e66465)",
-              WebkitBackgroundClip: "text",
-              color: "transparent",
-            }}
-          >
-            Login
-          </h2>
-        </div>
-        {
-          backendError && backendError.map(e => (
-            <p className="text-danger">{e.msg}</p>
-          )) 
-        }
-        <form onSubmit={handleSubmit}>
-          <div className="mb-3">
-            <label htmlFor="email">
-              <strong>Email</strong>
-            </label>
+    <div className="body">
+      <ToastContainer />
+      <div className={`container ${isSignUpActive ? "right-panel-active" : ""}`} id="container">
+        <div className="form-container sign-in-container">
+          <form className='signin' onSubmit={handleSubmit}>
+            <h1>Sign in</h1>
+            {errors.general && <p className="text-danger">{errors.general}</p>}
             <input
               type="email"
-              placeholder="Enter Email"
+              placeholder="Email"
               name="email"
+              value={values.email}
               onChange={handleInput}
-              className="form-control rounded-0"
             />
-          </div>
-          <div className="mb-3">
-            <label htmlFor="password">
-              <strong>Password</strong>
-            </label>
+            {errors.email && <p className="text-danger">{errors.email}</p>}
             <input
               type="password"
-              placeholder="Enter password"
+              placeholder="Password"
               name="password"
+              value={values.password}
               onChange={handleInput}
-              className="form-control rounded-0"
             />
+            {errors.password && <p className="text-danger">{errors.password}</p>}
+            <a href="#" className="forgot">Forgot your password?</a>
+            <button type="submit">Sign In</button>
+          </form>
+        </div>
+        <div className="form-container sign-up-container">
+          <form className='signup' onSubmit={handleSubmit}>
+            <h1>Create Account</h1>
+            <input
+              type="text"
+              placeholder="Name"
+              name="name"
+              value={values.name}
+              onChange={handleInput}
+            />
+            {errors.name && <p className="text-danger">{errors.name}</p>}
+            <input
+              type="email"
+              placeholder="Email"
+              name="email"
+              value={values.email}
+              onChange={handleInput}
+            />
+            {errors.email && <p className="text-danger">{errors.email}</p>}
+            <input
+              type="password"
+              placeholder="Password"
+              name="password"
+              value={values.password}
+              onChange={handleInput}
+            />
+            {errors.password && <p className="text-danger">{errors.password}</p>}
+            <input
+              type="text"
+              placeholder="Invitation Code"
+              name="inviteCode"
+              value={inviteCode}
+              onChange={(e) => setInviteCode(e.target.value)}
+              disabled
+            />
+            <button type="submit">Sign Up</button>
+          </form>
+        </div>
+        <div className="overlay-container">
+          <div className="overlay">
+            <div className="overlay-panel overlay-left">
+              <h1>Welcome Back!</h1>
+              <p>To keep connected with us please login with your personal info</p>
+              <button onClick={toggleSignUp} id="signInBtn">Sign In</button>
+            </div>
+            <div className="overlay-panel overlay-right">
+              <h1>Hello, Friend!</h1>
+              <p>Enter your personal details and start your journey with us</p>
+              <button onClick={toggleSignUp} id="signUpBtn">Sign Up</button>
+            </div>
           </div>
-          <button
-            type="submit"
-            style={{
-              backgroundImage: "linear-gradient(to right, #e66465, #9198e5)",
-            }}
-            className="btn btn-success w-100 rounded-0"
-          >
-            Login
-          </button>
-          <p>You are agree to our terms and policies</p>
-          <Link
-            to="/register"
-            className="btn btn-default border w-100 bg-light rounded-0 text-decoration-none"
-          >
-            Create account
-          </Link>
-        </form>
+        </div>
       </div>
     </div>
   );

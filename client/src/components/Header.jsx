@@ -3,76 +3,94 @@ import Logo from "../images/4-removebg-preview.png";
 import logo22 from "../images/5-removebg-preview.png";
 import axios from "axios";
 import { Link } from "react-router-dom";
+import { MenuOutlined } from "@ant-design/icons";
+import { Button, Popover } from "antd";
+import {
+  SettingOutlined,
+  LogoutOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
+import "./Header.css";
 
-function Header() {
+const api_address = process.env.REACT_APP_API_ADDRESS;
+
+function Header({ toggleSidebar, isSidebarOpen }) {
   const [auth, setAuth] = useState(false);
   const [name, setName] = useState("");
 
   useEffect(() => {
     axios
-      .get("http://localhost:8082")
+      .get(`${api_address}/api/users`)
       .then((res) => {
-        if (res.data.Status === "success") {
-          setAuth(true);
-          setName(res.data.name);
+        console.log(res);
+        if (res.status === 200) {
+          const data = res.data;
+          console.log(data);
+          if (data.success === true) {
+            setAuth(true);
+            setName(data.name); // Assuming `data.name` contains the user's name
+          } else {
+            setAuth(false);
+          }
         } else {
-          setAuth(false);
+          console.log("Unexpected response status:", res.status);
         }
       })
-      .catch((err) => console.log(err));
+      .catch((err) => console.error("Error fetching user data:", err));
   }, []);
 
   const handleLogout = () => {
     axios
-      .get("http://localhost:8082/logout")
+      .get(`${api_address}/logout`, { withCredentials: true })
       .then((res) => {
         window.location.href = "/login";
       })
       .catch((err) => console.log(err));
   };
 
-  return (
-  
-    <div className="navbar">
-        <div className="logo">
-          <img src={logo22} alt="" />
-        </div>
+  if (!auth) {
+    return null;
+  }
+  const menuContent = (
+    <div>
+      {/* <Button type="text" icon={<UserOutlined />}>
+        <Link to="/profile">{name}</Link>
+      </Button> */}
+      <br />
+      <button type="text" icon={<LogoutOutlined />} onClick={handleLogout}>
+        Logout
+      </button>
 
-        <div className="links">
-          <span className="dropdown">
-            <img className="logo22" src={Logo} alt="" />
-            <div className="dropdown-content">
-              <ul className="navbar-nav ml-auto">
-                {auth ? (
-                  // <div className="d-flex align-items-center gap-5">
-                  <>
-                    <li className="nav-item">
-                      <Link
-                        to="/profile"
-                        style={{ backgroundColor: "pink" }}
-                        className="nav-link"
-                      >
-                        {name}
-                      </Link>
-                    </li>
-                    <li className="nav-item">
-                      <Link onClick={handleLogout}>Logout</Link>
-                    </li>
-                  </>
-                ) : (
-                  <li className="nav-item">
-                    <Link to="/login" className="nav-link">
-                      Login
-                    </Link>
-                  </li>
-                )}
-              </ul>
-              <a href="/">Settings</a>
-            </div>
-          </span>
-        </div>
+      <br />
+    </div>
+  );
+
+  return (
+    <nav className="navbar">
+      {/* <div className="toggle-button">
+        <button onClick={toggleSidebar}>
+          <MenuOutlined />
+        </button>
+      </div> */}
+      <div className="logo">
+        <img src={logo22} alt="" />
       </div>
-    
+      <ul className="links">
+        {/* <li className="popover"> */}
+        <Popover
+          style={{ backgroundColor: "black" }}
+          content={menuContent}
+          trigger="click"
+          placement="bottom"
+        >
+          <div style={{ backgroundColor: "black", color: "white" }}>
+            <UserOutlined />
+          </div>
+          {/* <img className="logo22" src={Logo} alt="Logo" style={{ cursor: 'pointer' }} /> */}
+        </Popover>
+        {/* </li> */}
+      </ul>
+    </nav>
   );
 }
 

@@ -1,26 +1,21 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import TeamSelector from "./TeamSelector";
+import "./Sidebar.css";
 import {
-  // AppstoreOutlined,
-  // ContainerOutlined,
-  // DesktopOutlined,
-  // MailOutlined,
-  // MenuFoldOutlined,
-  // MenuUnfoldOutlined,
-  // PieChartOutlined,
   RightCircleOutlined,
   LeftCircleOutlined,
-} from "@ant-design/icons";
-import {
   UnorderedListOutlined,
   ArrowUpOutlined,
   ArrowDownOutlined,
   CarryOutOutlined,
   MoneyCollectOutlined,
+  TeamOutlined,
 } from "@ant-design/icons";
-
-import { Button, Menu, item, Card } from "antd";
+import { Button, Menu } from "antd";
 import axios from "axios";
+import { TeamContext } from "../context/TeamContext";
+import { MenuOutlined } from "@ant-design/icons";
 
 const iconComponents = {
   UnorderedListOutlined: UnorderedListOutlined,
@@ -28,115 +23,47 @@ const iconComponents = {
   ArrowDownOutlined: ArrowDownOutlined,
   CarryOutOutlined: CarryOutOutlined,
   MoneyCollectOutlined: MoneyCollectOutlined,
+  TeamOutlined: TeamOutlined,
 };
 
-// const items = [
-//   { key: "1", label: "Item List", icon: <PieChartOutlined />, route: "/" },
-//   { key: "2", label: "Stock In", icon: <DesktopOutlined />, route: "/create" },
-//   {
-//     key: "3",
-//     label: "Stock Out",
-//     icon: <ContainerOutlined />,
-//     route: "/stockout",
-//   },
-//   { key: "4", label: "Adjust", icon: <ContainerOutlined /> },
-//   { key: "5", label: "Transaction", icon: <ContainerOutlined /> },
-//   {
-//     key: "sub1",
-//     label: "Purchase & Sales",
-//     icon: <MailOutlined />,
-//     items: [
-//       { key: "6", label: "Bundles" },
-//       { key: "7", label: "Purchases" },
-//       { key: "8", label: "Sales" },
-//       { key: "9", label: "Sales Analysis" },
-//     ],
-//   },
-//   {
-//     key: "sub2",
-//     label: "Print Barcode",
-//     icon: <MailOutlined />,
-//     items: [
-//       { key: "10", label: "Item" },
-//       { key: "11", label: "Bundle" },
-//     ],
-//   },
-//   {
-//     key: "sub3",
-//     label: "Other Features",
-//     icon: <MailOutlined />,
-//     items: [
-//       { key: "12", label: "Low Stock Alert" },
-//       { key: "13", label: "Past Quantity" },
-//       { key: "14", label: "Inventory Link" },
-//       { key: "15", label: "Inventory Count" },
-//     ],
-//   },
-//   {
-//     key: "sub4",
-//     label: "Reports",
-//     icon: <AppstoreOutlined />,
-//     items: [
-//       { key: "16", label: "Summary" },
-//       { key: "17", label: "Dashboard" },
-//       { key: "18", label: "Analytics" },
-//     ],
-//   },
-//   {
-//     key: "sub5",
-//     label: "Data Center",
-//     icon: <AppstoreOutlined />,
-//     items: [
-//       { key: "19", label: "Item" },
-//       { key: "20", label: "Attribute" },
-//       { key: "21", label: "Partners" },
-//     ],
-//   },
-//   {
-//     key: "sub6",
-//     label: "Settings",
-//     icon: <AppstoreOutlined />,
-//     items: [
-//       { key: "22", label: "User" },
-//       { key: "23", label: "Team" },
-//       { key: "24", label: "Members" },
-//       { key: "25", label: "Integration & API" },
-//       { key: "26", label: "Billing" },
-//     ],
-//   },
-// ];
+const api_address = process.env.REACT_APP_API_ADDRESS;
 
 const Sidebar = () => {
-  const [collapsed, setCollapsed] = useState(false);
-  const [menuCollapsed, setMenuCollapsed] = useState(false);
+  const [menuCollapsed, setMenuCollapsed] = useState(true);
+  const toggleCollapsed = () => setMenuCollapsed(!menuCollapsed);
 
-  const toggleCollapsed = () => {
-    // setCollapsed(!collapsed);
-    setMenuCollapsed(!menuCollapsed);
-  };
   const { SubMenu } = Menu;
   const navigate = useNavigate();
   const [selectedMenuItem, setSelectedMenuItem] = useState(null);
-
-  const handleMenuClick = (id) => {
-    setSelectedMenuItem(id);
-  };
+  const handleMenuClick = (id) => setSelectedMenuItem(id);
 
   const [menuItems, setMenuItems] = useState([]);
+  const { teamId } = useContext(TeamContext);
+  const [auth, setAuth] = useState(false);
 
   useEffect(() => {
     axios
-      .get("http://localhost:8082/sidebar")
-      .then((response) => {
-        setMenuItems(response.data);
-        // console.log(menuItems);
-        // const noQuotes = menuItems[0].icon.split('"').join('');
-        // console.log(noQuotes)
+      .get(`${api_address}/api/users`)
+      .then((res) => {
+        if (res.status === 200 && res.data.success === true) {
+          setAuth(true);
+        } else {
+          setAuth(false);
+        }
       })
-      .catch((error) => {
-        console.error("Error fetching menu items:", error);
-      });
+      .catch((err) => console.error("Error fetching user data:", err));
   }, []);
+
+  useEffect(() => {
+    if (teamId) {
+      axios
+        .get(`${api_address}/sidebar`, { params: { teamId } })
+        .then((response) => setMenuItems(response.data))
+        .catch((error) => console.error("Error fetching menu items:", error));
+    } else {
+      setMenuItems([]); // Clear menu items if no team is selected
+    }
+  }, [teamId]);
 
   const nestedMenuItems = {};
   menuItems.forEach((item) => {
@@ -147,37 +74,40 @@ const Sidebar = () => {
         nestedMenuItems[item.parent_id].submenus.push(item);
       }
     }
-    // console.log(nestedMenuItems);
   });
 
   const [openKeys, setOpenKeys] = useState([]);
+  const handleOpenChange = (keys) => setOpenKeys(keys);
 
-  const handleOpenChange = (keys) => {
-    setOpenKeys(keys);
-  };
+  if (!auth) {
+    return null;
+  }
 
   return (
-    <div>
+    <div className="sidebar-container">
       <Menu
         className="menu"
-        style={{
-          maxHeight: "calc(83.7vh - 25px)",
-          height: "calc(100vh - 64px)", // Set a fixed height
-          overflowY: "auto",
-          top: 30,
-          background: "#E5E5E5",
-        }}
-        defaultSelectedKeys={["1"]}
+        style={{ backgroundColor: "black", color: "white" }}
         mode="inline"
-        theme="light"
+        theme="dark"
         inlineCollapsed={menuCollapsed}
         onClick={({ id }) => handleMenuClick(id)}
         openKeys={openKeys}
         onOpenChange={handleOpenChange}
       >
+        <div className="toggle-button">
+          <Button onClick={toggleCollapsed}>
+            <MenuOutlined />
+          </Button>
+        </div>
+        {/* Team Selector Menu Item */}
+        <Menu.Item key="teamSelector" icon={<TeamOutlined />}>
+          <TeamSelector />
+        </Menu.Item>
+
         {Object.values(nestedMenuItems).map((menuItem) =>
           menuItem.submenus.length > 0 ? (
-            <Menu.SubMenu
+            <SubMenu
               key={menuItem.id}
               icon={
                 menuItem.icon
@@ -199,7 +129,7 @@ const Sidebar = () => {
                   <Link to={submenu.route}></Link>
                 </Menu.Item>
               ))}
-            </Menu.SubMenu>
+            </SubMenu>
           ) : (
             <Menu.Item
               key={menuItem.id}
@@ -215,33 +145,6 @@ const Sidebar = () => {
           )
         )}
       </Menu>
-
-      <Button
-        // type="primary"
-        onClick={toggleCollapsed}
-        style={{
-          // marginBottom: 10,
-          textAlign: "center",
-          position: "fixed",
-
-          // right: menuCollapsed ? 7 : 100,
-          background: "white",
-          border: "none",
-          transition: "left 0.3s ease",
-          borderRadius: "90%",
-          padding: "0%",
-          left: menuCollapsed ? 75 : 190,
-          top: 90,
-          zIndex: 1,
-          fontSize: "24px",
-          color: "Gray",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        {menuCollapsed ? <RightCircleOutlined /> : <LeftCircleOutlined />}
-      </Button>
     </div>
   );
 };
