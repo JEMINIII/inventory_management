@@ -12,6 +12,7 @@ export const getSidebarMenuItems = async (req, res) => {
     const teamId = req.query.teamId;
     console.log(req.query);
     console.log('User ID:', userId);
+    
     console.log('Selected Team ID:', teamId);
     
     // Fetch the user's role from the team_members table for the selected team

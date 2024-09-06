@@ -26,10 +26,13 @@ const Team = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   useEffect(() => {
-    // Set token in headers
     const token = Cookies.get('token');
+    if (!token) {
+      // Redirect or show unauthorized message
+      return;
+    }
     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-
+  
     axios
       .get("http://localhost:8082/team")
       .then((res) => {
@@ -47,6 +50,7 @@ const Team = () => {
         notification.error({ message: "Failed to fetch teams" });
       });
   }, []);
+  
 
   const openCreateModal = () => setIsCreateModalOpen(true);
 

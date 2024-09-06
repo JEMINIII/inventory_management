@@ -59,6 +59,7 @@ const Login = () => {
     axios
       .post(url, payload, { withCredentials: true })
       .then((res) => {
+        
         if (res.data.errors) {
           const errorMessages = res.data.errors.reduce((acc, error) => {
             acc[error.param] = error.msg;
@@ -71,6 +72,7 @@ const Login = () => {
           if (res.data.message === "Login successful") {
             Cookies.set("token", res.data.token, { expires: 1 });
             Cookies.set("orgId", res.data.orgId, { expires: 1 });
+
             navigate("/", { replace: true });
           } else if (res.data.message === "User registered successfully") {
             toast.success("User registered successfully. Please sign in.");

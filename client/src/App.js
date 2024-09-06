@@ -14,12 +14,16 @@ import "./style.scss";
 import Sidebar from "./components/Sidebar.jsx";
 import { Layout as AntLayout } from "antd";
 import Member from "./pages/Member.jsx";
+import Sale from "./pages/Sale.jsx";
 import StockIn from "./pages/StockIn.jsx";
 import StockOut from "./pages/StockOut.jsx";
 import Team from "./pages/Team.jsx";
 import { TeamProvider } from "./context/TeamContext.js";
 import { OrganizationProvider } from "./context/OrgContext.js";
+import SaleAnalysis from "./pages/sales_analysis.jsx";
+// import Purchase from "./pages/Purchase.jsx";
 const { Content } = AntLayout;
+
 
 const Layout = ({ toggleSidebar, isSidebarOpen }) => {
   return (
@@ -83,6 +87,9 @@ function App() {
               <Route path="team" element={<Team />} />
               <Route path="StockIn" element={<StockIn />} />
               <Route path="StockOut" element={<StockOut />} />
+              <Route path='sale' element={<Sale/>} />
+              {/* <Route path='purchase' element={<Purchase/>} /> */}
+              <Route path='sales/analysis' element={<SaleAnalysis/>} />
             </Route>
             <Route path="login" element={<Login />} />
             {/* <Route path="register" element={<Register />} /> */}
