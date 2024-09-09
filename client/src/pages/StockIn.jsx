@@ -163,7 +163,6 @@ function StockIn() {
     selectedItems.forEach((item) => {
       const existingItem = data.find((i) => i.product_id === item.product_id);
       const inventoryQuantity = existingItem ? existingItem.quantity : 0;
-  
       axios
         .put("http://localhost:8082/products/updateQuantity", {
           productId: item.product_id,
@@ -171,36 +170,13 @@ function StockIn() {
         })
         .then((res) => {
           console.log("Quantity updated successfully");
-  
-          
-          setData((prevData) =>
-            prevData.map((i) =>
-              i.product_id === item.product_id
-                ? { ...i, quantity: inventoryQuantity + item.quantity }
-                : i
-            )
-          );
-  
-          setFilteredData((prevFilteredData) =>
-            prevFilteredData.map((i) =>
-              i.product_id === item.product_id
-                ? { ...i, quantity: inventoryQuantity + item.quantity }
-                : i
-            )
-          );
-  
-          // Show the success toast
-          setShowToast(true);
-  
-          // Optionally, hide the toast after a few seconds
-          setTimeout(() => {
-            setShowToast(false);
-          }, 3000); // Adjust the time as needed
+          setShowToast(true); // Show the toast message
         })
         .catch((err) => {
           console.error("Failed to update quantity:", err);
         });
     });
+    window.location.href = window.location.href;
   };
   
 
