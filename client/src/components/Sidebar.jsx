@@ -28,7 +28,9 @@ const iconComponents = {
 };
 
 const api_address = process.env.REACT_APP_API_ADDRESS;
-
+const renderIcon = (iconName) => {
+  return iconName ? React.createElement(iconComponents[iconName]) : null;
+};
 const Sidebar = () => {
   const [menuCollapsed, setMenuCollapsed] = useState(true);
   const toggleCollapsed = () => setMenuCollapsed(!menuCollapsed);
@@ -140,7 +142,6 @@ const Sidebar = () => {
           </Button>
         </div>
 
-        {/* Team Selector as a SubMenu */}
         <SubMenu
           key="teamSelector"
           icon={<TeamOutlined />}
@@ -151,58 +152,29 @@ const Sidebar = () => {
           </div>
         </SubMenu>
 
-        {Object.values(nestedMenuItems).map((menuItem) =>
-          menuItem.submenus.length > 0 ? (
-            <SubMenu
-              key={menuItem.id}
-              icon={
-                menuItem.icon
-                  ? React.createElement(iconComponents[menuItem.icon])
-                  : null
-              }
-              icon={
-                menuItem.icon
-                  ? React.createElement(iconComponents[menuItem.icon])
-                  : null
-              }
-              title={menuItem.label}
-            >
-              {menuItem.submenus.map((submenu) => (
-                <Menu.Item
-                  key={submenu.id}
-                  icon={
-                    submenu.icon
-                      ? React.createElement(iconComponents[submenu.icon])
-                      : null
-                  }
-                  icon={
-                    submenu.icon
-                      ? React.createElement(iconComponents[submenu.icon])
-                      : null
-                  }
-                >
-                  {submenu.label}
-                  <Link to={submenu.route}></Link>
-                </Menu.Item>
-              ))}
-            </SubMenu>
-          ) : (
-            <Menu.Item
-              key={menuItem.id}
-              icon={
-                menuItem.icon
-                  ? React.createElement(iconComponents[menuItem.icon])
-                  : null
-              }
-              icon={
-                menuItem.icon
-                  ? React.createElement(iconComponents[menuItem.icon])
-                  : null
-              }
-            >
-              {menuItem.label}
-              <Link to={menuItem.route}></Link>
-            </Menu.Item>
+        {Object.values(nestedMenuItems).length === 0 ? (
+          <p>No menu items available</p>
+        ) : (
+          Object.values(nestedMenuItems).map((menuItem) =>
+            menuItem.submenus.length > 0 ? (
+              <SubMenu
+                key={menuItem.id}
+                icon={renderIcon(menuItem.icon)}
+                title={menuItem.label}
+              >
+                {menuItem.submenus.map((submenu) => (
+                  <Menu.Item key={submenu.id} icon={renderIcon(submenu.icon)}>
+                    {submenu.label}
+                    <Link to={submenu.route}></Link>
+                  </Menu.Item>
+                ))}
+              </SubMenu>
+            ) : (
+              <Menu.Item key={menuItem.id} icon={renderIcon(menuItem.icon)}>
+                {menuItem.label}
+                <Link to={menuItem.route}></Link>
+              </Menu.Item>
+            )
           )
         )}
       </Menu>

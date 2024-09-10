@@ -11,17 +11,7 @@ import {
 } from "@ant-design/icons";
 import Cookies from 'js-cookie'; // For managing authentication tokens
 import "../pages/Login.css";
-import { Table, Form, Input, notification, Card } from "antd";
-import { Modal, Button } from "react-bootstrap";
-import {
-  SaveOutlined,
-  CloseOutlined,
-  EditOutlined,
-  UploadOutlined,
-  DeleteOutlined,
-} from "@ant-design/icons";
 import { Link } from "react-router-dom";
-import "../pages/Login.css";
 const api_address = process.env.REACT_APP_API_ADDRESS;
 
 const Team = () => {
@@ -98,9 +88,9 @@ const Team = () => {
   };
 
   useEffect(() => {
-    axios.defaults.withCredentials = true;
+    // axios.defaults.withCredentials = true;
     axios
-      .get(`${api_address}/team`)
+      .get(`http://localhost:8082/team`)
       .then((res) => {
         if (res.data.success === true) {
           setAuth(true);
@@ -267,12 +257,12 @@ const Team = () => {
           }}
         >
           <h2>Team</h2>
-          <Button
+          <button
             icon={<UploadOutlined />}
             onClick={openCreateModal}
           >
             Create Team
-          </Button>
+          </button>
         </div>
 
         <Card
