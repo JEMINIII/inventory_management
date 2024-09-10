@@ -13,7 +13,7 @@ function Header({ toggleSidebar, isSidebarOpen }) {
 
   useEffect(() => {
     axios
-      .get("http://localhost:8082/api/users", { withCredentials: true })
+      .get("http://localhost:8082/api/users")
       .then((res) => {
         console.log(res);
         if (res.status === 200) {
@@ -121,12 +121,15 @@ function Header({ toggleSidebar, isSidebarOpen }) {
         <span>{orgName}</span>
       </div>
       <ul className="links">
-        <Popover content={menuContent} trigger="click" placement="bottom">
-          <div style={{ backgroundColor: "black", color: "white" }}>
-            <UserOutlined />
-          </div>
+      {/* <li className="popover"> */}
+        <Popover style={{backgroundColor:'black'}} content={menuContent} trigger="click" placement="bottom">
+        <div style={{backgroundColor:'black',color:'white'}}>
+          <UserOutlined />
+        </div>
+          {/* <img className="logo22" src={Logo} alt="Logo" style={{ cursor: 'pointer' }} /> */}
         </Popover>
-      </ul>
+      {/* </li> */}
+    </ul>
     </nav>
   );
 }

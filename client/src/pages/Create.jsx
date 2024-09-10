@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
 
+const api_address = process.env.REACT_APP_API_ADDRESS;
 export const Create = () => {
   const [values, setValues] = useState({
     product_name: "",
@@ -10,6 +11,7 @@ export const Create = () => {
     quantity: "",
     total_amount: "",
     team_id: "",
+    user_id: "",
     product_id: null,
   });
 
@@ -77,7 +79,7 @@ export const Create = () => {
     }
 
     axios
-      .post("http://localhost:8082/products/create", formData, {
+      .post("${api_address}/products/create", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
           enctype: "multipart/form-data",

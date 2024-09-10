@@ -14,10 +14,11 @@ const Update = () => {
   });
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   const [showErrorToast, setShowErrorToast] = useState(false);
-
+  const api_address = process.env.REACT_APP_API_ADDRESS;
   useEffect(() => {
     axios
-      .get("http://localhost:8082/products/read/" + id)
+      .get(`${api_address}/products/read/`+ id)
+
       .then((res) => {
         setValues((prevValues) => ({
           ...prevValues,
@@ -34,7 +35,9 @@ const Update = () => {
   const handleUpdate = (e) => {
     e.preventDefault();
     axios
-      .put("http://localhost:8082/products/edit/" + id, values)
+
+      .put(`${api_address}/products/edit/` + id, values)
+
       .then((res) => {
         setShowSuccessToast(true);
         setTimeout(() => {

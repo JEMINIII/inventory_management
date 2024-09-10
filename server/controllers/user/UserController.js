@@ -1,12 +1,14 @@
 
 import db from "../../models/db/DbModel.js";
 
+
   export const getAllUsers = async (req, res) => {
     try {
-      // Fetch all users from the database
+      
       const q = "SELECT * FROM users";
       const [rows] = await db.query(q);
       
+
       const loggedInUser = req.user;
       const userRole = loggedInUser ? loggedInUser.role : null; 
   

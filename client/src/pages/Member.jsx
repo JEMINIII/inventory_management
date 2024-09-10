@@ -6,6 +6,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { TeamContext } from "../context/TeamContext"; // Assuming you have a TeamContext
 
+const api_address = process.env.REACT_APP_API_ADDRESS;
 const Member = () => {
   const { teamId } = useContext(TeamContext); // Using TeamContext for team selection
   const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
@@ -30,7 +31,7 @@ const Member = () => {
   const fetchTeamMembers = async (teamId) => {
     try {
       const response = await axios.get(
-        `http://localhost:8082/api/team_members/${teamId}`
+        `${api_address}/api/team_members/${teamId}`
       );
       setAuth(true); // Assuming successful fetching means user is authenticated
       console.log("Fetched Team Members:", response.data.teamMembers);
@@ -74,7 +75,7 @@ const Member = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await axios.get("http://localhost:8082/api/users");
+      const response = await axios.get(`${api_address}/api/users`);
       console.log("Fetched Users:", response.data.users);
       return response.data.users || [];
     } catch (error) {
@@ -85,7 +86,7 @@ const Member = () => {
 
   const fetchRoles = async () => {
     try {
-      const response = await axios.get("http://localhost:8082/roles");
+      const response = await axios.get(`${api_address}/roles`);
       console.log("Fetched Roles:", response.data.items);
       return response.data.items || [];
     } catch (error) {
@@ -96,7 +97,7 @@ const Member = () => {
 
   const fetchTeams = async () => {
     try {
-      const response = await axios.get("http://localhost:8082/team");
+      const response = await axios.get(`${api_address}/team`);
       console.log("Fetched Teams:", response.data.items);
       return response.data.items || [];
     } catch (error) {
@@ -135,7 +136,7 @@ const Member = () => {
     }
 
     axios
-      .post("http://localhost:8082/api/team_members", {
+      .post(`${api_address}/api/team_members`, {
         user_id: selectedUser,
         role_id: selectedRole,
         team_id: teamId,
@@ -171,7 +172,7 @@ const Member = () => {
     }
 
     axios
-      .post("http://localhost:8082/api/invite", {
+      .post(`${api_address}/api/invite`, {
         email: inviteEmail,
         name: inviteName,
         inviteCode,
@@ -196,7 +197,7 @@ const Member = () => {
   const handleTeamChange = (e) => {
     const newTeamId = e.target.value;
     setSelectedTeam(newTeamId);
-    // localStorage.setItem("selectedTeamId", newTeamId);
+    localStorage.setItem("selectedTeamId", newTeamId);
 
     // Fetch team members for the selected team
     fetchTeamMembers(newTeamId).then((data) => {

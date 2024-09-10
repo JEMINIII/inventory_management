@@ -8,68 +8,55 @@ import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Toast from "react-bootstrap/Toast";
 import { TeamContext } from "../context/TeamContext";
-import "../pages/Login.css";
-import { CloseOutlined } from "@ant-design/icons";
+import '../pages/Login.css'
+import { CloseOutlined } from '@ant-design/icons';
 
 function StockOut() {
   // const [modalShow, setModalShow] = useState(false);
-  const [data, setData] = useState([]);
-  const [auth, setAuth] = useState(false);
-  const [message, setMessage] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filteredData, setFilteredData] = useState([]);
-  const [selectedItems, setSelectedItems] = useState([]);
-  const navigate = useNavigate();
-  const [modalShow, setModalShow] = useState(false);
-  const { teamId, setTeamId } = useContext(TeamContext);
-  const [showToast, setShowToast] = useState(false);
-  // const { teamId, setTeamId, changeTeam } = useContext(TeamContext);
-  const [items, setItems] = useState([]);
-  const MyVerticallyCenteredModal = (props) => (
-    <Modal
-      {...props}
-      size="lg"
-      aria-labelledby="contained-modal-title-vcenter"
-      centered
-    >
-      <Modal.Header closeButton>
-        <Modal.Title id="contained-modal-title-vcenter">
-          Are you sure ?
-        </Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
-        <h6>Do you really want to update the quantity ?</h6>
-      </Modal.Body>
-      <Modal.Footer>
-        <button onClick={handleUpdateClick}>Update</button>
-        <button onClick={props.onHide}>Close</button>
-      </Modal.Footer>
-    </Modal>
-  );
-  const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth <= 800);
-  useEffect(() => {
-    const storedTeamId = localStorage.getItem("selectedTeamId");
-    if (storedTeamId) {
-      setTeamId(storedTeamId);
-    }
-  }, [setTeamId]);
-
-  useEffect(() => {
-    const storedTeamId = localStorage.getItem("selectedTeamId");
-    if (storedTeamId) {
-      console.log("Stored Team ID:", storedTeamId); // Debugging log
-      setTeamId(storedTeamId);
-    } else {
-      console.log("No Team ID found in localStorage");
-    }
-  }, [setTeamId]);
-  
-  useEffect(() => {
-    console.log("Current Team ID:", teamId); // Debugging log
-  
+    const [data, setData] = useState([]);
+    const [auth, setAuth] = useState(false);
+    const [message, setMessage] = useState("");
+    const [searchQuery, setSearchQuery] = useState("");
+    const [filteredData, setFilteredData] = useState([]);
+    const [selectedItems, setSelectedItems] = useState([]);
+    const navigate = useNavigate();
+    const [modalShow, setModalShow] = useState(false);
+    const [showToast, setShowToast] = useState(false);
+    const { teamId, setTeamId, changeTeam } = useContext(TeamContext); 
+    const [items, setItems] = useState([]);
+    const MyVerticallyCenteredModal = (props) => (
+      <Modal
+        {...props}
+        size="lg"
+        aria-labelledby="contained-modal-title-vcenter"
+        centered
+      >
+        <Modal.Header closeButton>
+          <Modal.Title id="contained-modal-title-vcenter">
+            Are you sure ?
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <h6>Do you really want to update the quantity ?</h6>
+          
+        </Modal.Body>
+        <Modal.Footer>
+        <button  onClick={handleUpdateClick}>Update</button>
+          <button onClick={props.onHide}>Close</button>
+        </Modal.Footer>
+      </Modal>
+    );
+    const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth <= 800);
+    useEffect(() => {
+      const storedTeamId = localStorage.getItem("selectedTeamId");
+      if (storedTeamId) {
+        changeTeam(storedTeamId); // use changeTeam to update context
+      }
+    }, [changeTeam]);
+    
+useEffect(() => {
     if (teamId) {
-      axios
-        .get(`http://localhost:8082/products?team_id=${teamId}`)
+      axios.get(`http://localhost:8082/products?team_id=${teamId}`)
         .then((res) => {
           console.log("Product Data Response:", res.data); // Debugging log
           if (res.data.success === true) {
@@ -90,79 +77,68 @@ function StockOut() {
         });
     }
   }, [teamId]);
-  
 
-  useEffect(() => {
-    const filtered = data.filter((item) =>
-      item.product_name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-    setFilteredData(filtered);
-  }, [searchQuery, data]);
 
-  useEffect(() => {
-    axios.defaults.withCredentials = true;
-    axios
-      .get("http://localhost:8082/products")
-      .then((res) => {
-        // console.log(res.data)
-
-        if (res.data.success === true) {
-          setAuth(true);
-          const sortedInventory = res.data.items.sort((a, b) =>
-            a.product_name.localeCompare(b.product_name)
-          );
-          setData(sortedInventory);
-          setFilteredData(sortedInventory);
+    useEffect(() => {
+        axios.defaults.withCredentials = true;
+        axios
+          .get("http://localhost:8082/products")
+          .then((res) => {
+            // console.log(res.data)
+            
+            if (res.data.success === true) {
+              setAuth(true);
+              const sortedInventory = res.data.items.sort((a, b) =>
+                a.product_name.localeCompare(b.product_name)
+              );
+              setData(sortedInventory);
+              setFilteredData(sortedInventory);
+            } else {
+              setAuth(false);
+              setMessage(res.data.error);
+            }
+          })
+          .catch((err) => {
+            console.log(err.response.data); // Log the error response data
+            console.error(err); // Log the full error object for further investigation
+          });
+      }, []);
+      
+      const handleItemClick = (inventory) => {
+        const existingItemIndex = selectedItems.findIndex(item => item.product_id === inventory.product_id);
+        if (existingItemIndex !== -1) {
+            const updatedItems = [...selectedItems];
+            updatedItems[existingItemIndex].quantity++;
+            setSelectedItems(updatedItems);
         } else {
-          setAuth(false);
-          setMessage(res.data.error);
+            setSelectedItems([...selectedItems, { ...inventory, quantity: 1 }]);
         }
-      })
-      .catch((err) => {
-        console.log(err.response.data); // Log the error response data
-        console.error(err); // Log the full error object for further investigation
+    };
+    
+    const handleQuantityChange = (productId, quantity) => {
+        const updatedItems = selectedItems.map(item =>
+            item.product_id === productId ? { ...item, quantity } : item
+        );
+        setSelectedItems(updatedItems);
+    };
+    
+    
+
+    const handleUpdateClick = () => {
+      selectedItems.forEach(item => {
+        const existingItem = data.find(i => i.product_id === item.product_id);
+        const inventoryQuantity = existingItem ? existingItem.quantity : 0;
+        axios.put('http://localhost:8082/products/updateQuantity', { productId: item.product_id, quantity: inventoryQuantity - item.quantity })
+            .then(res => {
+                console.log('Quantity updated successfully');
+                setShowToast(true); // Show the toast message
+            })
+            .catch(err => {
+                console.error('Failed to update quantity:', err);
+            });
       });
-  }, []);
-
-  const handleItemClick = (inventory) => {
-    const existingItemIndex = selectedItems.findIndex(
-      (item) => item.product_id === inventory.product_id
-    );
-    if (existingItemIndex !== -1) {
-      const updatedItems = [...selectedItems];
-      updatedItems[existingItemIndex].quantity++;
-      setSelectedItems(updatedItems);
-    } else {
-      setSelectedItems([...selectedItems, { ...inventory, quantity: 1 }]);
-    }
-  };
-
-  const handleQuantityChange = (productId, quantity) => {
-    const updatedItems = selectedItems.map((item) =>
-      item.product_id === productId ? { ...item, quantity } : item
-    );
-    setSelectedItems(updatedItems);
-  };
-
-  const handleUpdateClick = () => {
-    selectedItems.forEach((item) => {
-      const existingItem = data.find((i) => i.product_id === item.product_id);
-      const inventoryQuantity = existingItem ? existingItem.quantity : 0;
-      axios
-        .put("http://localhost:8082/products/updateQuantity", {
-          productId: item.product_id,
-          quantity: inventoryQuantity - item.quantity,
-        })
-        .then((res) => {
-          console.log("Quantity updated successfully");
-          setShowToast(true); // Show the toast message
-        })
-        .catch((err) => {
-          console.error("Failed to update quantity:", err);
-        });
-    });
-    window.location.href = window.location.href;
-  };
+      window.location.href = window.location.href;
+    };  
 
   useEffect(() => {
     const handleResize = () => {
@@ -201,55 +177,42 @@ function StockOut() {
     };
   };
 
-  return (
-    <div>
-      <div
+    return (
+     
+        
+      <div >
+        
+        <div style={{
+            display: "flex",
+            flexDirection: "column",
+            width: "100%",
+            maxHeight: "calc(80vh - 74px)",
+          }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginBottom: 30,
+                marginTop: 30,
+                borderBottom: "2px black solid"
+              }}
+            >
+              <h2 style={{ marginBottom: 30 }}>Stock Out</h2>
+              
+            </div>
+            <div
         style={{
           display: "flex",
-          flexDirection: "column",
-          width: "100%",
-          maxHeight: "calc(80vh - 74px)",
+          justifyContent: "space-between",
+          flexDirection: isSmallScreen ? "column" : "row"
         }}
       >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: 30,
-            marginTop: 30,
-            borderBottom: "2px black solid",
-          }}
-        >
-          <h2 style={{ marginBottom: 30 }}>Stock Out</h2>
-        </div>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            flexDirection: isSmallScreen ? "column" : "row",
-          }}
-        >
-          <Card
-            className="mb-3"
-            style={{
-              width: "100%",
-              padding: "10px",
-              textAlign: "left",
-              overflowY: "auto",
-            }}
-          >
-            <div style={{ textAlign: "left" }}>
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search products..."
-                // prefix={<SearchOutlined />} 
-              />
-            </div>
-            <div className="table-responsive">
-              <Table
+              <Card className="mb-3" style={{ width: "100%",padding:'10px',textAlign:'left', overflowY: "auto" }}>
+                
+                <div className="table-responsive">
+                  
+                <Table
                 columns={columns}
                 dataSource={filteredData.filter(
                   (inventory) => inventory.team_id === parseInt(teamId)

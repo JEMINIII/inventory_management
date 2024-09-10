@@ -11,6 +11,18 @@ import {
 } from "@ant-design/icons";
 import Cookies from 'js-cookie'; // For managing authentication tokens
 import "../pages/Login.css";
+import { Table, Form, Input, notification, Card } from "antd";
+import { Modal, Button } from "react-bootstrap";
+import {
+  SaveOutlined,
+  CloseOutlined,
+  EditOutlined,
+  UploadOutlined,
+  DeleteOutlined,
+} from "@ant-design/icons";
+import { Link } from "react-router-dom";
+import "../pages/Login.css";
+const api_address = process.env.REACT_APP_API_ADDRESS;
 
 const Team = () => {
   const [name, setName] = useState("");
@@ -61,12 +73,12 @@ const Team = () => {
 
   const handleCreate = () => {
     axios
-      .post("http://localhost:8082/team/create", { name: teamName })
+      .post(`${api_address}/team/create`, { name: teamName })
       .then((response) => {
         notification.success({ message: "Team created successfully" });
         closeCreateModal();
-        // Fetch updated team list
-        axios.get("http://localhost:8082/team")
+        axios
+          .get(`${api_address}/team`)
           .then((res) => {
             if (res.data.success) {
               setFilteredData(res.data.items);
@@ -85,6 +97,23 @@ const Team = () => {
       });
   };
 
+  useEffect(() => {
+    axios.defaults.withCredentials = true;
+    axios
+      .get(`${api_address}/team`)
+      .then((res) => {
+        if (res.data.success === true) {
+          setAuth(true);
+          setName(res.data.name);
+          setFilteredData(res.data.items);
+        } else {
+          setAuth(false);
+          setMessage(res.data.error);
+        }
+      })
+      .catch((err) => console.log(err));
+  }, []);
+
   const handleItemClick = (team) => {
     setSelectedItem(team);
     setEditedItem({ ...team });
@@ -102,7 +131,7 @@ const Team = () => {
   const handleUpdate = () => {
     if (selectedItem && selectedItem.id) {
       axios
-        .put(`http://localhost:8082/team/edit/${selectedItem.id}`, editedItem)
+        .put(`${api_address}/team/edit/${selectedItem.id}`, editedItem)
         .then(() => {
           const updatedData = filteredData.map((item) =>
             item.id === selectedItem.id ? editedItem : item
@@ -141,7 +170,7 @@ const Team = () => {
   const handleConfirmDelete = () => {
     if (selectedItem && selectedItem.id) {
       axios
-        .delete(`http://localhost:8082/team/delete/${selectedItem.id}`)
+        .delete(`${api_address}/team/delete/${selectedItem.id}`)
         .then(() => {
           const updatedData = filteredData.filter(
             (team) => team.id !== selectedItem.id
@@ -152,7 +181,7 @@ const Team = () => {
           notification.success({ message: "Team deleted successfully" });
         })
         .catch((err) => {
-          console.error(err);
+          console.log(err);
           notification.error({ message: "Failed to delete team" });
         });
     }
@@ -195,19 +224,23 @@ const Team = () => {
           </div>
         ) : (
           <div style={{ display: "flex", gap: "10px" }}>
-            <Button
-              onClick={() => handleEditClick(record.id)}
-              icon={<EditOutlined />}
-            >
-              Edit
-            </Button>
-            <Button
-              onClick={() => handleDelete(record.id)}
-              danger
-              icon={<DeleteOutlined />}
-            >
-              Delete
-            </Button>
+            <div>
+              <button
+                onClick={() => handleEditClick(record.id)}
+                icon={<EditOutlined />}
+              >
+                Edit
+              </button>
+            </div>
+            <div>
+              <button
+                onClick={() => handleDelete(record.id)}
+                type="danger"
+                icon={<DeleteOutlined />}
+              >
+                Delete
+              </button>
+            </div>
           </div>
         ),
     },

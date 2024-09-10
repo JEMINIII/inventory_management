@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Link } from "react-router-dom";
 
+const api_address = process.env.REACT_APP_API_ADDRESS;
 const Read = () => {
   const { id } = useParams();
   const [stock, setStock] = useState({});
@@ -10,7 +11,7 @@ const Read = () => {
 
   useEffect(() => {
     axios
-      .get(`http://localhost:8082/products/read/${id}`)
+      .get(`${api_address}/products/read/${id}`)
       .then((res) => {
         setStock(res.data);
       })
@@ -22,7 +23,7 @@ const Read = () => {
 
   const handleDelete = (id) => {
     axios
-      .delete("http://localhost:8082/delete/" + id)
+      .delete(`${api_address}/delete/` + id)
       .then((res) => {
         const updatedData = data.filter(
           (inventory) => inventory.product_id !== id
@@ -70,7 +71,7 @@ const Read = () => {
               {""}
               {stock && (
                 <img
-                  src={`http://localhost:8082/images/${stock.img}`}
+                  src={`${api_address}/images/${stock.img}`}
                   style={{ maxWidth: "30%", height: "auto" }}
                   alt="Product"
                 />

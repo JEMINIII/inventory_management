@@ -27,6 +27,8 @@ const iconComponents = {
   TeamOutlined: TeamOutlined,
 };
 
+const api_address = process.env.REACT_APP_API_ADDRESS;
+
 const Sidebar = () => {
   const [menuCollapsed, setMenuCollapsed] = useState(true);
   const toggleCollapsed = () => setMenuCollapsed(!menuCollapsed);
@@ -158,11 +160,21 @@ const Sidebar = () => {
                   ? React.createElement(iconComponents[menuItem.icon])
                   : null
               }
+              icon={
+                menuItem.icon
+                  ? React.createElement(iconComponents[menuItem.icon])
+                  : null
+              }
               title={menuItem.label}
             >
               {menuItem.submenus.map((submenu) => (
                 <Menu.Item
                   key={submenu.id}
+                  icon={
+                    submenu.icon
+                      ? React.createElement(iconComponents[submenu.icon])
+                      : null
+                  }
                   icon={
                     submenu.icon
                       ? React.createElement(iconComponents[submenu.icon])
@@ -177,6 +189,11 @@ const Sidebar = () => {
           ) : (
             <Menu.Item
               key={menuItem.id}
+              icon={
+                menuItem.icon
+                  ? React.createElement(iconComponents[menuItem.icon])
+                  : null
+              }
               icon={
                 menuItem.icon
                   ? React.createElement(iconComponents[menuItem.icon])

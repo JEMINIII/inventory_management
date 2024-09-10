@@ -3,6 +3,7 @@ import { Modal, Button, Form, Input } from "antd";
 import axios from "axios";
 import { TeamContext } from "../context/TeamContext";
 
+const api_address = process.env.REACT_APP_API_ADDRESS;
 const AddItemModal = ({ isVisible, handleClose }) => {
   const [formValues, setFormValues] = useState({
     product_name: "",
@@ -35,7 +36,7 @@ const AddItemModal = ({ isVisible, handleClose }) => {
   const handleAddItem = async () => {
     if (validateForm()) {
       try {
-        const response = await axios.post("http://localhost:8082/products", {
+        const response = await axios.post(`${api_address}/products`, {
           ...formValues,
           team_id: teamId,
         });

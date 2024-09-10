@@ -45,12 +45,11 @@ const Login = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setLoading(true);
-
-    const url = isSignUpActive
-      ? "http://localhost:8082/register"
-      : "http://localhost:8082/login";
-
+  
+    // Determine the URL based on whether it's a sign-up or login action
+    const url = isSignUpActive ? "http://localhost:8082/register" : "http://localhost:8082/login";
+    
+    // Create the payload, conditionally adding inviteCode if it's a sign-up
     const payload = { ...values };
     if (isSignUpActive && inviteCode) {
       payload.inviteCode = inviteCode;
@@ -66,6 +65,7 @@ const Login = () => {
             return acc;
           }, {});
           setErrors(errorMessages);
+          console.log(errorMessages)
           toast.error("Please check the form for errors.");
         } else {
           setErrors({});

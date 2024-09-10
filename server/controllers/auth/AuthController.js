@@ -52,7 +52,6 @@ export const registerUser = async (req, res) => {
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
-
     if (!email || !password) {
       return res.status(400).json({ error: "Email and password are required" });
     }
@@ -126,7 +125,6 @@ export const verifyUser = async (req, res, next) => {
         return res.status(401).json({ error: "Unauthorized" });
       }
       req.user = decoded; // Ensure decoded contains necessary user data
-      // console.log('Decoded token:', decoded); // Log decoded token for debugging
       next();
     });
   } catch (error) {
