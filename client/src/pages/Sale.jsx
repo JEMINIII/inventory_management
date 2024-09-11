@@ -7,7 +7,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import moment from "moment";
 import "../pages/Login.css";
-
+const api_address = process.env.REACT_APP_API_ADDRESS;
 
 const { Option } = Select;
 const { RangePicker } = DatePicker;
@@ -36,7 +36,7 @@ const Sale = () => {
   const fetchInventory = () => {
     if (teamId) {
       axios
-        .get(`http://localhost:8082/products/inventory?team_id=${teamId}`)
+        .get(`${api_address}/products/inventory?team_id=${teamId}`)
         .then((res) => {
           if (res.data.success) {
             setInventory(res.data.inventory);
@@ -49,7 +49,7 @@ const Sale = () => {
   const fetchSales = () => {
     if (teamId) {
       axios
-        .get(`http://localhost:8082/products/sales?team_id=${teamId}`)
+        .get(`${api_address}/products/sales?team_id=${teamId}`)
         .then((res) => {
           if (res.data.success) {
             setSales(res.data.sales);
@@ -82,7 +82,7 @@ const Sale = () => {
   useEffect(() => {
     axios.defaults.withCredentials = true;
     axios
-      .get("http://localhost:8082/products")
+      .get(`${api_address}/products`)
       .then((res) => {
         if (res.data.success === true) {
           setAuth(true);
@@ -132,7 +132,7 @@ const Sale = () => {
         teamId: teamId
       });
   
-      const response = await axios.post("http://localhost:8082/products/sales", {
+      const response = await axios.post(`${api_address}/products/sales`, {
         items: selectedItems,
         teamId: teamId
       }, {

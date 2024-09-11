@@ -9,7 +9,7 @@ import 'chart.js/auto';
 const { Option } = Select;
 const { TabPane } = Tabs;
 const { Title } = Typography;
-
+const api_address = process.env.REACT_APP_API_ADDRESS;
 const SaleAnalysis = () => {
   const [loading, setLoading] = useState(true);
   const [salesData, setSalesData] = useState([]);
@@ -31,7 +31,7 @@ const SaleAnalysis = () => {
   const fetchSalesAnalysis = async () => {
     setLoading(true);
     try {
-      const response = await axios.get('http://localhost:8082/products/sales/analysis', {
+      const response = await axios.get(`${api_address}/products/sales/analysis`, {
         params: { period },
       });
 

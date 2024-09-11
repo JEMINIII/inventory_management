@@ -36,7 +36,7 @@ const Team = () => {
     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
   
     axios
-      .get("http://localhost:8082/team")
+      .get(`${api_address}/team`)
       .then((res) => {
         if (res.data.success) {
           setAuth(true);
@@ -90,7 +90,7 @@ const Team = () => {
   useEffect(() => {
     // axios.defaults.withCredentials = true;
     axios
-      .get(`http://localhost:8082/team`)
+      .get(`${api_address}/team`)
       .then((res) => {
         if (res.data.success === true) {
           setAuth(true);

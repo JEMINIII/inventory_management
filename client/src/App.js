@@ -23,6 +23,7 @@ import { OrganizationProvider } from "./context/OrgContext.js";
 import SaleAnalysis from "./pages/sales_analysis.jsx";
 // import Purchase from "./pages/Purchase.jsx";
 const { Content } = AntLayout;
+// require('dotenv').config();
 
 
 const Layout = ({ toggleSidebar, isSidebarOpen }) => {
@@ -37,7 +38,7 @@ const Layout = ({ toggleSidebar, isSidebarOpen }) => {
         maxHeight: "calc(98vh - 74px)"
       }}
     >
-     <Sidebar />
+    <Sidebar />
       <div
         style={{
           paddingLeft: 40,

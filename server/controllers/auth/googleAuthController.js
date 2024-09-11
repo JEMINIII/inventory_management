@@ -55,7 +55,7 @@ export const googleAuthCallback = (req, res) => {
   res.cookie('token', token, { httpOnly: true, secure: false }); // secure: true in production
 
   // Redirect to frontend
-  res.redirect('http://localhost:3000'); // Update this to your frontend URL
+  res.redirect('/'); // Update this to your frontend URL
 };
 
 // Route for Google login

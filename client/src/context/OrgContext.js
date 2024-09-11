@@ -8,7 +8,12 @@ export const useOrganization = () => useContext(OrganizationContext);
 export const OrganizationProvider = ({ children }) => {
   const [selectedOrgId, setSelectedOrgId] = useState(() => {
     const storedOrgId = Cookies.get('orgId');
-    return storedOrgId ? JSON.parse(storedOrgId) : null;
+    try {
+      return storedOrgId ? JSON.parse(storedOrgId) : null;
+    } catch (error) {
+      console.error("Invalid JSON in 'orgId' cookie:", error);
+      return null;
+    }
   });
 
   useEffect(() => {

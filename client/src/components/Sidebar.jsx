@@ -46,7 +46,7 @@ const Sidebar = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const res = await axios.get("http://localhost:8082/api/users", {
+        const res = await axios.get(`${api_address}/api/users`, {
           withCredentials: true,
         });
         if (res.status === 200 && res.data.success === true) {
@@ -92,7 +92,7 @@ const Sidebar = () => {
   useEffect(() => {
     if (orgId) {
       axios
-        .get("http://localhost:8082/sidebar", {
+        .get(`${api_address}/sidebar`, {
           params: { teamId, orgId },
           headers: {
             Authorization: `Bearer ${token}`,
@@ -137,9 +137,9 @@ const Sidebar = () => {
         onOpenChange={handleOpenChange}
       >
         <div className="toggle-button">
-          <Button onClick={toggleCollapsed}>
+          <button onClick={toggleCollapsed}>
             <MenuOutlined />
-          </Button>
+          </button>
         </div>
 
         <SubMenu

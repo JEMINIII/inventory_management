@@ -13,6 +13,7 @@ const Login = () => {
     email: "",
     password: "",
   });
+  const api_address = process.env.REACT_APP_API_ADDRESS;
   const [isSignUpActive, setIsSignUpActive] = useState(false);
   const [errors, setErrors] = useState({});
   const [inviteCode, setInviteCode] = useState("");
@@ -46,33 +47,29 @@ const Login = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
   
-    // Determine the URL based on whether it's a sign-up or login action
-    const url = isSignUpActive ? "http://localhost:8082/register" : "http://localhost:8082/login";
+    const url = isSignUpActive ? `${api_address}/register` : `${api_address}/login`;  
     
-    // Create the payload, conditionally adding inviteCode if it's a sign-up
     const payload = { ...values };
     if (isSignUpActive && inviteCode) {
       payload.inviteCode = inviteCode;
     }
-
+  
     axios
       .post(url, payload, { withCredentials: true })
       .then((res) => {
-        
         if (res.data.errors) {
           const errorMessages = res.data.errors.reduce((acc, error) => {
             acc[error.param] = error.msg;
             return acc;
           }, {});
           setErrors(errorMessages);
-          console.log(errorMessages)
           toast.error("Please check the form for errors.");
         } else {
           setErrors({});
           if (res.data.message === "Login successful") {
             Cookies.set("token", res.data.token, { expires: 1 });
             Cookies.set("orgId", res.data.orgId, { expires: 1 });
-
+  
             navigate("/", { replace: true });
           } else if (res.data.message === "User registered successfully") {
             toast.success("User registered successfully. Please sign in.");
@@ -88,6 +85,7 @@ const Login = () => {
       })
       .finally(() => setLoading(false));
   };
+  
 
   const toggleSignUp = () => {
     setIsSignUpActive(!isSignUpActive);
@@ -98,11 +96,11 @@ const Login = () => {
   // Google login integration
   const googleLogin = useGoogleLogin({
     flow: "auth-code",  // Use auth-code flow instead of implicit
-    redirectUri: "http://localhost:8082/auth/google/callback",  // Use a redirect URI
+    redirectUri: `${api_address}/auth/google/callback`,  // Use a redirect URI
     onSuccess: async (codeResponse) => {
       try {
         // Redirect to your server's OAuth route
-        window.location.href = "http://localhost:8082/auth/google";
+        window.location.href = `${api_address}/auth/google`;
       } catch (error) {
         console.error("Google login failed:", error);
         toast.error("An error occurred with Google login. Please try again.");

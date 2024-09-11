@@ -21,7 +21,9 @@ import googleAuthRoute from './routes/auth/googleAuthRoute.js';
 
 
 dotenv.config();
+const api_cors = process.env.Api_cors;
 
+initDatabase();
 const app = express();
 
 const transporter = nodemailer.createTransport({

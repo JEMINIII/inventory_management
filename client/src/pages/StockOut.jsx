@@ -10,7 +10,7 @@ import Toast from "react-bootstrap/Toast";
 import { TeamContext } from "../context/TeamContext";
 import '../pages/Login.css'
 import { CloseOutlined } from '@ant-design/icons';
-
+const api_address = process.env.REACT_APP_API_ADDRESS;
 function StockOut() {
   // const [modalShow, setModalShow] = useState(false);
     const [data, setData] = useState([]);
@@ -56,7 +56,7 @@ function StockOut() {
     
 useEffect(() => {
     if (teamId) {
-      axios.get(`http://localhost:8082/products?team_id=${teamId}`)
+      axios.get(`${api_address}/products?team_id=${teamId}`)
         .then((res) => {
           console.log("Product Data Response:", res.data); // Debugging log
           if (res.data.success === true) {
@@ -82,7 +82,7 @@ useEffect(() => {
     useEffect(() => {
         axios.defaults.withCredentials = true;
         axios
-          .get("http://localhost:8082/products")
+          .get(`${api_address}/products`)
           .then((res) => {
             // console.log(res.data)
             
@@ -128,7 +128,7 @@ useEffect(() => {
       selectedItems.forEach(item => {
         const existingItem = data.find(i => i.product_id === item.product_id);
         const inventoryQuantity = existingItem ? existingItem.quantity : 0;
-        axios.put('http://localhost:8082/products/updateQuantity', { productId: item.product_id, quantity: inventoryQuantity - item.quantity })
+        axios.put(`${api_address}/products/updateQuantity`, { productId: item.product_id, quantity: inventoryQuantity - item.quantity })
             .then(res => {
                 console.log('Quantity updated successfully');
                 setShowToast(true); // Show the toast message

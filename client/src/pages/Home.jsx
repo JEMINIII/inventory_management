@@ -18,7 +18,7 @@ import {
 // import TeamSelector from "../components/TeamSelector";
 import { TeamContext } from "../context/TeamContext";
 // import AddItemModal from "./AddItemModel";
-
+const api_address = process.env.REACT_APP_API_ADDRESS;
 export const Home = () => {
   const [formValues, setFormValues] = useState({
     product_name: "",
@@ -141,7 +141,7 @@ export const Home = () => {
     }
 
     axios
-      .post("http://localhost:8082/products/create", formData, {
+      .post(`${api_address}/products/create`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
           enctype: "multipart/form-data",
@@ -182,7 +182,7 @@ export const Home = () => {
   useEffect(() => {
     axios.defaults.withCredentials = true;
     axios
-      .get("http://localhost:8082/products")
+      .get(`${api_address}/products`)
       .then((res) => {
         if (res.data.success === true) {
           setAuth(true);
@@ -231,7 +231,7 @@ export const Home = () => {
   const deleteItem = (id) => {
     axios
       .delete(
-        `http://localhost:8082/products/delete/${selectedItem.product_id}`
+        `${api_address}/products/delete/${selectedItem.product_id}`
       )
       .then(() => {
         const updatedData = data.filter(
@@ -254,7 +254,7 @@ export const Home = () => {
   const handleConfirmDelete = () => {
     axios
       .delete(
-        `http://localhost:8082/products/delete/${selectedItem.product_id}`
+        `${api_address}/products/delete/${selectedItem.product_id}`
       )
       .then(() => {
         const updatedData = data.filter(
@@ -293,7 +293,7 @@ export const Home = () => {
   const handleUpdate = () => {
     axios
       .put(
-        `http://localhost:8082/products/edit/${selectedItem.product_id}`,
+        `${api_address}/products/edit/${selectedItem.product_id}`,
         editedItem
       )
       .then(() => {
@@ -797,7 +797,7 @@ export const Home = () => {
                             <td>
                               {selectedItem.img && (
                                 <img
-                                  src={`http://localhost:8082/images/${selectedItem.img}`}
+                                  src={`${api_address}/images/${selectedItem.img}`}
                                   alt={selectedItem.product_name}
                                   style={{
                                     maxWidth: "40%",

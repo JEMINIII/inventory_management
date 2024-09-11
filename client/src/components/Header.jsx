@@ -6,14 +6,15 @@ import logo22 from "../images/5-removebg-preview.png";
 import "./Header.css";
 import Cookies from "js-cookie";
 
+
 function Header({ toggleSidebar, isSidebarOpen }) {
   const [auth, setAuth] = useState(false);
   const [name, setName] = useState("");
   const [orgName, setOrgName] = useState(localStorage.getItem("orgName") || "");
-
+  const api_address = process.env.REACT_APP_API_ADDRESS;
   useEffect(() => {
     axios
-      .get("http://localhost:8082/api/users")
+      .get(`${api_address}/api/users`)
       .then((res) => {
         console.log(res);
         if (res.status === 200) {
@@ -30,7 +31,7 @@ function Header({ toggleSidebar, isSidebarOpen }) {
               Cookies.set("orgId", orgId);
   
               axios
-                .get("http://localhost:8082/org")
+                .get(`${api_address}/org`)
                 .then((orgRes) => {
                   console.log(orgRes);
                   if (orgRes.status === 200) {
@@ -85,7 +86,7 @@ function Header({ toggleSidebar, isSidebarOpen }) {
 
   const handleLogout = () => {
     axios
-      .get("http://localhost:8082/logout", { withCredentials: true })
+      .get(`${api_address}/logout`, { withCredentials: true })
       .then(() => {
         // Remove orgId and orgName from both localStorage and cookies
         localStorage.removeItem("orgId");
