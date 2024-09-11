@@ -8,24 +8,28 @@ import Update from "./pages/Update.jsx";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
 import "./style.css";
-import Header from "./components/Header.jsx";
+import Header from "./components/Header.jsx"
 import Footer from "./components/Footer.jsx";
 import "./style.scss";
 import Sidebar from "./components/Sidebar.jsx";
 import { Layout as AntLayout } from "antd";
 import Member from "./pages/Member.jsx";
+import Sale from "./pages/Sale.jsx";
 import StockIn from "./pages/StockIn.jsx";
 import StockOut from "./pages/StockOut.jsx";
 import Team from "./pages/Team.jsx";
 import { TeamProvider } from "./context/TeamContext.js";
+import { OrganizationProvider } from "./context/OrgContext.js";
+import SaleAnalysis from "./pages/sales_analysis.jsx";
+// import Purchase from "./pages/Purchase.jsx";
 const { Content } = AntLayout;
+// require('dotenv').config();
+
 
 const Layout = ({ toggleSidebar, isSidebarOpen }) => {
   return (
     <AntLayout style={{ background: "#ffffff" }}>
-  
-  <Content> 
-    <Header toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
+  <Header toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
     <div
       style={{
         display: "flex",
@@ -34,7 +38,7 @@ const Layout = ({ toggleSidebar, isSidebarOpen }) => {
         maxHeight: "calc(98vh - 74px)"
       }}
     >
-     <Sidebar />
+    <Sidebar />
       <div
         style={{
           paddingLeft: 40,
@@ -44,12 +48,16 @@ const Layout = ({ toggleSidebar, isSidebarOpen }) => {
           overflow: "auto",
         }}
       >
+        
+  <Content> 
+    
         <div>
           <Outlet />
         </div>
-      </div>
-    </div>
+      
   </Content>
+  </div>
+        </div>
 </AntLayout>
 
   );
@@ -64,6 +72,7 @@ function App() {
 
   return (
     <div>
+      <OrganizationProvider>
       <TeamProvider>
         <BrowserRouter>
           <Routes>
@@ -79,12 +88,16 @@ function App() {
               <Route path="team" element={<Team />} />
               <Route path="StockIn" element={<StockIn />} />
               <Route path="StockOut" element={<StockOut />} />
+              <Route path='sale' element={<Sale/>} />
+              {/* <Route path='purchase' element={<Purchase/>} /> */}
+              <Route path='sales/analysis' element={<SaleAnalysis/>} />
             </Route>
             <Route path="login" element={<Login />} />
-            <Route path="register" element={<Register />} />
+            {/* <Route path="register" element={<Register />} /> */}
           </Routes>
         </BrowserRouter>
       </TeamProvider>
+      </OrganizationProvider>
     </div>
   );
 }

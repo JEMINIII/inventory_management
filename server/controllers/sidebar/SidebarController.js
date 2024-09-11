@@ -9,26 +9,27 @@ export const getSidebarMenuItems = async (req, res) => {
     }
 
     const userId = req.user.id;
-    const { teamId } = req.query;
-
+    const teamId = req.query.teamId;
+    console.log(req.query);
     console.log('User ID:', userId);
+    
     console.log('Selected Team ID:', teamId);
-
+    
     // Fetch the user's role from the team_members table for the selected team
     const [roleRows] = await db.query(`
-      SELECT roles.name as role_name, team_members.team_id
+      SELECT roles.name as role_name, team_members.team_id,team_members.user_id
       FROM team_members 
       JOIN roles ON team_members.role_id = roles.id 
-      WHERE team_members.user_id = ? AND team_members.team_id = ?
-    `, [userId, teamId]);
+      WHERE team_members.team_id = ?
+    `, [teamId]);
 
     if (roleRows.length === 0) {
       return res.json([]); // Return empty array if role not found for the user in the selected team
     }
 
     const userRole = roleRows[0].role_name;
+    console.log(roleRows);
 
-    // Fetch the menu items from the database
     const [menuRows] = await db.query("SELECT * FROM menu");
 
     const formattedMenuItems = menuRows.map((item) => ({
@@ -45,11 +46,11 @@ export const getSidebarMenuItems = async (req, res) => {
       filteredMenuItems = formattedMenuItems;
     } else if (userRole === 'Manager') {
       filteredMenuItems = formattedMenuItems.filter(item =>
-        item.label === 'Item List' || item.label === 'Stock In' || item.label === 'Stock Out' || item.label === 'Settings' || item.label === 'Members' 
+        item.label === 'Item List' || item.label === 'Stock In' || item.label === 'Stock Out' || item.label === 'Settings' || item.label === 'Members'
       );
     } else if (userRole === 'User') {
       filteredMenuItems = formattedMenuItems.filter(item =>
-        item.label === 'Stock In' || item.label === 'Stock Out' 
+        item.label === 'Stock In' || item.label === 'Stock Out'
       );
     } else {
       filteredMenuItems = []; // No menu items for other roles or unauthorized users

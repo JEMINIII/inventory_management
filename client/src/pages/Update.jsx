@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import axios from "axios";
 import { Toast } from "react-bootstrap";
-const api_address = process.env.REACT_APP_API_ADDRESS;
+
 const Update = () => {
   const { id } = useParams();
   const [values, setValues] = useState({
@@ -14,10 +14,11 @@ const Update = () => {
   });
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   const [showErrorToast, setShowErrorToast] = useState(false);
-
+  const api_address = process.env.REACT_APP_API_ADDRESS;
   useEffect(() => {
     axios
       .get(`${api_address}/products/read/`+ id)
+
       .then((res) => {
         setValues((prevValues) => ({
           ...prevValues,
@@ -34,7 +35,9 @@ const Update = () => {
   const handleUpdate = (e) => {
     e.preventDefault();
     axios
+
       .put(`${api_address}/products/edit/` + id, values)
+
       .then((res) => {
         setShowSuccessToast(true);
         setTimeout(() => {

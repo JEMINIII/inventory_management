@@ -1,9 +1,8 @@
-import bcrypt from 'bcryptjs';
-import dotenv from 'dotenv';
-import jwt from 'jsonwebtoken';
-
-import db from '../../models/db/DbModel.js';
-
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import { validationResult } from "express-validator";
+import db from '../../models/db/DbModel.js'
+import dotenv from "dotenv";
 dotenv.config();
 
 const salt = 10;
@@ -56,30 +55,40 @@ export const loginUser = async (req, res) => {
     if (!email || !password) {
       return res.status(400).json({ error: "Email and password are required" });
     }
+
     const q = "SELECT * FROM users WHERE email = ?";
     const [rows] = await db.query(q, [email]);
+
     if (rows.length === 0) {
       return res.status(401).json({ error: "Invalid email or password" });
     }
+
     const match = await bcrypt.compare(
       password.toString(),
       rows[0].password.toString()
     );
+
     if (!match) {
       return res.status(401).json({ error: "Invalid email or password" });
     }
-    const token = jwt.sign(
-      { id: rows[0].id, email: rows[0].email },
-      process.env.JWT_SECRET,
-      { expiresIn: "1h" }
-    );
-    res.cookie("token", token, { httpOnly: true,sameSite: 'none', secure: true });
-    res.json({ message: "Login successful", token });
+
+    const user = {
+      id: rows[0].id,
+      email: rows[0].email,
+      name: rows[0].name,
+      org_id: rows[0].org_id
+    };
+
+    const token = jwt.sign(user, process.env.JWT_SECRET, { expiresIn: "1h" });
+
+    res.cookie("token", token, { httpOnly: true });
+    res.json({ message: "Login successful", token, user });
   } catch (error) {
     console.error("Error logging in:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
 
 // export const logoutUser = async (req, res) => {
 //   try {
@@ -116,7 +125,6 @@ export const verifyUser = async (req, res, next) => {
         return res.status(401).json({ error: "Unauthorized" });
       }
       req.user = decoded; // Ensure decoded contains necessary user data
-      // console.log('Decoded token:', decoded); // Log decoded token for debugging
       next();
     });
   } catch (error) {

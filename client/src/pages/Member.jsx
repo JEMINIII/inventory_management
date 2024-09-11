@@ -5,7 +5,6 @@ import { Modal, Form } from "react-bootstrap";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { TeamContext } from "../context/TeamContext"; // Assuming you have a TeamContext
-
 const api_address = process.env.REACT_APP_API_ADDRESS;
 const Member = () => {
   const { teamId } = useContext(TeamContext); // Using TeamContext for team selection
@@ -197,7 +196,7 @@ const Member = () => {
   const handleTeamChange = (e) => {
     const newTeamId = e.target.value;
     setSelectedTeam(newTeamId);
-    localStorage.setItem("selectedTeamId", newTeamId);
+    // localStorage.setItem("selectedTeamId", newTeamId);
 
     // Fetch team members for the selected team
     fetchTeamMembers(newTeamId).then((data) => {

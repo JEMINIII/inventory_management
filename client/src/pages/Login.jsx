@@ -3,10 +3,9 @@ import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { toast, ToastContainer } from "react-toastify";
-import 'react-toastify/dist/ReactToastify.css';
-import "./Login.css"; 
-
-const api_address = process.env.REACT_APP_API_ADDRESS;
+import { useGoogleLogin } from "@react-oauth/google";
+import "react-toastify/dist/ReactToastify.css";
+import "./Login.css";
 
 const Login = () => {
   const [values, setValues] = useState({
@@ -14,20 +13,21 @@ const Login = () => {
     email: "",
     password: "",
   });
+  const api_address = process.env.REACT_APP_API_ADDRESS;
   const [isSignUpActive, setIsSignUpActive] = useState(false);
   const [errors, setErrors] = useState({});
   const [inviteCode, setInviteCode] = useState("");
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-
-  let errorTimeout;
 
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
     };
     window.addEventListener("resize", handleResize);
+    handleResize();
 
     const searchParams = new URLSearchParams(location.search);
     const code = searchParams.get("inviteCode");
@@ -35,16 +35,8 @@ const Login = () => {
       setInviteCode(code);
     }
 
-    if (errors) {
-      errorTimeout = setTimeout(() => {
-        setErrors({});
-      }, 3000);
-    }
-    return () => {
-      window.removeEventListener("resize", handleResize);
-      clearTimeout(errorTimeout);
-    };
-  }, [errors, location.search]);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [location.search]);
 
   const handleInput = (e) => {
     const { name, value } = e.target;
@@ -55,10 +47,8 @@ const Login = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
   
-    // Determine the URL based on whether it's a sign-up or login action
-    const url = isSignUpActive ? `${api_address}/register` : `${api_address}/login`;
+    const url = isSignUpActive ? `${api_address}/register` : `${api_address}/login`;  
     
-    // Create the payload, conditionally adding inviteCode if it's a sign-up
     const payload = { ...values };
     if (isSignUpActive && inviteCode) {
       payload.inviteCode = inviteCode;
@@ -68,32 +58,32 @@ const Login = () => {
       .post(url, payload, { withCredentials: true })
       .then((res) => {
         if (res.data.errors) {
-          // Handle form errors and display error messages
           const errorMessages = res.data.errors.reduce((acc, error) => {
             acc[error.param] = error.msg;
             return acc;
           }, {});
           setErrors(errorMessages);
-          console.log(errorMessages);
           toast.error("Please check the form for errors.");
         } else {
           setErrors({});
-          // Handle successful responses for login and registration
           if (res.data.message === "Login successful") {
             Cookies.set("token", res.data.token, { expires: 1 });
-            navigate("/");
+            Cookies.set("orgId", res.data.orgId, { expires: 1 });
+  
+            navigate("/", { replace: true });
           } else if (res.data.message === "User registered successfully") {
             toast.success("User registered successfully. Please sign in.");
             setIsSignUpActive(false);
             setValues({ name: "", email: "", password: "" });
-            setInviteCode(""); 
+            setInviteCode("");
           }
         }
       })
       .catch((err) => {
-        console.error('Error:', err);
+        console.error("Error:", err);
         toast.error("An error occurred. Please try again.");
-      });
+      })
+      .finally(() => setLoading(false));
   };
   
 
@@ -103,12 +93,37 @@ const Login = () => {
     setInviteCode("");
   };
 
+  // Google login integration
+  const googleLogin = useGoogleLogin({
+    flow: "auth-code",  // Use auth-code flow instead of implicit
+    redirectUri: `${api_address}/auth/google/callback`,  // Use a redirect URI
+    onSuccess: async (codeResponse) => {
+      try {
+        // Redirect to your server's OAuth route
+        window.location.href = `${api_address}/auth/google`;
+      } catch (error) {
+        console.error("Google login failed:", error);
+        toast.error("An error occurred with Google login. Please try again.");
+      }
+    },
+    onError: (error) => {
+      console.log("Google Login Failed:", error);
+      toast.error("Google login failed.");
+    },
+  });
+  
+  
+
+
   return (
     <div className="body">
       <ToastContainer />
-      <div className={`container ${isSignUpActive ? "right-panel-active" : ""}`} id="container">
+      <div
+        className={`container ${isSignUpActive ? "right-panel-active" : ""}`}
+        id="container"
+      >
         <div className="form-container sign-in-container">
-          <form className='signin' onSubmit={handleSubmit}>
+          <form className="signin" onSubmit={handleSubmit}>
             <h1>Sign in</h1>
             {errors.general && <p className="text-danger">{errors.general}</p>}
             <input
@@ -126,13 +141,27 @@ const Login = () => {
               value={values.password}
               onChange={handleInput}
             />
-            {errors.password && <p className="text-danger">{errors.password}</p>}
-            <a href="#" className="forgot">Forgot your password?</a>
-            <button type="submit">Sign In</button>
+            {errors.password && (
+              <p className="text-danger">{errors.password}</p>
+            )}
+            <a href="#" className="forgot">
+              Forgot your password?
+            </a>
+            <button type="submit" disabled={loading}>
+              {loading ? "Loading..." : "Sign In"}
+            </button>
+            <button
+              type="button"
+              onClick={() => googleLogin()}
+              className="google-btn"
+              disabled={loading}
+            >
+              {loading ? "Loading..." : "Sign in with Google"}
+            </button>
           </form>
         </div>
         <div className="form-container sign-up-container">
-          <form className='signup' onSubmit={handleSubmit}>
+          <form className="signup" onSubmit={handleSubmit}>
             <h1>Create Account</h1>
             <input
               type="text"
@@ -157,29 +186,39 @@ const Login = () => {
               value={values.password}
               onChange={handleInput}
             />
-            {errors.password && <p className="text-danger">{errors.password}</p>}
+            {errors.password && (
+              <p className="text-danger">{errors.password}</p>
+            )}
             <input
               type="text"
               placeholder="Invitation Code"
               name="inviteCode"
               value={inviteCode}
               onChange={(e) => setInviteCode(e.target.value)}
-              disabled
+              disabled={!isSignUpActive}
             />
-            <button type="submit">Sign Up</button>
+            <button type="submit" disabled={loading}>
+              {loading ? "Loading..." : "Sign Up"}
+            </button>
           </form>
         </div>
         <div className="overlay-container">
           <div className="overlay">
             <div className="overlay-panel overlay-left">
               <h1>Welcome Back!</h1>
-              <p>To keep connected with us please login with your personal info</p>
-              <button onClick={toggleSignUp} id="signInBtn">Sign In</button>
+              <p>
+                To keep connected with us please login with your personal info
+              </p>
+              <button onClick={toggleSignUp} id="signInBtn">
+                Sign In
+              </button>
             </div>
             <div className="overlay-panel overlay-right">
               <h1>Hello, Friend!</h1>
               <p>Enter your personal details and start your journey with us</p>
-              <button onClick={toggleSignUp} id="signUpBtn">Sign Up</button>
+              <button onClick={toggleSignUp} id="signUpBtn">
+                Sign Up
+              </button>
             </div>
           </div>
         </div>

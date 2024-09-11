@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Table, Form, Input, notification, Card } from "antd";
-import { Modal, Button } from "react-bootstrap";
+import { Table, Form, Input, notification, Card, Button } from "antd";
+import { Modal } from "react-bootstrap";
 import {
   SaveOutlined,
   CloseOutlined,
@@ -9,8 +9,9 @@ import {
   UploadOutlined,
   DeleteOutlined,
 } from "@ant-design/icons";
-import { Link } from "react-router-dom";
+import Cookies from 'js-cookie'; // For managing authentication tokens
 import "../pages/Login.css";
+import { Link } from "react-router-dom";
 const api_address = process.env.REACT_APP_API_ADDRESS;
 
 const Team = () => {
@@ -18,18 +19,42 @@ const Team = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [auth, setAuth] = useState(false);
   const [message, setMessage] = useState("");
-  const [email, setEmail] = useState("");
+  const [teamName, setTeamName] = useState("");
   const [filteredData, setFilteredData] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editedItem, setEditedItem] = useState(null);
   const [editingTeamId, setEditingTeamId] = useState(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [teamName, setTeamName] = useState("");
 
-  const openCreateModal = () => {
-    setIsCreateModalOpen(true);
-  };
+  useEffect(() => {
+    const token = Cookies.get('token');
+    if (!token) {
+      // Redirect or show unauthorized message
+      return;
+    }
+    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+  
+    axios
+      .get(`${api_address}/team`)
+      .then((res) => {
+        if (res.data.success) {
+          setAuth(true);
+          setName(res.data.name);
+          setFilteredData(res.data.items);
+        } else {
+          setAuth(false);
+          setMessage(res.data.error);
+        }
+      })
+      .catch((err) => {
+        console.error(err);
+        notification.error({ message: "Failed to fetch teams" });
+      });
+  }, []);
+  
+
+  const openCreateModal = () => setIsCreateModalOpen(true);
 
   const closeCreateModal = () => {
     setTeamName("");
@@ -40,19 +65,21 @@ const Team = () => {
     axios
       .post(`${api_address}/team/create`, { name: teamName })
       .then((response) => {
-        console.log("Team created:", response.data);
         notification.success({ message: "Team created successfully" });
         closeCreateModal();
         axios
           .get(`${api_address}/team`)
           .then((res) => {
-            if (res.data.success === true) {
+            if (res.data.success) {
               setFilteredData(res.data.items);
             } else {
               setMessage(res.data.error);
             }
           })
-          .catch((err) => console.log(err));
+          .catch((err) => {
+            console.error(err);
+            notification.error({ message: "Failed to fetch updated team list" });
+          });
       })
       .catch((error) => {
         console.error("Error creating team:", error);
@@ -61,7 +88,7 @@ const Team = () => {
   };
 
   useEffect(() => {
-    axios.defaults.withCredentials = true;
+    // axios.defaults.withCredentials = true;
     axios
       .get(`${api_address}/team`)
       .then((res) => {
@@ -105,7 +132,10 @@ const Team = () => {
           setEditingTeamId(null);
           notification.success({ message: "Team updated successfully" });
         })
-        .catch((err) => console.log(err));
+        .catch((err) => {
+          console.error(err);
+          notification.error({ message: "Failed to update team" });
+        });
     }
   };
 
@@ -175,16 +205,12 @@ const Team = () => {
       render: (text, record) =>
         editingTeamId === record.id ? (
           <div style={{ display: "flex", gap: "10px" }}>
-            <div>
-              <button onClick={handleUpdate} icon={<SaveOutlined />}>
-                Save
-              </button>
-            </div>
-            <div>
-              <button onClick={handleCancelEdit} icon={<CloseOutlined />}>
-                Cancel
-              </button>
-            </div>
+            <Button onClick={handleUpdate} icon={<SaveOutlined />}>
+              Save
+            </Button>
+            <Button onClick={handleCancelEdit} icon={<CloseOutlined />}>
+              Cancel
+            </Button>
           </div>
         ) : (
           <div style={{ display: "flex", gap: "10px" }}>
@@ -230,11 +256,10 @@ const Team = () => {
             borderBottom: "2px black solid",
           }}
         >
-          <h2 style={{ marginBottom: 30 }}>Team</h2>
+          <h2>Team</h2>
           <button
-            style={{ marginBottom: 30 }}
-            onClick={openCreateModal}
             icon={<UploadOutlined />}
+            onClick={openCreateModal}
           >
             Create Team
           </button>
@@ -253,8 +278,8 @@ const Team = () => {
             dataSource={filteredData}
             columns={columns}
             rowKey="id"
-            pagination={{ pageSize: 5 }} // Enable pagination with 5 items per page
-            scroll={false} // Disable scrolling
+            pagination={{ pageSize: 5 }}
+            scroll={false}
           />
 
           {/* Delete Modal */}
@@ -266,26 +291,29 @@ const Team = () => {
               <p>Are you sure you want to delete this team?</p>
             </Modal.Body>
             <Modal.Footer>
-              <button variant="secondary" onClick={handleCancelDelete}>
+              <Button variant="secondary" onClick={handleCancelDelete}>
                 Cancel
-              </button>
-              <button variant="danger" onClick={handleConfirmDelete}>
+              </Button>
+              <Button variant="primary" onClick={handleConfirmDelete}>
                 Delete
-              </button>
+              </Button>
             </Modal.Footer>
           </Modal>
 
-          {/* Create Modal */}
+          {/* Create Team Modal */}
           <Modal show={isCreateModalOpen} onHide={closeCreateModal} centered>
             <Modal.Header closeButton>
               <Modal.Title>Create Team</Modal.Title>
             </Modal.Header>
             <Modal.Body>
               <Form>
-                <Form.Item label="Team Name">
+                <Form.Item
+                  name="name"
+                  label="Team Name"
+                  rules={[{ required: true, message: "Please enter team name" }]}
+                >
                   <Input
                     type="text"
-                    placeholder="Enter team name"
                     value={teamName}
                     onChange={(e) => setTeamName(e.target.value)}
                   />
@@ -293,12 +321,12 @@ const Team = () => {
               </Form>
             </Modal.Body>
             <Modal.Footer>
-              <button variant="secondary" onClick={closeCreateModal}>
-                Close
-              </button>
-              <button variant="primary" onClick={handleCreate}>
+              <Button variant="secondary" onClick={closeCreateModal}>
+                Cancel
+              </Button>
+              <Button variant="primary" onClick={handleCreate}>
                 Create
-              </button>
+              </Button>
             </Modal.Footer>
           </Modal>
         </Card>

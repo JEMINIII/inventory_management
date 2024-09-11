@@ -79,7 +79,7 @@ export const Create = () => {
     }
 
     axios
-      .post("${api_address}/products/create", formData, {
+      .post(`${api_address}/products/create`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
           enctype: "multipart/form-data",

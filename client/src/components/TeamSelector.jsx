@@ -1,58 +1,53 @@
-// File path: src/components/TeamSelector.js
-
-import React, { useState, useEffect, useContext } from "react";
-import axios from "axios";
-import { TeamContext } from "../context/TeamContext";
+import React, { useState, useEffect, useContext } from 'react';
+import { TeamContext } from '../context/TeamContext';
 import { Select } from "antd";
 
 const { Option } = Select;
-const api_address = process.env.REACT_APP_API_ADDRESS;
 
 const TeamSelector = () => {
-  const { teamId, changeTeam } = useContext(TeamContext);
-  const [teams, setTeams] = useState([]);
-  const [selectedTeamName, setSelectedTeamName] = useState("");
+  const { teamId, teams, changeTeam } = useContext(TeamContext);
+  const [selectedTeamName, setSelectedTeamName] = useState('');
 
+  // Set the default team if none is selected
   useEffect(() => {
-    axios
-      .get(`${api_address}/team`)
-      .then((response) => {
-        if (response.data.success) {
-          setTeams(response.data.items);
-          // If teamId exists, find and set the team name
-          const selectedTeam = response.data.items.find(
-            (team) => team.id === teamId
-          );
-          if (selectedTeam) {
-            setSelectedTeamName(selectedTeam.name);
-          }
-        } else {
-          console.error("Failed to fetch teams");
-        }
-      })
-      .catch((error) => {
-        console.error("Error fetching teams:", error);
-      });
-  }, [teamId]);
+    if (!teamId && teams.length > 0) {
+      const firstTeam = teams[0];
+      changeTeam(firstTeam.id, firstTeam.name);
+    }
+  }, [teams, teamId, changeTeam]);
+
+  // Update selectedTeamName when teamId or teams change
+  useEffect(() => {
+    const selectedTeam = teams.find(team => team.id === teamId);
+    if (selectedTeam) {
+      setSelectedTeamName(selectedTeam.name);
+    } else {
+      setSelectedTeamName(''); // Clear the name if no matching team is found
+    }
+  }, [teamId, teams]);
 
   const handleTeamChange = (value) => {
-    const selectedTeam = teams.find((team) => team.id === value);
-    changeTeam(value);
-    setSelectedTeamName(selectedTeam ? selectedTeam.name : "");
-    console.log(value);
+    const selectedTeam = teams.find(team => team.id === value);
+    if (selectedTeam) {
+      changeTeam(selectedTeam.id, selectedTeam.name);
+    }
   };
 
   return (
-    <Select
-      value={selectedTeamName || undefined}
-      style={{ width: 200 }}
+    <Select 
+      value={selectedTeamName || undefined} 
+      className="team-selector"
       onChange={handleTeamChange}
-      dropdownStyle={{ maxHeight: 200, overflowY: "auto", background: "white" }}
       placeholder="Select Team"
       optionLabelProp="label"
+      dropdownStyle={{ maxHeight: 200, overflowY: 'auto' }}
     >
       {teams.map((team) => (
-        <Option key={team.id} value={team.id} label={team.name}>
+        <Option 
+          key={team.id} 
+          value={team.id} 
+          label={team.name}
+        >
           {team.name}
         </Option>
       ))}
