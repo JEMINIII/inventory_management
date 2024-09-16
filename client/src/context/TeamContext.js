@@ -2,6 +2,7 @@ import React, { createContext, useState, useEffect } from "react";
 import axios from "axios";
 import Cookies from 'js-cookie';
 
+
 export const TeamContext = createContext();
 
 const api_address = process.env.REACT_APP_API_ADDRESS;
@@ -11,6 +12,7 @@ export const TeamProvider = ({ children }) => {
   const [teamName, setTeamName] = useState(null);
   const [teams, setTeams] = useState([]);
   const [sidebarItems, setSidebarItems] = useState([]);
+  const api_address = process.env.REACT_APP_API_ADDRESS;
 
   const changeTeam = (id, name) => {
     setTeamId(id);
@@ -27,7 +29,7 @@ export const TeamProvider = ({ children }) => {
 
     if (selectedOrgId) {
       axios
-        .get(`http://localhost:8082/team?orgId=${selectedOrgId}`, {
+        .get(`{api_address}/team?orgId=${selectedOrgId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
