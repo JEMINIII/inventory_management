@@ -3,7 +3,9 @@ import axios from "axios";
 import Cookies from 'js-cookie';
 
 export const TeamContext = createContext();
+
 const api_address = process.env.REACT_APP_API_ADDRESS;
+
 export const TeamProvider = ({ children }) => {
   const [teamId, setTeamId] = useState(null);
   const [teamName, setTeamName] = useState(null);
@@ -16,6 +18,7 @@ export const TeamProvider = ({ children }) => {
     localStorage.setItem("selectedTeamId", id);
     localStorage.setItem("selectedTeamName", name);
     console.log("Team changed:", { id, name });
+    console.log("Team ID in localStorage:", localStorage.getItem("selectedTeamId"));
   };
 
   useEffect(() => {
@@ -28,7 +31,7 @@ export const TeamProvider = ({ children }) => {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-          withCredentials: true
+          withCredentials: true 
         })
         .then((response) => {
           if (response.data.success) {
@@ -39,7 +42,6 @@ export const TeamProvider = ({ children }) => {
             const savedTeamId = localStorage.getItem("selectedTeamId");
             const savedTeamName = localStorage.getItem("selectedTeamName");
 
-            // Set default team after fetching if none is set
             if (!savedTeamId && fetchedTeams.length > 0) {
               const firstTeam = fetchedTeams[0];
               changeTeam(firstTeam.id, firstTeam.name);
@@ -84,8 +86,7 @@ export const TeamProvider = ({ children }) => {
           console.error("Error fetching sidebar items:", error);
         });
     }
-  }, [teamId]); // Only fetch sidebar items when teamId changes
-
+  }, [teamId]); 
   const value = {
     teamId,
     teamName,
