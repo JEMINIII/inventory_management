@@ -21,7 +21,7 @@ import googleAuthRoute from './routes/auth/googleAuthRoute.js';
 
 
 dotenv.config();
-const api_cors = process.env.Api_cors;
+
 
 initDatabase();
 const app = express();
@@ -33,11 +33,12 @@ const transporter = nodemailer.createTransport({
     pass: process.env.EMAIL_PASS,
   },
 });
+const Api_cors = process.env.Api_cors;
 
 app.use(express.json());
 app.use(
   cors({
-    origin: ['{api_cors}'],
+    origin: [{Api_cors}],
     methods: ['POST', 'GET', 'PUT', 'DELETE'],
     credentials: true,
   })
@@ -52,6 +53,7 @@ app.use(
     cookie: {
       secure: true,
       maxAge: 1000 * 60 * 60 * 24,
+      sameSite: 'none'
     },
   })
 );
@@ -83,9 +85,10 @@ app.use((req, res, next) => {
     "OPTIONS, GET, POST, PUT, PATCH, DELETE"
   );
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.header('Access-Control-Allow-Credentials', 'true');
   next(); // Don't forget to call next() to pass control to the next middleware
 });
-
+app.options('*', cors());
 app.post('/send-email', (req, res) => {
   const { email } = req.body;
   console.log(email);
