@@ -33,7 +33,7 @@ export const sendInviteEmail = async (req, res) => {
     // If there's already an invite code, use it; otherwise, use the new inviteCode
     const codeToSend = existingInviteCode || inviteCode;
 
-    const signupUrl = `http://localhost:3000/login?inviteCode=${codeToSend}`;
+    const signupUrl = `{api_cors}/login?inviteCode=${codeToSend}`;
 
     // Read the HTML template file
     const templatePath = path.join(__dirname, "invite-template.html");
