@@ -5,9 +5,10 @@ import Cookies from 'js-cookie';
 
 export const TeamContext = createContext();
 
-const api_address = process.env.REACT_APP_API_ADDRESS;
 
 export const TeamProvider = ({ children }) => {
+  
+
   const [teamId, setTeamId] = useState(null);
   const [teamName, setTeamName] = useState(null);
   const [teams, setTeams] = useState([]);
@@ -29,7 +30,7 @@ export const TeamProvider = ({ children }) => {
 
     if (selectedOrgId) {
       axios
-        .get(`{api_address}/team?orgId=${selectedOrgId}`, {
+        .get(`${api_address}/team?orgId=${selectedOrgId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
