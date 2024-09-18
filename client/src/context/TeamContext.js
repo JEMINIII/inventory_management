@@ -1,7 +1,11 @@
-import React, { createContext, useState, useEffect } from "react";
-import axios from "axios";
-import Cookies from 'js-cookie';
+import React, {
+  createContext,
+  useEffect,
+  useState,
+} from 'react';
 
+import axios from 'axios';
+import Cookies from 'js-cookie';
 
 export const TeamContext = createContext();
 
@@ -25,7 +29,7 @@ export const TeamProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    const selectedOrgId = Cookies.get('orgId');
+    const selectedOrgId = localStorage.getItem('orgId');
     const token = Cookies.get('token');
 
     if (selectedOrgId) {
