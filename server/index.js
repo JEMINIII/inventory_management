@@ -38,7 +38,7 @@ app.use(express.json());
 
 const corsOptions = {
   origin: `${Api_cors}`,
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Access-Control-Allow-Origin', `${Api_cors}`],
 };
 
