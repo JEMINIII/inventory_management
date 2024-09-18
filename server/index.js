@@ -1,5 +1,4 @@
 import cookieParser from 'cookie-parser';
-import cors from 'cors';
 import dotenv from 'dotenv';
 import express from 'express';
 import session from 'express-session';
@@ -37,13 +36,13 @@ const Api_cors = process.env.Api_cors;
 
 app.use(express.json());
 
-// const corsOptions = {
-//   origin: `${Api_cors}`,
-//   methods: ['GET', 'POST', 'PUT', 'DELETE'],
-//   allowedHeaders: ['Content-Type', 'Authorization'],
-// };
+const corsOptions = {
+  origin: `${Api_cors}`,
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Access-Control-Allow-Origin', `${Api_cors}`],
+};
 
-app.use(cors());
+// app.use(cors());
 
 
 app.use(express.static('public'));
