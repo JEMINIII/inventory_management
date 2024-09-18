@@ -5,8 +5,7 @@ import db from '../../models/db/DbModel.js';
 export const getAllTeam = async (req, res) => {
   try {
     // Extract orgId from the cookies
-    const { orgId } = req.query.orgId;
-
+    const orgId = req.query.orgId;
     // Log the organization ID being used for the query
     console.log(`Fetching teams for orgId: ${orgId}`);
 
