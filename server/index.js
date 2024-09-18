@@ -22,7 +22,7 @@ dotenv.config();
 
 initDatabase();
 // const express = require('express');
-// const cors = require('cors');
+const cors = require('cors');
 const app = express();
 
 const transporter = nodemailer.createTransport({
