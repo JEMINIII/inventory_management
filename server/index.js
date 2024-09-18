@@ -4,10 +4,12 @@ import dotenv from 'dotenv';
 import express from 'express';
 import session from 'express-session';
 import nodemailer from 'nodemailer';
+import passport from 'passport';
 
 import initDatabase from './models/initDatabase/initDatabase.js';
-
 import authRoutes from './routes/auth/AuthRoute.js';
+import googleAuthRoute from './routes/auth/googleAuthRoute.js';
+import organizationRoutes from './routes/data/DataRoute.js';
 import inviteRoute from './routes/invite/inviteRoute.js';
 import productRoutes from './routes/product/ProductRoute.js';
 import roleRoutes from './routes/role/RoleRoute.js';
@@ -15,15 +17,13 @@ import SidebarRoute from './routes/sidebar/sidebarRoute.js';
 import MemberRoute from './routes/team/TeamRoute.js';
 import teamMembersRoutes from './routes/team_members/teamMembersRoutes.js';
 import userRoutes from './routes/user/UserRoute.js';
-import organizationRoutes from './routes/data/DataRoute.js'
-import passport from 'passport';
-import googleAuthRoute from './routes/auth/googleAuthRoute.js';
-
 
 dotenv.config();
 
 
 initDatabase();
+// const express = require('express');
+// const cors = require('cors');
 const app = express();
 
 const transporter = nodemailer.createTransport({
@@ -36,13 +36,16 @@ const transporter = nodemailer.createTransport({
 const Api_cors = process.env.Api_cors;
 
 app.use(express.json());
-app.use(
-  cors({
-    origin: [{Api_cors}],
-    methods: ['POST', 'GET', 'PUT', 'DELETE'],
-    credentials: true,
-  })
-);
+
+// const corsOptions = {
+//   origin: `${Api_cors}`,
+//   methods: ['GET', 'POST', 'PUT', 'DELETE'],
+//   allowedHeaders: ['Content-Type', 'Authorization'],
+// };
+
+app.use(cors());
+
+
 app.use(express.static('public'));
 app.use(cookieParser());
 app.use(
@@ -73,22 +76,22 @@ app.use(passport.session());
 app.use(authRoutes);
 app.use(googleAuthRoute)
 // Express.js example
-app.use((req, res, next) => {
-  res.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
-  next();
-});
+// app.use((req, res, next) => {
+//   res.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
+//   next();
+// });
 
-app.use((req, res, next) => {
-  res.setHeader("Access-Control-Allow-Origin", "*"); // Allow all origins (change to specific origin if needed)
-  res.setHeader(
-    "Access-Control-Allow-Methods",
-    "OPTIONS, GET, POST, PUT, PATCH, DELETE"
-  );
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  res.header('Access-Control-Allow-Credentials', 'true');
-  next(); // Don't forget to call next() to pass control to the next middleware
-});
-app.options('*', cors());
+// app.use((req, res, next) => {
+//   res.setHeader("Access-Control-Allow-Origin", "*"); // Allow all origins (change to specific origin if needed)
+//   res.setHeader(
+//     "Access-Control-Allow-Methods",
+//     "OPTIONS, GET, POST, PUT, PATCH, DELETE"
+//   );
+//   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+//   res.header('Access-Control-Allow-Credentials', 'true');
+//   next(); // Don't forget to call next() to pass control to the next middleware
+// });
+// app.options('*', cors());
 app.post('/send-email', (req, res) => {
   const { email } = req.body;
   console.log(email);
