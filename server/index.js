@@ -39,10 +39,10 @@ app.use(express.json());
 const corsOptions = {
   origin: `${Api_cors}`,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Access-Control-Allow-Origin', `${Api_cors}`],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 };
 
-// app.use(cors());
+app.use(cors(corsOptions));
 
 
 app.use(express.static('public'));
