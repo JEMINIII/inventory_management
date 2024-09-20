@@ -12,7 +12,8 @@ export const TeamContext = createContext();
 
 export const TeamProvider = ({ children }) => {
   
-
+  const token = localStorage.getItem('token');
+  // console.log(token)
   const [teamId, setTeamId] = useState(null);
   const [teamName, setTeamName] = useState(null);
   const [teams, setTeams] = useState([]);
@@ -30,8 +31,9 @@ export const TeamProvider = ({ children }) => {
 
   useEffect(() => {
     const selectedOrgId = localStorage.getItem('orgId');
-    const token = Cookies.get('token');
-
+    const token = localStorage.getItem('token');
+    console.log(token)
+    
     if (selectedOrgId) {
       axios
         .get(`${api_address}/team?orgId=${selectedOrgId}`, {
@@ -54,6 +56,7 @@ export const TeamProvider = ({ children }) => {
               changeTeam(firstTeam.id, firstTeam.name);
             } else {
               setTeamId(parseInt(savedTeamId, 10));
+              console.log(savedTeamId)
               setTeamName(savedTeamName);
             }
           } else {
@@ -72,7 +75,6 @@ export const TeamProvider = ({ children }) => {
   useEffect(() => {
     const selectedOrgId = Cookies.get('orgId');
     const token = Cookies.get('token');
-
     if (teamId && selectedOrgId) {
       axios
         .get(`${api_address}/sidebar?teamId=${teamId}&orgId=${selectedOrgId}`, {

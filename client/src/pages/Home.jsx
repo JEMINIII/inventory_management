@@ -144,12 +144,12 @@ export const Home = () => {
       .post(`${api_address}/products/create`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
-          enctype: "multipart/form-data",
+          // enctype: "multipart/form-data",
         },
       })
       .then((res) => {
         console.log(res);
-        notification.success({ message: "Team created successfully" });
+        notification.success({ message: "item created successfully" });
         setCreateModalShow(false);
         navigate("/");
         // Reset form values after successful submission
@@ -178,28 +178,48 @@ export const Home = () => {
       window.removeEventListener("resize", handleResize);
     };
   }, []);
-
+  
   useEffect(() => {
+    // This will ensure credentials are sent with every request
     axios.defaults.withCredentials = true;
-    axios
-      .get(`${api_address}/products`)
-      .then((res) => {
-        if (res.data.success === true) {
-          setAuth(true);
-          const sortedInventory = res.data.items.sort((a, b) =>
-            a.product_name.localeCompare(b.product_name)
-          );
-          setData(sortedInventory);
-          setFilteredData(sortedInventory);
-        } else {
-          setAuth(false);
-          setMessage(res.data.error);
-        }
-      })
-      .catch((err) => {
-        console.error(err);
-      });
-  }, []);
+  
+    // Function to fetch and handle product data
+    const fetchData = () => {
+      axios
+        .get(`${api_address}/products`)
+        .then((res) => {
+          if (res.data.success === true && Array.isArray(res.data.items)) {
+            // Sorting the product data alphabetically
+            const sortedInventory = res.data.items.sort((a, b) =>
+              a.product_name.localeCompare(b.product_name)
+            );
+  
+            // Updating states once with sorted data
+            setAuth(true);
+            setData(sortedInventory);
+            setFilteredData(sortedInventory);
+          } else {
+            setAuth(false);
+            setMessage(res.data.error);
+          }
+        })
+        .catch((err) => {
+          console.error("Error fetching products:", err);
+        });
+    };
+  
+    // Call fetchData initially
+    fetchData();
+  
+    // Optional: Polling interval for real-time updates (only if needed)
+    const intervalId = setInterval(fetchData, 20000); // Polling every 5 seconds
+  
+    // Clean up polling interval on component unmount
+    return () => clearInterval(intervalId);
+  }, [api_address]); // Ensure this only runs once when api_address changes
+  
+  
+  
 
   const handleFile = (e) => {
     const file = e.target.files[0];
@@ -289,6 +309,8 @@ export const Home = () => {
       [name]: value,
     }));
   };
+
+
 
   const handleUpdate = () => {
     axios
