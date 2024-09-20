@@ -6,10 +6,9 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const salt = 10;
-
 export const registerUser = async (req, res) => {
   try {
-    const { name, email, password, inviteCode } = req.body;
+    const { name, email, password, org_id, inviteCode } = req.body;
 
     console.log("Received data:", req.body); // Log received data
 
@@ -29,18 +28,51 @@ export const registerUser = async (req, res) => {
 
       if (!inviteResult || inviteResult.length === 0) {
         console.log("Invite validation failed"); // Log validation failure
-        return res
-          .status(400)
-          .json({ message: "Invalid email or invitation code." });
+        return res.status(400).json({ message: "Invalid email or invitation code." });
       }
     }
 
     // Hash the password
-    const hash = await bcrypt.hash(password.toString(), salt);
+    const saltRounds = 10; // Define your salt rounds
+    const hash = await bcrypt.hash(password.toString(), saltRounds);
 
     // Insert the new user into the database
-    const userQuery = "INSERT INTO users (name, email, password) VALUES (?, ?, ?)";
-    await db.query(userQuery, [name, email, hash]);
+    const userQuery = "INSERT INTO users (name, email, password, org_id) VALUES (?, ?, ?, ?)";
+    const [userInsertResult] = await db.query(userQuery, [name, email, hash, org_id]);
+
+    const firstUserCheckQuery = "SELECT COUNT(*) AS userCount FROM users WHERE org_id = ?";
+    const [firstUserCountResult] = await db.query(firstUserCheckQuery, [org_id]);
+
+    // If no teams exist for the organization, create a default team
+    const teamCheckQuery = "SELECT * FROM team WHERE org_id = ?";
+    const [teamResult] = await db.query(teamCheckQuery, [org_id]);
+
+    // If no teams exist for the organization, create a default team
+    if (!teamResult || teamResult.length === 0) {
+      const defaultTeamQuery = `
+        INSERT INTO team (name, org_id)
+        VALUES (?, ?)
+      `;
+      const [teamInsertResult] = await db.query(defaultTeamQuery, [
+        "General Team", // Default team name
+        org_id,
+      ]);
+      console.log("Default team created for org_id:", org_id, "Team ID:", teamInsertResult.insertId);
+    }
+
+    // If this is the first user for the organization
+    if (firstUserCountResult[0].userCount === 1) {
+      // Assign Admin role (Assuming role ID for Admin is known, e.g., 1)
+      const adminRoleId = 1; // Change this according to your roles table
+      const teamId = teamResult[0]?.id || teamInsertResult.insertId; // Use existing or newly created team ID
+
+      // Insert into team_members table
+      const insertTeamMemberQuery = `
+        INSERT INTO team_members (user_id, role_id, team_id)
+        VALUES (?, ?, ?)
+      `;
+      await db.query(insertTeamMemberQuery, [userInsertResult.insertId, adminRoleId, teamId]);
+    }
 
     res.json({ message: "User registered successfully" });
   } catch (error) {

@@ -21,6 +21,7 @@ function StockIn() {
   const { teamId, setTeamId } = useContext(TeamContext);
   const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth <= 800);
    const MyVerticallyCenteredModal = ({ handleUpdateClick, ...props }) => (
+    
       <Modal
         {...props}
         size="lg"

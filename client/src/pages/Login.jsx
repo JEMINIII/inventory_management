@@ -8,11 +8,14 @@ import "react-toastify/dist/ReactToastify.css";
 import "./Login.css";
 
 const Login = () => {
+  const [selectedOrg, setSelectedOrg] = useState("");
   const [values, setValues] = useState({
     name: "",
     email: "",
     password: "",
+    org_id: selectedOrg, 
   });
+
   const api_address = process.env.REACT_APP_API_ADDRESS;
   const [isSignUpActive, setIsSignUpActive] = useState(false);
   const [errors, setErrors] = useState({});
@@ -21,6 +24,29 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const [organizations, setOrganizations] = useState([]);
+  
+  // const [values, setValues] = useState({ name: "", email: "", password: "" });
+  // const [inviteCode, setInviteCode] = useState("");
+  // const [loading, setLoading] = useState(false);
+  // const [errors, setErrors] = useState({});
+
+  // Fetch the list of organizations on component mount
+  useEffect(() => {
+    const fetchOrganizations = async () => {
+      try {
+        const response = await axios.get(`${api_address}/org`);
+        setOrganizations(response.data.items);
+        console.log(response.data)
+      } catch (error) {
+        console.error("Failed to fetch organizations:", error);
+      }
+    };
+
+    fetchOrganizations();
+  }, []);
+
+  
 
   useEffect(() => {
     const handleResize = () => {
@@ -49,7 +75,11 @@ const handleSubmit = (e) => {
 
   const url = isSignUpActive ? `${api_address}/register` : `${api_address}/login`;
 
-  const payload = { ...values };
+  const payload = { 
+    ...values,
+    org_id: selectedOrg ? selectedOrg : null, 
+  };
+
   if (isSignUpActive && inviteCode) {
     payload.inviteCode = inviteCode;
   }
@@ -71,7 +101,7 @@ const handleSubmit = (e) => {
         if (res.data.message === "Login successful") {
           const token = res.data.token;
           const orgId = res.data.user.org_id;
-console.log(token)
+
           // Set token and orgId in cookies/localStorage
           Cookies.set("token", token, { expires: 1 });
           localStorage.setItem("orgId", orgId);
@@ -96,18 +126,35 @@ console.log(token)
                 console.log(`Selected Team: ${firstTeam.name}`);
               } else {
                 console.log("No teams available for this organization.");
+                // Optionally, show a toast or message that no teams are available
+                toast.info("No teams available for this organization.");
               }
 
               // Navigate to the dashboard or homepage after successful login
               navigate("/", { replace: true });
+              window.location.reload();
             })
             .catch((teamError) => {
               console.error("Error fetching teams:", teamError);
-              toast.error("Failed to fetch teams. Please try again.");
+              // Handle error gracefully when no teams exist
+              if (teamError.response && teamError.response.status === 404) {
+                // No teams found for the organization, handle this case
+                toast.info("No teams available for this organization.");
+
+                // Navigate to a default dashboard even if there are no teams
+                navigate("/", { replace: true });
+                window.location.reload();
+              } else {
+                toast.error("Failed to fetch teams. Please try again.");
+              }
             });
         } else if (res.data.message === "User registered successfully") {
-          toast.success("User registered successfully. Please sign in.");
+          toast.success("User registered successfully! Please sign in.");
+          
+          // Switch to the Sign In tab
           setIsSignUpActive(false);
+          
+          // Reset form values
           setValues({ name: "", email: "", password: "" });
           setInviteCode("");
         }
@@ -119,6 +166,7 @@ console.log(token)
     })
     .finally(() => setLoading(false));
 };
+
 
   
 
@@ -198,47 +246,65 @@ console.log(token)
           </form>
         </div>
         <div className="form-container sign-up-container">
-          <form className="signup" onSubmit={handleSubmit}>
-            <h1>Create Account</h1>
-            <input
-              type="text"
-              placeholder="Name"
-              name="name"
-              value={values.name}
-              onChange={handleInput}
-            />
-            {errors.name && <p className="text-danger">{errors.name}</p>}
-            <input
-              type="email"
-              placeholder="Email"
-              name="email"
-              value={values.email}
-              onChange={handleInput}
-            />
-            {errors.email && <p className="text-danger">{errors.email}</p>}
-            <input
-              type="password"
-              placeholder="Password"
-              name="password"
-              value={values.password}
-              onChange={handleInput}
-            />
-            {errors.password && (
-              <p className="text-danger">{errors.password}</p>
-            )}
-            <input
-              type="text"
-              placeholder="Invitation Code"
-              name="inviteCode"
-              value={inviteCode}
-              onChange={(e) => setInviteCode(e.target.value)}
-              disabled={!isSignUpActive}
-            />
-            <button type="submit" disabled={loading}>
-              {loading ? "Loading..." : "Sign Up"}
-            </button>
-          </form>
-        </div>
+      <form className="signup" onSubmit={handleSubmit}>
+        <h1>Create Account</h1>
+        <input
+          type="text"
+          placeholder="Name"
+          name="name"
+          value={values.name}
+          onChange={handleInput}
+        />
+        {errors.name && <p className="text-danger">{errors.name}</p>}
+        <input
+          type="email"
+          placeholder="Email"
+          name="email"
+          value={values.email}
+          onChange={handleInput}
+        />
+        {errors.email && <p className="text-danger">{errors.email}</p>}
+        <input
+          type="password"
+          placeholder="Password"
+          name="password"
+          value={values.password}
+          onChange={handleInput}
+        />
+        {errors.password && <p className="text-danger">{errors.password}</p>}
+        
+        <input
+          type="text"
+          placeholder="Invitation Code"
+          name="inviteCode"
+          value={inviteCode}
+          onChange={(e) => setInviteCode(e.target.value)}
+        />
+
+        {/* Organization dropdown */}
+        <select
+  name="org_id"
+  value={selectedOrg}
+  onChange={(e) => {
+    setSelectedOrg(e.target.value); // Update selectedOrg state
+    setValues((prevValues) => ({ ...prevValues, org_id: e.target.value })); // Update org_id in values
+  }}
+  required
+>
+  <option value="">Select Organization</option>
+  {organizations.map((org) => (
+    <option key={org.id} value={org.id}>
+      {org.name}
+    </option>
+  ))}
+</select>
+
+
+        <button type="submit" disabled={loading}>
+          {loading ? "Loading..." : "Sign Up"}
+        </button>
+      </form>
+    </div>
         <div className="overlay-container">
           <div className="overlay">
             <div className="overlay-panel overlay-left">

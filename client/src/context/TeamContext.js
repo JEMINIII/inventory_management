@@ -81,6 +81,7 @@ export const TeamProvider = ({ children }) => {
           headers: {
             Authorization: `Bearer ${token}`,
           },
+          withCredentials: true,
         })
         .then((response) => {
           if (response.data) {
