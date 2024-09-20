@@ -44,47 +44,82 @@ const Login = () => {
     setErrors({});
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-  
-    const url = isSignUpActive ? `${api_address}/register` : `${api_address}/login`;  
-    
-    const payload = { ...values };
-    if (isSignUpActive && inviteCode) {
-      payload.inviteCode = inviteCode;
-    }
-  
-    axios
-      .post(url, payload, { withCredentials: true })
-      .then((res) => {
-        if (res.data.errors) {
-          const errorMessages = res.data.errors.reduce((acc, error) => {
-            acc[error.param] = error.msg;
-            return acc;
-          }, {});
-          setErrors(errorMessages);
-          toast.error("Please check the form for errors.");
-        } else {
-          setErrors({});
-          if (res.data.message === "Login successful") {
-            Cookies.set("token", res.data.token, { expires: 1 });
-            Cookies.set("orgId", res.data.orgId, { expires: 1 });
-  
-            navigate("/", { replace: true });
-          } else if (res.data.message === "User registered successfully") {
-            toast.success("User registered successfully. Please sign in.");
-            setIsSignUpActive(false);
-            setValues({ name: "", email: "", password: "" });
-            setInviteCode("");
-          }
+const handleSubmit = (e) => {
+  e.preventDefault();
+
+  const url = isSignUpActive ? `${api_address}/register` : `${api_address}/login`;
+
+  const payload = { ...values };
+  if (isSignUpActive && inviteCode) {
+    payload.inviteCode = inviteCode;
+  }
+
+  setLoading(true);
+
+  axios
+    .post(url, payload, { withCredentials: true })
+    .then((res) => {
+      if (res.data.errors) {
+        const errorMessages = res.data.errors.reduce((acc, error) => {
+          acc[error.param] = error.msg;
+          return acc;
+        }, {});
+        setErrors(errorMessages);
+        toast.error("Please check the form for errors.");
+      } else {
+        setErrors({});
+        if (res.data.message === "Login successful") {
+          const token = res.data.token;
+          const orgId = res.data.user.org_id;
+console.log(token)
+          // Set token and orgId in cookies/localStorage
+          Cookies.set("token", token, { expires: 1 });
+          localStorage.setItem("orgId", orgId);
+          localStorage.setItem("token", token);
+
+          // Fetch teams based on orgId
+          axios
+            .get(`${api_address}/team?orgId=${orgId}`, {
+              headers: { Authorization: `Bearer ${token}` },
+              withCredentials: true,
+            })
+            .then((teamResponse) => {
+              const teams = teamResponse.data.items;
+
+              if (teams && teams.length > 0) {
+                const firstTeam = teams[0];
+
+                // Set teamId and teamName in localStorage
+                localStorage.setItem("selectedTeamId", firstTeam.id);
+                localStorage.setItem("selectedTeamName", firstTeam.name);
+
+                console.log(`Selected Team: ${firstTeam.name}`);
+              } else {
+                console.log("No teams available for this organization.");
+              }
+
+              // Navigate to the dashboard or homepage after successful login
+              navigate("/", { replace: true });
+            })
+            .catch((teamError) => {
+              console.error("Error fetching teams:", teamError);
+              toast.error("Failed to fetch teams. Please try again.");
+            });
+        } else if (res.data.message === "User registered successfully") {
+          toast.success("User registered successfully. Please sign in.");
+          setIsSignUpActive(false);
+          setValues({ name: "", email: "", password: "" });
+          setInviteCode("");
         }
-      })
-      .catch((err) => {
-        console.error("Error:", err);
-        toast.error("An error occurred. Please try again.");
-      })
-      .finally(() => setLoading(false));
-  };
+      }
+    })
+    .catch((err) => {
+      console.error("Error:", err);
+      toast.error("An error occurred. Please try again.");
+    })
+    .finally(() => setLoading(false));
+};
+
   
 
   const toggleSignUp = () => {
@@ -111,6 +146,8 @@ const Login = () => {
       toast.error("Google login failed.");
     },
   });
+
+  
   
   
 

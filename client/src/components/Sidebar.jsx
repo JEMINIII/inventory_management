@@ -34,19 +34,23 @@ const renderIcon = (iconName) => {
 const Sidebar = () => {
   const [menuCollapsed, setMenuCollapsed] = useState(true);
   const toggleCollapsed = () => setMenuCollapsed(!menuCollapsed);
-
+ const [sidebarItems, setSidebarItems] = useState([]);
   const { SubMenu } = Menu;
   const [selectedMenuItem, setSelectedMenuItem] = useState(null);
   const handleMenuClick = (id) => setSelectedMenuItem(id);
 
   const [menuItems, setMenuItems] = useState([]);
-  const { teamId } = useContext(TeamContext);
+  // const { teamId } = useContext(TeamContext);
   const [auth, setAuth] = useState(false);
+  // const [teamId,setTeamId] = useState([])
+  const { teamId,token } = useContext(TeamContext);
+  console.log(teamId)
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         const res = await axios.get(`${api_address}/api/users`, {
+          Authorization: `Bearer ${token}`,
           withCredentials: true,
         });
         if (res.status === 200 && res.data.success === true) {
@@ -61,9 +65,44 @@ const Sidebar = () => {
 
     fetchUserData();
   }, []);
-  const token = Cookies.get("token");
+  // const token = localStorage.getItem('token');
 
-  const orgId = localStorage.getItem("orgId");
+  const orgId = localStorage.getItem("orgId")
+  
+  // useEffect(() => {
+  //   if (orgId) {
+  //     axios
+  //       .get(`${api_address}/team`, {
+  //         params: { orgId },
+  //         headers: {
+  //           Authorization: `Bearer ${token}`,
+  //         },
+  //       })
+  //       .then((response) => setTeamId(response.data.items[0].id))
+        
+        
+  //       .catch((error) => console.error("Error fetching menu items:", error));
+  //   } else {
+  //     setTeamId([]);
+  //   }
+  // }, [orgId]);
+
+  axios
+  .get(`${api_address}/team?orgId=${orgId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+    withCredentials: true,
+  })
+  .then((teamResponse) => {
+    const teams = teamResponse.data.items;})
+  .catch((err) => {
+      console.error("Error:", err);
+      console.error("An error occurred. Please try again.");
+    })
+
+
+
+  // console.log(teamId)
+
   // useEffect(() => {
   //   const selectedOrgId = Cookies.get('orgId'); // Ensure orgId is fetched from cookies
   //   const token = Cookies.get('token'); // Ensure token is fetched from cookies
@@ -89,22 +128,53 @@ const Sidebar = () => {
   //   }
   // }, [teamId, orgId]);
   
+  // useEffect(() => {
+  //   const selectedOrgId = localStorage.getItem('orgId');
+  //   const token = Cookies.get('token');
+
+
+  //   if (teamId && selectedOrgId) {
+  //     axios
+  //       .get(`${api_address}/sidebar?teamId=${teamId}&orgId=${selectedOrgId}`, {
+  //         headers: { Authorization: `Bearer ${token}` },
+  //         withCredentials: true,
+        
+  //       })
+  //       .then((response) => {
+  //         if (response.data) {
+  //           const fetchedSidebarItems = response.data;
+  //           setSidebarItems(fetchedSidebarItems);
+  //           console.log("Sidebar items fetched:", fetchedSidebarItems);
+  //         } else {
+  //           console.error("Failed to fetch sidebar items:", response.data.message || "Unknown error");
+  //         }
+  //       })
+  //       .catch((error) => {
+  //         console.error("Error fetching sidebar items:", error);
+  //       });
+  //   }
+  // }, [teamId]); 
+
   useEffect(() => {
+    const orgId = localStorage.getItem('orgId');
+    const teamId = localStorage.getItem('selectedTeamId');
+    const token = localStorage.getItem('token');
     if (orgId) {
       axios
-        .get(`${api_address}/sidebar`, {
-          params: { teamId, orgId },
+        .get(`${api_address}/sidebar`, { 
           headers: {
             Authorization: `Bearer ${token}`,
           },
+          params: { teamId,orgId },
+          withCredentials: true,
+          
         })
         .then((response) => setMenuItems(response.data))
-        
         .catch((error) => console.error("Error fetching menu items:", error));
     } else {
-      setMenuItems([]);
+      setMenuItems([]); // Clear menu items if no team is selected
     }
-  }, [teamId, orgId]);
+  }, [teamId,orgId]);
 
   const nestedMenuItems = {};
   menuItems.forEach((item) => {
