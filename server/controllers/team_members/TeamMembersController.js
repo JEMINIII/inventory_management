@@ -6,7 +6,7 @@ export const addTeamMember = async (req, res) => {
   if (!user_id || !role_id || !team_id) {
     return res.status(400).send({ message: 'Missing required fields' });
   }
-
+  
   try {
     // Insert the new team member
     const result = await db.query(
@@ -39,7 +39,7 @@ export const getTeamMembers = async (req, res) => {
       FROM team_members tm
       INNER JOIN users u ON tm.user_id = u.id
       INNER JOIN roles r ON tm.role_id = r.id
-      WHERE tm.team_id = ?`; // Filter team members by team_id
+      WHERE tm.team_id = ?`; 
 
     const teamMembers = await db.query(query, [team_id]);
 
@@ -49,6 +49,7 @@ export const getTeamMembers = async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 };
+
 
 
 

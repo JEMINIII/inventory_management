@@ -21,7 +21,9 @@ function StockIn() {
   const { teamId, changeTeam } = useContext(TeamContext);  // Use changeTeam instead of setTeamId
   const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth <= 800);
 
-  const MyVerticallyCenteredModal = ({ handleUpdateClick, ...props }) => (
+  const MyVerticallyCenteredModal = ({ handleUpdateClick, ...props }) => {
+    // console.log(props);
+    (
     <Modal
       {...props}
       size="lg"
@@ -43,7 +45,7 @@ function StockIn() {
         <button onClick={props.onHide}>No</button>
       </Modal.Footer>
     </Modal>
-  );
+  )};
 
   useEffect(() => {
     const storedTeamId = localStorage.getItem("selectedTeamId");

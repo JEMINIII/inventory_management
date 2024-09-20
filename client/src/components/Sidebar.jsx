@@ -1,3 +1,5 @@
+/* The above code is a React component named `Sidebar` that serves as a navigation sidebar for a web
+application. Here is a breakdown of what the code is doing: */
 import React, { useState, useEffect, useContext } from "react";
 import { Link } from "react-router-dom";
 import TeamSelector from "./TeamSelector";
@@ -34,23 +36,30 @@ const renderIcon = (iconName) => {
 const Sidebar = () => {
   const [menuCollapsed, setMenuCollapsed] = useState(true);
   const toggleCollapsed = () => setMenuCollapsed(!menuCollapsed);
- const [sidebarItems, setSidebarItems] = useState([]);
+  const [sidebarItems, setSidebarItems] = useState([]);
   const { SubMenu } = Menu;
   const [selectedMenuItem, setSelectedMenuItem] = useState(null);
   const handleMenuClick = (id) => setSelectedMenuItem(id);
-
+  const token = Cookies.get("token");
   const [menuItems, setMenuItems] = useState([]);
   // const { teamId } = useContext(TeamContext);
   const [auth, setAuth] = useState(false);
-  // const [teamId,setTeamId] = useState([])
-  const { teamId,token } = useContext(TeamContext);
-  console.log(teamId)
+  const teamId = localStorage.getItem("selectedTeamId");
+  // const [teamId, setTeamId] = useState(localStorage.getItem("selectedTeamId"));
+  // const { teamId } = useContext(TeamContext);
+  //
+  console.log(teamId);
+  // const token = localStorage.getItem("token")
 
   useEffect(() => {
+    const token = localStorage.getItem("token");
     const fetchUserData = async () => {
       try {
         const res = await axios.get(`${api_address}/api/users`, {
-          Authorization: `Bearer ${token}`,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+
           withCredentials: true,
         });
         if (res.status === 200 && res.data.success === true) {
@@ -67,8 +76,8 @@ const Sidebar = () => {
   }, []);
   // const token = localStorage.getItem('token');
 
-  const orgId = localStorage.getItem("orgId")
-  
+  const orgId = localStorage.getItem("orgId");
+
   // useEffect(() => {
   //   if (orgId) {
   //     axios
@@ -79,34 +88,35 @@ const Sidebar = () => {
   //         },
   //       })
   //       .then((response) => setTeamId(response.data.items[0].id))
-        
-        
+
   //       .catch((error) => console.error("Error fetching menu items:", error));
   //   } else {
   //     setTeamId([]);
   //   }
   // }, [orgId]);
-
+  // const token = localStorage.getItem("token");
   axios
-  .get(`${api_address}/team?orgId=${orgId}`, {
-    headers: { Authorization: `Bearer ${token}` },
-    withCredentials: true,
-  })
-  .then((teamResponse) => {
-    const teams = teamResponse.data.items;})
-  .catch((err) => {
+    .get(`${api_address}/team?orgId=${orgId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+
+      withCredentials: true,
+    })
+    .then((teamResponse) => {
+      const teams = teamResponse.data.items;
+    })
+    .catch((err) => {
       console.error("Error:", err);
       console.error("An error occurred. Please try again.");
-    })
-
-
+    });
 
   // console.log(teamId)
 
   // useEffect(() => {
   //   const selectedOrgId = Cookies.get('orgId'); // Ensure orgId is fetched from cookies
   //   const token = Cookies.get('token'); // Ensure token is fetched from cookies
-  
+
   //   if (teamId && selectedOrgId && token) {
   //     axios
   //       .get("http://localhost:8082/sidebar", {
@@ -127,18 +137,16 @@ const Sidebar = () => {
   //     console.log("Missing required parameters for fetching sidebar items.");
   //   }
   // }, [teamId, orgId]);
-  
+
   // useEffect(() => {
   //   const selectedOrgId = localStorage.getItem('orgId');
-  //   const token = Cookies.get('token');
-
 
   //   if (teamId && selectedOrgId) {
   //     axios
   //       .get(`${api_address}/sidebar?teamId=${teamId}&orgId=${selectedOrgId}`, {
   //         headers: { Authorization: `Bearer ${token}` },
   //         withCredentials: true,
-        
+
   //       })
   //       .then((response) => {
   //         if (response.data) {
@@ -153,28 +161,27 @@ const Sidebar = () => {
   //         console.error("Error fetching sidebar items:", error);
   //       });
   //   }
-  // }, [teamId]); 
+  // }, [teamId]);
 
   useEffect(() => {
-    const orgId = localStorage.getItem('orgId');
-    const teamId = localStorage.getItem('selectedTeamId');
-    const token = localStorage.getItem('token');
-    if (orgId) {
+    const orgId = localStorage.getItem("orgId");
+    const teamId = localStorage.getItem("selectedTeamId");
+    const token = localStorage.getItem("token");
+    if (orgId && teamId && token) {
       axios
-        .get(`${api_address}/sidebar`, { 
+        .get(`${api_address}/sidebar`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-          params: { teamId,orgId },
+          params: { teamId, orgId },
           withCredentials: true,
-          
         })
         .then((response) => setMenuItems(response.data))
         .catch((error) => console.error("Error fetching menu items:", error));
     } else {
       setMenuItems([]); // Clear menu items if no team is selected
     }
-  }, [teamId,orgId]);
+  }, [teamId, orgId, token]);
 
   const nestedMenuItems = {};
   menuItems.forEach((item) => {
@@ -212,11 +219,7 @@ const Sidebar = () => {
           </button>
         </div>
 
-        <SubMenu
-          key="teamSelector"
-          icon={<TeamOutlined />}
-          title="Select Team"
-        >
+        <SubMenu key="teamSelector" icon={<TeamOutlined />} title="Select Team">
           <div style={{ padding: "10px" }}>
             <TeamSelector />
           </div>

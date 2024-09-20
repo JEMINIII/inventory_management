@@ -1,65 +1,57 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { UserOutlined, LogoutOutlined } from "@ant-design/icons";
-import { Button, Popover } from "antd";
+import { Button, Dropdown, Menu, Modal } from "antd";
+import CreateOrganization from "../pages/create_org";  // Import CreateOrganization component
 import logo22 from "../images/5-removebg-preview.png";
 import "./Header.css";
 import Cookies from "js-cookie";
 
 function Header({ toggleSidebar, isSidebarOpen }) {
   const [auth, setAuth] = useState(false);
-  const [name, setName] = useState("");
+  const [name, setName] = useState(localStorage.getItem("loggedInUser") || "");
   const [orgName, setOrgName] = useState(localStorage.getItem("orgName") || "");
+  const [isCreateOrgModalVisible, setCreateOrgModalVisible] = useState(false);
   const api_address = process.env.REACT_APP_API_ADDRESS;
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const userRes = await axios.get(`${api_address}/api/users`, { withCredentials: true });
+        const userRes = await axios.get(`${api_address}/api/users`, {
+          withCredentials: true,
+        });
         if (userRes.status === 200 && userRes.data.success) {
+          const userName = userRes.data.name;
           setAuth(true);
-          setName(userRes.data.name);
+          setName(userName);
+          localStorage.setItem("loggedInUser", userName);
 
           const orgId = userRes.data.orgId;
           if (orgId) {
             localStorage.setItem("orgId", orgId);
-            Cookies.set("orgId", orgId, { secure: true, sameSite: 'Strict' });
-
-            try {
-              const orgRes = await axios.get(`${api_address}/org`, { withCredentials: true });
-              if (orgRes.status === 200) {
-                const orgData = orgRes.data.items;
-                const organization = orgData.find(org => org.id === orgId);
-
-                if (organization) {
-                  localStorage.setItem("orgName", organization.name);
-                  Cookies.set("orgName", organization.name, { secure: true, sameSite: 'Strict' });
-                  setOrgName(organization.name);
-
-                  if (organization.teams && organization.teams.length > 0) {
-                    const firstTeam = organization.teams[0];
-                    localStorage.setItem("selectedTeamId", firstTeam.id);
-                    localStorage.setItem("selectedTeamName", firstTeam.name);
-                    Cookies.set("selectedTeamId", firstTeam.id, { secure: true, sameSite: 'Strict' });
-                    Cookies.set("selectedTeamName", firstTeam.name, { secure: true, sameSite: 'Strict' });
-                  }
-                } else {
-                  console.log("Organization not found");
-                }
-              } else {
-                console.log("Unexpected response status:", orgRes.status);
+            Cookies.set("orgId", orgId, { secure: true, sameSite: "Strict" });
+            const orgRes = await axios.get(`${api_address}/org`, {
+              withCredentials: true,
+            });
+            if (orgRes.status === 200) {
+              const organization = orgRes.data.items.find(
+                (org) => org.id === orgId
+              );
+              if (organization) {
+                localStorage.setItem("orgName", organization.name);
+                Cookies.set("orgName", organization.name, {
+                  secure: true,
+                  sameSite: "Strict",
+                });
+                setOrgName(organization.name);
               }
-            } catch (orgErr) {
-              console.error("Error fetching organization data:", orgErr);
             }
-          } else {
-            console.log("orgId not found in user data");
           }
         } else {
           setAuth(false);
         }
       } catch (userErr) {
-        console.error("Error fetching user data:", userErr.response?.data || userErr.message || userErr);
+        console.error("Error fetching user data:", userErr);
       }
     };
 
@@ -69,51 +61,81 @@ function Header({ toggleSidebar, isSidebarOpen }) {
   const handleLogout = async () => {
     try {
       await axios.get(`${api_address}/logout`, { withCredentials: true });
-
-      // Remove orgId and orgName from both localStorage and cookies
       localStorage.removeItem("orgId");
       localStorage.removeItem("orgName");
-      localStorage.removeItem("selectedTeamId");
-      localStorage.removeItem("selectedTeamName");
+      localStorage.removeItem("loggedInUser");
       Cookies.remove("orgId");
       Cookies.remove("orgName");
-      Cookies.remove("selectedTeamId");
-      Cookies.remove("selectedTeamName");
-
+      setName("");
+      setAuth(false);
       window.location.href = "/login";
     } catch (err) {
       console.error("Error during logout:", err);
     }
   };
 
-  if (!auth) {
-    return null;
-  }
+  const handleCreateOrg = (newOrgData) => {
+    console.log("Organization created with data:", newOrgData);
+    setCreateOrgModalVisible(false);
+    
+  };
+  
 
-  const menuContent = (
-    <div>
-      <Button type="text" icon={<LogoutOutlined />} onClick={handleLogout}>
-        Logout
-      </Button>
-    </div>
+  const showCreateOrgModal = () => {
+    setCreateOrgModalVisible(true);
+  };
+
+  const hideCreateOrgModal = () => {
+    setCreateOrgModalVisible(false);
+  };
+
+  // Dropdown menu items
+  const menuItems = (
+    <Menu>
+      <Menu.Item key="1">
+        <span>Logged in as: {name}</span>
+      </Menu.Item>
+      <Menu.Divider />
+      <Menu.Item key="2" onClick={handleLogout}>
+        <LogoutOutlined /> Logout
+      </Menu.Item>
+      <Menu.Item key="3" onClick={showCreateOrgModal}>
+        Create Organization
+      </Menu.Item>
+    </Menu>
   );
 
   return (
-    <nav className="navbar">
-      <div className="logo">
-        <img src={logo22} alt="Logo" />
-      </div>
-      <div className="org-container">
-        <span>{orgName}</span>
-      </div>
-      <ul className="links">
-        <Popover content={menuContent} trigger="click" placement="bottom">
-          <div style={{ backgroundColor: 'black', color: 'white' }}>
-            <UserOutlined />
-          </div>
-        </Popover>
-      </ul>
-    </nav>
+    <>
+      <nav className="navbar">
+        <div className="logo">
+          <img src={logo22} alt="Logo" />
+        </div>
+        <div className="org-container">
+          <p style={{ fontFamily: "'Bungee Tint', sans-serif", fontSize: "26px" }}>
+            {orgName}
+          </p>
+        </div>
+        <ul className="links" style={{ marginLeft: "auto" }}>
+          {auth && (
+            <Dropdown overlay={menuItems} trigger={["click"]}>
+              <Button
+                type="text"
+                icon={<UserOutlined />}
+                style={{ color: "white" }}
+              />
+            </Dropdown>
+          )}
+        </ul>
+      </nav>
+      {/* Create Organization Modal */}
+      {isCreateOrgModalVisible && (
+        <CreateOrganization
+          onCreate={handleCreateOrg}
+          onCancel={hideCreateOrgModal}
+        />
+      )}
+    </>
   );
 }
 

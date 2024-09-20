@@ -7,7 +7,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { TeamContext } from "../context/TeamContext"; // Assuming you have a TeamContext
 const api_address = process.env.REACT_APP_API_ADDRESS;
 const Member = () => {
-  const { teamId } = useContext(TeamContext); // Using TeamContext for team selection
+  const { teamId } = localStorage.getItem('selectedTeamId')
   const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth <= 800);
@@ -26,20 +26,32 @@ const Member = () => {
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteName, setInviteName] = useState("");
   const [inviteCode, setInviteCode] = useState("");
+  
 
   const fetchTeamMembers = async (teamId) => {
+    const token = localStorage.getItem('token');
     try {
-      const response = await axios.get(
-        `${api_address}/api/team_members/${teamId}`
+      const response = await axios.get(`${api_address}/api/team_members/${teamId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          withCredentials: true 
+        }
       );
-      setAuth(true); // Assuming successful fetching means user is authenticated
       console.log("Fetched Team Members:", response.data.teamMembers);
-      return response.data.teamMembers || [];
+      setTeamMembers(response.data.teamMembers || []);
     } catch (error) {
       console.error("Error fetching team members:", error);
-      return [];
     }
   };
+  
+  useEffect(() => {
+    if (selectedTeam) {
+      fetchTeamMembers(selectedTeam);
+    }
+  }, [selectedTeam]);
+  
 
   useEffect(() => {
     if (teamId) {
@@ -73,8 +85,16 @@ const Member = () => {
   }, []);
 
   const fetchUsers = async () => {
+    const token = localStorage.getItem('token');
     try {
-      const response = await axios.get(`${api_address}/api/users`);
+      const response = await axios.get(`${api_address}/api/users`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          withCredentials: true 
+        }
+      );
       console.log("Fetched Users:", response.data.users);
       return response.data.users || [];
     } catch (error) {
@@ -84,8 +104,16 @@ const Member = () => {
   };
 
   const fetchRoles = async () => {
+    const token = localStorage.getItem('token');
     try {
-      const response = await axios.get(`${api_address}/roles`);
+      const response = await axios.get(`${api_address}/roles`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          withCredentials: true 
+        }
+      );
       console.log("Fetched Roles:", response.data.items);
       return response.data.items || [];
     } catch (error) {
@@ -95,8 +123,21 @@ const Member = () => {
   };
 
   const fetchTeams = async () => {
+    const token = localStorage.getItem('token');
+    const orgId = localStorage.getItem('org_id');
+    if (!orgId) {
+      console.error("Organization ID is not available.");
+      return []; // Early return if org_id is missing
+    }
+  
     try {
-      const response = await axios.get(`${api_address}/team`);
+      const response = await axios.get(`${api_address}/team`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        params: { org_id: orgId }, // Include org_id as a query parameter
+        withCredentials: true,
+      });
       console.log("Fetched Teams:", response.data.items);
       return response.data.items || [];
     } catch (error) {
@@ -104,6 +145,7 @@ const Member = () => {
       return [];
     }
   };
+  
 
   const openAddMemberModal = () => {
     setIsAddMemberModalOpen(true);
