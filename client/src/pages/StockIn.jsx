@@ -18,41 +18,38 @@ function StockIn() {
   const [filteredData, setFilteredData] = useState([]);
   const [selectedItems, setSelectedItems] = useState([]);
   const [modalShow, setModalShow] = useState(false);
-  const { teamId, changeTeam } = useContext(TeamContext);  // Use changeTeam instead of setTeamId
+  const { teamId, setTeamId } = useContext(TeamContext);
   const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth <= 800);
-
-  const MyVerticallyCenteredModal = ({ handleUpdateClick, ...props }) => {
-    // console.log(props);
-    (
-    <Modal
-      {...props}
-      size="lg"
-      aria-labelledby="contained-modal-title-vcenter"
-      centered
-    >
-      <Modal.Header closeButton>
-        <Modal.Title id="contained-modal-title-vcenter">
-          Are you sure ?
-        </Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
-        <h6>Do you really want to update the quantity ?</h6>
-      </Modal.Body>
-      <Modal.Footer>
-        <button type="primary" onClick={handleUpdateClick}>
-          Yes
-        </button>
-        <button onClick={props.onHide}>No</button>
-      </Modal.Footer>
-    </Modal>
-  )};
+   const MyVerticallyCenteredModal = ({ handleUpdateClick, ...props }) => (
+      <Modal
+        {...props}
+        size="lg"
+        aria-labelledby="contained-modal-title-vcenter"
+        centered
+      >
+        <Modal.Header closeButton>
+          <Modal.Title id="contained-modal-title-vcenter">
+            Are you sure ?
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <h6>Do you really want to update the quantity ?</h6>
+        </Modal.Body>
+        <Modal.Footer>
+          <button type="primary" onClick={handleUpdateClick}>
+            Yes
+          </button>
+          <button onClick={props.onHide}>No</button>
+        </Modal.Footer>
+      </Modal>
+    );
 
   useEffect(() => {
     const storedTeamId = localStorage.getItem("selectedTeamId");
     if (storedTeamId) {
-      changeTeam(storedTeamId, localStorage.getItem('selectedTeamName'));  // Use changeTeam
+      setTeamId(storedTeamId);
     }
-  }, [changeTeam]);  // Use changeTeam dependency
+  }, [setTeamId]);
 
   useEffect(() => {
     if (teamId) {
@@ -77,8 +74,7 @@ function StockIn() {
   }, [teamId]);
 
   useEffect(() => {
-    axios.defaults.withCredentials = true;
-    axios.get(`${api_address}/products`)
+    axios.get(`${api_address}/products`, { withCredentials: true })
       .then((res) => {
         if (res.data.success === true) {
           setAuth(true);
@@ -96,6 +92,7 @@ function StockIn() {
         console.error(err.response?.data || err);
       });
   }, []);
+  
 
   const handleItemClick = (inventory) => {
     const existingItemIndex = selectedItems.findIndex(item => item.product_id === inventory.product_id);
@@ -120,10 +117,11 @@ function StockIn() {
       const existingItem = Array.isArray(data) ? data.find(i => i.product_id === item.product_id) : null;
       const inventoryQuantity = existingItem ? existingItem.quantity : 0;
   
-      return axios.put(`${api_address}/products/updateQuantity`, { 
-          productId: item.product_id, 
-          quantity: inventoryQuantity + item.quantity 
-      });
+      return axios.put(
+        `${api_address}/products/updateQuantity`, 
+        { productId: item.product_id, quantity: inventoryQuantity + item.quantity },
+        { withCredentials: true } // Ensure withCredentials is explicitly set
+      );
     });
   
     Promise.all(updateRequests)
@@ -139,6 +137,7 @@ function StockIn() {
         toast.error('Failed to update product quantities');
       });
   };
+  
   
 
   const fetchUpdatedData = () => {
