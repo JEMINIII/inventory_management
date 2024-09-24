@@ -116,12 +116,12 @@ export const updateQuantity = async (req, res) => {
       throw new Error('Failed to update quantity or product not found.');
     }
 
-    // Insert a record into stock_history
-    const [historyResult] = await connection.query(
-      'INSERT INTO stock_history (product_id, product_name, quantity, team_id, user_name, action, date) ' +
-      'SELECT product_id, product_name, ?, team_id, ?, ?, NOW() FROM inventory WHERE product_id = ?',
-      [quantity, userName, action, productId]
-    );
+    // // Insert a record into stock_history
+    // const [historyResult] = await connection.query(
+    //   'INSERT INTO stock_history (product_id, product_name, quantity, team_id, user_name, action, date) ' +
+    //   'SELECT product_id, product_name, ?, team_id, ?, ?, NOW() FROM inventory WHERE product_id = ?',
+    //   [quantity, userName, action, productId]
+    // );
 
     // Commit the transaction
     await connection.commit();
@@ -139,19 +139,19 @@ export const updateQuantity = async (req, res) => {
   }
 };
 
-export const getStockHistory = async (req, res) => {
-  const { teamId } = req.query;
+// export const getStockHistory = async (req, res) => {
+//   const { teamId } = req.query;
 
-  try {
-    const q = "SELECT * FROM stock_history WHERE team_id = ? ORDER BY date DESC";
-    const [rows] = await db.query(q, [teamId]);
+//   try {
+//     const q = "SELECT * FROM stock_history WHERE team_id = ? ORDER BY date DESC";
+//     const [rows] = await db.query(q, [teamId]);
 
-    res.json({ success: true, history: rows });
-  } catch (error) {
-    console.error("Error fetching stock history:", error);
-    res.status(500).json({ error: "Internal server error" });
-  }
-};
+//     res.json({ success: true, history: rows });
+//   } catch (error) {
+//     console.error("Error fetching stock history:", error);
+//     res.status(500).json({ error: "Internal server error" });
+//   }
+// };
 
 
 
