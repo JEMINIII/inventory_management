@@ -98,16 +98,61 @@ export const deleteProduct = async (req, res) => {
   }
 };
 
-export const updateQuantity = (req, res) => {
-  const { productId, quantity } = req.body;
-  db.query('UPDATE inventory SET quantity = ? WHERE product_id = ?', [quantity, productId], (err, result) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).json({ success: false, error: 'Failed to update quantity' });
+export const updateQuantity = async (req, res) => {
+  const { productId, quantity, action, userName } = req.body;
+
+  // Start a transaction
+  const connection = await db.getConnection();
+  try {
+    await connection.beginTransaction();
+
+    // Update inventory
+    const [result] = await connection.query(
+      'UPDATE inventory SET quantity = ? WHERE product_id = ?',
+      [quantity, productId]
+    );
+
+    if (result.affectedRows === 0) {
+      throw new Error('Failed to update quantity or product not found.');
     }
+
+    // Insert a record into stock_history
+    const [historyResult] = await connection.query(
+      'INSERT INTO stock_history (product_id, product_name, quantity, team_id, user_name, action, date) ' +
+      'SELECT product_id, product_name, ?, team_id, ?, ?, NOW() FROM inventory WHERE product_id = ?',
+      [quantity, userName, action, productId]
+    );
+
+    // Commit the transaction
+    await connection.commit();
+
+    // Respond with success
     return res.json({ success: true });
-  });
+  } catch (err) {
+    // Rollback transaction in case of error
+    await connection.rollback();
+    console.error('Error updating quantity:', err);
+    return res.status(500).json({ success: false, error: err.message });
+  } finally {
+    // Release the connection back to the pool
+    connection.release();
+  }
 };
+
+export const getStockHistory = async (req, res) => {
+  const { teamId } = req.query;
+
+  try {
+    const q = "SELECT * FROM stock_history WHERE team_id = ? ORDER BY date DESC";
+    const [rows] = await db.query(q, [teamId]);
+
+    res.json({ success: true, history: rows });
+  } catch (error) {
+    console.error("Error fetching stock history:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
 
 
 export const createSale = async (req, res) => {
