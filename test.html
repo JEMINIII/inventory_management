@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inventory Management Web Application</title>
+  <style>
+    /* General Styles */
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #1E1E1E; /* Dark background */
+      color: #EDEDED; /* Light text */
+    }
+
+    h1, h2, h3 {
+      margin: 0;
+      padding: 0;
+      color: #EDEDED; /* Light text */
+    }
+
+    p {
+      margin: 0;
+      color: #AFAFAF; /* Softer, muted text for paragraphs */
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    /* Hero Section */
+    .hero-section {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 100px 0;
+      background: linear-gradient(135deg, #121212 50%, #2A2A2A 50%);
+      flex-wrap: wrap;
+    }
+
+    .hero-content {
+      flex: 1;
+      min-width: 300px; /* Prevents content from becoming too narrow */
+      margin-right: 20px;
+    }
+
+    .hero-content h1 {
+      font-size: 50px;
+      color: #EDEDED;
+    }
+
+    .hero-content p {
+      font-size: 20px;
+      margin: 20px 0;
+      color: #D1D1D1;
+    }
+
+    .hero-buttons {
+      margin-top: 30px;
+    }
+
+    .btn-primary, .btn-secondary {
+      padding: 14px 28px;
+      border-radius: 50px;
+      margin: 0 10px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background-color: #C0A265; /* Luxurious gold button */
+      color: #1E1E1E; /* Dark text */
+    }
+
+    .btn-primary:hover {
+      background-color: #A68443;
+    }
+
+    .btn-secondary {
+      background-color: transparent;
+      color: #C0A265;
+      border: 2px solid #C0A265;
+    }
+
+    .hero-image {
+      flex: 1;
+      min-width: 300px; /* Prevents content from becoming too narrow */
+      text-align: right; /* Aligns the image to the right */
+    }
+
+    .hero-image img {
+      max-width: 100%;
+      height: auto;
+    }
+
+    /* Key Features Section */
+    .features-section {
+      padding: 60px 0;
+      background-color: #2A2A2A;
+      text-align: center;
+    }
+
+    .features-section h2 {
+      font-size: 36px;
+      margin-bottom: 40px;
+      color: #C0A265;
+    }
+
+    .features-grid {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap; /* Allow wrapping */
+      text-align: center;
+    }
+
+    .feature-item {
+      width: 23%;
+      background-color: #1E1E1E;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+      margin: 10px; /* Add some spacing between items */
+    }
+
+    .feature-item img {
+      width: 60px;
+      margin-bottom: 20px;
+    }
+
+    .feature-item h3 {
+      font-size: 24px;
+      margin-bottom: 10px;
+      color: #EDEDED;
+    }
+
+    .feature-item p {
+      font-size: 16px;
+      color: #AFAFAF;
+    }
+
+    /* How It Works Section */
+    .how-it-works {
+      padding: 60px 0;
+      background-color: #1B1B1B;
+      text-align: center;
+    }
+
+    .how-it-works h2 {
+      font-size: 36px;
+      margin-bottom: 40px;
+      color: #C0A265;
+    }
+
+    .steps-container {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap; /* Allow wrapping */
+      text-align: center;
+    }
+
+    .step-item {
+      width: 23%;
+      padding: 20px;
+      color: #EDEDED;
+      margin: 10px; /* Add some spacing between items */
+    }
+
+    .step-item h3 {
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+
+    .step-item p {
+      font-size: 16px;
+      color: #D1D1D1;
+    }
+
+    /* Testimonials Section */
+    .testimonials-section {
+      padding: 60px 0;
+      background-color: #2A2A2A;
+      text-align: center;
+    }
+
+    .testimonials-section h2 {
+      font-size: 36px;
+      margin-bottom: 40px;
+      color: #C0A265;
+    }
+
+    .testimonials-grid {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap; /* Allow wrapping */
+      text-align: center;
+    }
+
+    .testimonial-item {
+      width: 30%;
+      background-color: #1E1E1E;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+      margin: 10px; /* Add some spacing between items */
+    }
+
+    .testimonial-item img {
+      width: 60px;
+      margin-bottom: 20px;
+      border-radius: 50%;
+    }
+
+    .testimonial-item p {
+      font-size: 16px;
+      color: #AFAFAF;
+    }
+
+    .testimonial-item h3 {
+      font-size: 18px;
+      margin-bottom: 10px;
+      color: #EDEDED;
+    }
+
+    /* Call-to-Action Section */
+    .cta-section {
+      padding: 80px 0;
+      background-color: #1B1B1B;
+      text-align: center;
+      color: white;
+    }
+
+    .cta-section h2 {
+      font-size: 36px;
+      margin-bottom: 30px;
+      color: #C0A265;
+    }
+
+    .cta-buttons .btn-primary,
+    .cta-buttons .btn-secondary {
+      padding: 14px 28px;
+      border-radius: 50px;
+      margin: 0 10px;
+      font-weight: bold;
+      color: #1E1E1E;
+      cursor: pointer;
+    }
+
+    .cta-buttons .btn-primary {
+      background-color: #C0A265;
+    }
+
+    .cta-buttons .btn-secondary {
+      background-color: transparent;
+      color: #C0A265;
+      border: 2px solid #C0A265;
+    }
+
+    .cta-buttons .btn-primary:hover {
+      background-color: #A68443;
+    }
+
+    .cta-buttons .btn-secondary:hover {
+      border-color: #A68443;
+      color: #A68443;
+    }
+
+    /* Responsive Styles */
+    @media (max-width: 768px) {
+      .hero-section {
+        flex-direction: column; /* Stack elements vertically */
+        padding: 60px 0;
+      }
+
+      .hero-content h1 {
+        font-size: 36px; /* Reduce font size for mobile */
+      }
+
+      .hero-content p {
+        font-size: 16px; /* Reduce font size for mobile */
+      }
+
+      .features-grid,
+      .steps-container,
+      .testimonials-grid {
+        flex-direction: column; /* Stack items vertically */
+        align-items: center; /* Center items */
+      }
+
+      .feature-item,
+      .step-item,
+      .testimonial-item {
+        width: 80%; /* Take up more width on mobile */
+        margin: 10px 0; /* Add margin for spacing */
+      }
+
+      .cta-section h2 {
+        font-size: 28px; /* Reduce font size for mobile */
+      }
+    }
+
+    @media (max-width: 480px) {
+      .hero-content h1 {
+        font-size: 28px; /* Further reduce font size for smaller screens */
+      }
+
+      .hero-content p {
+        font-size: 14px; /* Further reduce font size for smaller screens */
+      }
+
+      .btn-primary, .btn-secondary {
+        width: 100%; /* Full width buttons on small screens */
+        margin: 10px 0; /* Add margin for spacing */
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="container hero-content">
+      <h1>Simplify Your Inventory Management</h1>
+      <p>Our premium tool eliminates friction, automates tasks, and offers total control of your inventory in an elegant, luxury-driven experience.</p>
+      <div class="hero-buttons">
+        <button class="btn-primary">Start Free Trial</button>
+        <button class="btn-secondary">Request a Demo</button>
+      </div>
+    </div>
+    <div class="hero-image">
+      <img src="inventory-management-illustration.png" alt="App Interface">
+    </div>
+  </section>
+
+  <!-- Key Features Section -->
+  <section class="features-section">
+    <div class="container">
+      <h2>Luxury Features for Seamless Inventory Management</h2>
+      <div class="features-grid">
+        <div class="feature-item">
+          <img src="icon-real-time-tracking.png" alt="Real-time Tracking">
+          <h3>Real-time Tracking</h3>
+          <p>Instant access to your stock levels with up-to-the-minute data.</p>
+        </div>
+        <div class="feature-item">
+          <img src="icon-automated-restocking.png" alt="Automated Restocking">
+          <h3>Automated Restocking</h3>
+          <p>Set up intelligent restocking systems to never run out of stock.</p>
+        </div>
+        <div class="feature-item">
+          <img src="icon-analytics-dashboard.png" alt="Analytics Dashboard">
+          <h3>Analytics Dashboard</h3>
+          <p>Gain powerful insights and track performance at a glance.</p>
+        </div>
+        <div class="feature-item">
+          <img src="icon-mobile-access.png" alt="Mobile Access">
+          <h3>Mobile Access</h3>
+          <p>Manage your inventory from anywhere with our intuitive mobile app.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works Section -->
+  <section class="how-it-works">
+    <div class="container">
+      <h2>How It Works in 3 Simple Steps</h2>
+      <div class="steps-container">
+        <div class="step-item">
+          <h3>1. Sign Up</h3>
+          <p>Create your account and set up your inventory in minutes.</p>
+        </div>
+        <div class="step-item">
+          <h3>2. Automate</h3>
+          <p>Customize automated workflows to track and restock effortlessly.</p>
+        </div>
+        <div class="step-item">
+          <h3>3. Monitor</h3>
+          <p>Get real-time updates on your inventory status anytime, anywhere.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials Section -->
+  <section class="testimonials-section">
+    <div class="container">
+      <h2>Trusted by Businesses Like Yours</h2>
+      <div class="testimonials-grid">
+        <div class="testimonial-item">
+          <img src="customer-photo-1.png" alt="Customer 1">
+          <h3>John Doe</h3>
+          <p>"This app has saved us hours each week on inventory management!"</p>
+        </div>
+        <div class="testimonial-item">
+          <img src="customer-photo-2.png" alt="Customer 2">
+          <h3>Jane Smith</h3>
+          <p>"Automating restocking has completely streamlined our process!"</p>
+        </div>
+        <div class="testimonial-item">
+          <img src="customer-photo-3.png" alt="Customer 3">
+          <h3>Michael Brown</h3>
+          <p>"The analytics dashboard gives us real-time insights into stock levels."</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="cta-section">
+    <div class="container">
+      <h2>Ready to Take Control of Your Inventory?</h2>
+      <div class="cta-buttons">
+        <button class="btn-primary">Start Free Trial</button>
+        <button class="btn-secondary">Request a Demo</button>
+      </div>
+    </div>
+  </section>
+
+</body>
+</html>
