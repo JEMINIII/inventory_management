@@ -206,10 +206,22 @@ doc.text(`State: Gujarat`, rightX, 60, { align: 'right' });
 doc.line(20, 65, 190, 65); // Line across the page
 
 // Add mid-section for Challan information
-doc.setFontSize(16); // Normal bold size for Challan information
-doc.setFont("helvetica", "bold"); // Bold font for Challan details
-doc.text(`Challan Number: ${selectedChalan.id}`, 20, 80);
-doc.text(`Challan Date: ${new Date(selectedChalan.date).toLocaleDateString()}`, 20, 90);
+// Add mid-section for Challan information
+doc.setFontSize(16); // Set font size for the title
+doc.setFont("helvetica", "bold"); // Set font to bold for titles
+doc.text(`Challan Number:`, 20, 80); // Title for Challan Number
+
+doc.setFont("helvetica", "normal"); // Change font back to normal for details
+doc.setFontSize(14); // Slightly smaller font size for details
+doc.text(`  ${selectedChalan.id}`, 20 + doc.getTextWidth("Challan Number: ") + 5, 80); // Details for Challan Number
+
+doc.setFont("helvetica", "bold"); // Set font to bold again for titles
+doc.setFontSize(16); // Set font size for the title
+doc.text(`Challan Date:`, 20, 90); // Title for Challan Date
+
+doc.setFont("helvetica", "normal"); // Change font back to normal for details
+doc.setFontSize(14); // Slightly smaller font size for details
+doc.text(` ${new Date(selectedChalan.date).toLocaleDateString()}`, 20 + doc.getTextWidth("Challan Date: ") + 5, 90); // Details for Challan Date
 
 // Add client information section with proper styling
 doc.setFontSize(14); // Medium bold font for Client Information

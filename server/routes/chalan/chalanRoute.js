@@ -12,11 +12,11 @@ router.post('/chalan_items', verifyUser, createChalanItems);
 
 router.get('/chalan_data',verifyUser, getStockHistory);
 
-router.delete('/chalans/:chalanId', deleteChalan);
+router.delete('/chalans/:chalanId',verifyUser, deleteChalan);
 
 // Update chalan
-router.put('/chalans/:chalanId', updateChalan)
+router.put('/chalans/:chalanId',verifyUser, updateChalan)
 
-router.get('/chalans/:chalanId/items', getChalanItems);
+router.get('/chalans/:chalanId/items',verifyUser, getChalanItems);
 
 export default router;
