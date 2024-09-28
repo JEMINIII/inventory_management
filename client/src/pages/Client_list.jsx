@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Modal, Table, Input, Card } from 'antd';
 import { EditOutlined, DeleteOutlined, SearchOutlined, SaveOutlined, CloseOutlined } from '@ant-design/icons';
-import { ToastContainer,toast } from 'react-toastify';
-// import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer, toast } from 'react-toastify';
 import Cookies from "js-cookie";
 
 const { Column } = Table;
@@ -18,47 +17,47 @@ const ClientList = () => {
     client_name: '',
     city: '',
     state: '',
-    mobile_number: '', // New field for mobile number
-    org_id: '', // Will be set to current organization
+    mobile_number: '',
+    org_id: '', // This will be set from localStorage
   });
   const [searchQuery, setSearchQuery] = useState('');
   const [modalShow, setModalShow] = useState(false);
   const api_address = process.env.REACT_APP_API_ADDRESS;
 
-  
-    const fetchClients = async () => {
-        const token = localStorage.getItem('token');
-        const orgId = localStorage.getItem('orgId');
+  // Fetch clients
+  const fetchClients = async () => {
+    const token = localStorage.getItem('token');
+    const orgId = localStorage.getItem('orgId');
 
-        setFormValues(prevValues => ({
-            ...prevValues,
-            org_id: orgId,
-        }));
+    // Ensure orgId is available
+    if (!orgId) {
+      toast.error("Organization ID is required.");
+      return;
+    }
 
-        try {
-            const res = await axios.get(`${api_address}/api/clients`, {
-                headers: { Authorization: `Bearer ${token}` },
-                withCredentials: true,
-            });
+    try {
+      const res = await axios.get(`${api_address}/api/clients`, {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { orgId }, // Pass orgId as a query parameter
+        withCredentials: true,
+      });
 
-            setClients(
-                res.data.items.map(client => ({
-                    client_name: client.client_name || '',
-                    city: client.city || '',
-                    state: client.state || '',
-                    org_id: client.org_id || '',
-                    mobile_number: client.mobile_number || '',
-                    client_id: client.client_id,
-                }))
-            );
-            console.log(res.data.items);
-        } catch (error) {
-            console.error('Error fetching clients:', error.response ? error.response.data : error.message);
-        }
-    };
+      setClients(res.data.items.map(client => ({
+        client_name: client.client_name || '',
+        city: client.city || '',
+        state: client.state || '',
+        org_id: client.org_id || '',
+        mobile_number: client.mobile_number || '',
+        client_id: client.client_id || ''
+      })));
+      console.log(res.data.items);
+    } catch (error) {
+      console.error('Error fetching clients:', error.response ? error.response.data : error.message);
+      toast.error("Failed to load clients. Please try again later.");
+    }
+  };
 
-
-    useEffect(() => {
+  useEffect(() => {
     fetchClients();
   }, [api_address]);
 
@@ -67,26 +66,35 @@ const ClientList = () => {
     setFormValues({ ...formValues, [name]: value });
   };
 
-  const handleCreateSubmit = (e) => {
+  const handleCreateSubmit = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem('token');
+    const orgId = localStorage.getItem('orgId');
 
-    axios.post(`${api_address}/api/clients/create`, formValues, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then(response => {
-        fetchClients();
-        setClients([...clients, response.data]);
-        toast.success('Client created successfully!');
-        setCreateModalShow(false);
-        setFormValues({ client_name: '', city: '', state: '', org_id: '', mobile_number: '' });
-      })
-      .catch(error => {
-        console.error('Error creating client:', error);
-        toast.error('Error creating client!'); 
+    if (!orgId) {
+      toast.error("Organization ID is required.");
+      return;
+    }
+
+    const clientData = {
+      ...formValues,
+      org_id: orgId, // Include org_id in client data
+    };
+
+    try {
+      const response = await axios.post(`${api_address}/api/clients/create`, clientData, {
+        headers: { Authorization: `Bearer ${token}` },
       });
+
+      fetchClients(); // Refresh the client list after creation
+      toast.success('Client created successfully!');
+      setCreateModalShow(false); // Close the modal
+      // Reset form values
+      setFormValues({ client_name: '', city: '', state: '', mobile_number: '', org_id: orgId });
+    } catch (error) {
+      console.error('Error creating client:', error);
+      toast.error('Error creating client!');
+    }
   };
 
   const handleEditChange = (e) => {
@@ -94,35 +102,37 @@ const ClientList = () => {
     setSelectedClient({ ...selectedClient, [name]: value });
   };
 
-  const handleUpdate = () => {
+  const handleUpdate = async () => {
     const token = localStorage.getItem('token');
-    axios.put(`${api_address}/api/clients/edit/${selectedClient.client_id}`, selectedClient, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then(() => {
-        setClients(clients.map(client =>
-          client.client_id === selectedClient.client_id ? selectedClient : client
-        ));
-        setIsEditing(false);
-        setSelectedClient(null); // Clear selected client after updating
-      })
-      .catch(error => console.error('Error updating client:', error));
+    try {
+      await axios.put(`${api_address}/api/clients/edit/${selectedClient.client_id}`, selectedClient, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setClients(clients.map(client =>
+        client.client_id === selectedClient.client_id ? selectedClient : client
+      ));
+      toast.success('Client updated successfully!');
+      setIsEditing(false);
+      setSelectedClient(null);
+    } catch (error) {
+      console.error('Error updating client:', error);
+      toast.error('Error updating client!');
+    }
   };
 
-  const handleDelete = (clientId) => {
+  const handleDelete = async (clientId) => {
     const token = localStorage.getItem('token');
-    axios.delete(`${api_address}/api/clients/delete/${clientId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then(() => {
-        setClients(clients.filter(client => client.client_id !== clientId));
-        setSelectedClient(null);
-      })
-      .catch(error => console.error('Error deleting client:', error));
+    try {
+      await axios.delete(`${api_address}/api/clients/delete/${clientId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setClients(clients.filter(client => client.client_id !== clientId));
+      toast.success('Client deleted successfully!');
+      setSelectedClient(null);
+    } catch (error) {
+      console.error('Error deleting client:', error);
+      toast.error('Error deleting client!');
+    }
   };
 
   const handleConfirmDelete = () => {
@@ -143,26 +153,22 @@ const ClientList = () => {
   return (
     <div>
       <ToastContainer />
-      <div
-        style={{
+      <div style={{
+        display: "flex",
+        flexDirection: "column",
+        width: "100%",
+        maxHeight: "calc(98vh - 74px)",
+      }}>
+        <div style={{
           display: "flex",
-          flexDirection: "column",
-          width: "100%",
-          maxHeight: "calc(98vh - 74px)",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: 30,
-            marginTop: 30,
-            borderBottom: "2px black solid",
-          }}
-        >
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: 30,
+          marginTop: 30,
+          borderBottom: "2px black solid",
+        }}>
           <h2 style={{ marginBottom: 30 }}>Client List</h2>
-          <button type="primary" onClick={() => setCreateModalShow(true)} style={{ marginBottom: 30 }}>
+          <button type="button" onClick={() => setCreateModalShow(true)} style={{ marginBottom: 30 }}>
             Add Client
           </button>
         </div>
@@ -179,17 +185,28 @@ const ClientList = () => {
             {Object.entries(formValues).map(([key, value]) => (
               <div className="form-group" key={key}>
                 <label htmlFor={key} className="form-label">{key.replace(/_/g, " ").toUpperCase()}</label>
-                <Input
-                  placeholder={`Enter ${key.replace(/_/g, " ")}`}
-                  id={key}
-                  name={key}
-                  value={value}
-                  onChange={handleInputChange}
-                />
+                {/* If key is org_id, render as read-only */}
+                {key === 'org_id' ? (
+                  <Input
+                    placeholder={`Organization ID`}
+                    id={key}
+                    name={key}
+                    value={value}
+                    readOnly
+                  />
+                ) : (
+                  <Input
+                    placeholder={`Enter ${key.replace(/_/g, " ")}`}
+                    id={key}
+                    name={key}
+                    value={value}
+                    onChange={handleInputChange}
+                  />
+                )}
               </div>
             ))}
             <center>
-              <button type="primary" Type="submit">Submit</button>
+              <button type="submit">Submit</button>
             </center>
           </form>
         </Modal>
@@ -220,7 +237,7 @@ const ClientList = () => {
               <Column title="Client Name" dataIndex="client_name" key="client_name" />
               <Column title="City" dataIndex="city" key="city" />
               <Column title="State" dataIndex="state" key="state" />
-              <Column title="Mobile Number" dataIndex="mobile_number" key="mobile_number" /> {/* New Column */}
+              <Column title="Mobile Number" dataIndex="mobile_number" key="mobile_number" />
             </Table>
           </Card>
 
@@ -242,13 +259,21 @@ const ClientList = () => {
                             <tr key={key}>
                               <td><strong>{key.replace(/_/g, " ")}:</strong></td>
                               <td>
-                                <Input
-                                  type="text"
-                                  name={key}
-                                  style={{ border: "none" }}
-                                  value={value}
-                                  onChange={handleEditChange}
-                                />
+                              {key === 'client_id' || key === 'org_id' ? (
+                                  <Input
+                                    type="text"
+                                    name={key}
+                                    value={value}
+                                    readOnly
+                                  />
+                                ) : (
+                                  <Input
+                                    type="text"
+                                    name={key}
+                                    value={value}
+                                    onChange={handleEditChange}
+                                  />
+                                )}
                               </td>
                             </tr>
                           ))}
@@ -258,15 +283,13 @@ const ClientList = () => {
                   </>
                 ) : (
                   <>
-                    <h6
-                      style={{
-                        borderBottom: "3px black solid",
-                        paddingBottom: "5px",
-                        display: "flex",
-                        justifyContent: "space-evenly",
-                        alignItems: "center",
-                      }}
-                    >
+                    <h6 style={{
+                      borderBottom: "3px black solid",
+                      paddingBottom: "5px",
+                      display: "flex",
+                      justifyContent: "space-evenly",
+                      alignItems: "center",
+                    }}>
                       Selected Client Details
                     </h6>
                     <div style={{ fontWeight: "bold", fontSize: "40px", textAlign: "center" }}>
@@ -336,7 +359,7 @@ const ClientList = () => {
             <button onClick={handleCancelDelete} style={{ marginRight: 10 }}>
               Cancel
             </button>
-            <button type="primary" onClick={handleConfirmDelete}>
+            <button type="button" onClick={handleConfirmDelete}>
               Delete
             </button>
           </div>

@@ -30,18 +30,34 @@ const ChalanHistory = () => {
   // Fetch Chalan History
   const fetchChalanHistory = async () => {
     const token = localStorage.getItem('token');
-    try {
-      const res = await axios.get(`${api_address}/chalan_data`, {
-        headers: { Authorization: `Bearer ${token}` },
-        withCredentials: true,
-      });
-      setChalanHistory(res.data.data[0]); // Filter by team_id
-      console.log(res.data.data[0])
-    } catch (error) {
-      console.error("Error fetching chalan history:", error);
-      toast.error("Failed to fetch chalan history.");
+    const orgId = localStorage.getItem('orgId'); // Assuming orgId is stored in local storage
+
+    if (!orgId) {
+        toast.error("Organization ID is required.");
+        return;
     }
-  };
+
+    try {
+        const res = await axios.get(`${api_address}/chalan_data`, {
+            headers: { Authorization: `Bearer ${token}` },
+            params: { orgId }, // Pass orgId as a query parameter
+            withCredentials: true,
+        });
+
+        // Ensure data is an array and contains items before accessing the first element
+        if (res.data.success && Array.isArray(res.data.data) && res.data.data.length > 0) {
+            setChalanHistory(res.data.data); // Set the entire array of chalan history
+            console.log(res.data.data); // Log the entire data for debugging
+        } else {
+            toast.error("No chalan history found.");
+        }
+    } catch (error) {
+        console.error("Error fetching chalan history:", error);
+        toast.error("Failed to fetch chalan history.");
+    }
+};
+
+
 
   // Fetch Chalan Items
   const fetchChalanItems = async (id) => {
@@ -162,75 +178,89 @@ const ChalanHistory = () => {
     }
   
     const doc = new jsPDF();
-  
+    const orgName = localStorage.getItem('orgName')
     // Add header with custom styles
+    // Set font and add organization name in bold
+    const textWidth = doc.getTextWidth(orgName);
+
+// Calculate x position to center the text
+    const x = (doc.internal.pageSize.getWidth() - textWidth) / 2;
     doc.setFont("helvetica", "bold");
     doc.setFontSize(24);
-    doc.text("Your Organization Name", 20, 20);
-    
-    doc.setFontSize(12);
-    doc.setTextColor(100);
-     doc.text(`Client Name: ${clientDetails.client_name || "N/A"}`, 20, 30);
-    doc.text(`Mobile Number: ${clientDetails.mobile_number || "N/A"}`, 20, 40);
-    doc.text(`City: ${clientDetails.city || "N/A"}`, 20, 50);
-    doc.text(`State: ${clientDetails.state || "N/A"}`, 20, 60);
-    
-    doc.setDrawColor(255, 0, 0);
-    doc.line(20, 55, 190, 55); // Add a red line after the header
-  
-    // Add mid section with styling
-    doc.setFontSize(18);
-    doc.setFont("times", "italic");
-    doc.text(`Challan Number: ${selectedChalan.id}`, 20, 70);
-    doc.text(`Challan Date: ${new Date(selectedChalan.date).toLocaleDateString()}`, 20, 80);
-  
-    // Add client information
-    doc.setFontSize(14);
-    doc.setFont("courier", "bold");
-    doc.text("Client Information:", 20, 100);
-    
-    // Check if clientDetails is defined before accessing its properties
-    if (clientDetails) {
-      doc.setFont("courier", "normal");
-      doc.text(`Client Name: ${clientDetails.client_name || "N/A"}`, 20, 110);
-      doc.text(`City: ${clientDetails.city || "N/A"}`, 20, 120);
-      doc.text(`State: ${clientDetails.state || "N/A"}`, 20, 130);
-    } else {
-      doc.text(`Client Name: N/A`, 20, 110);
-      doc.text(`City: N/A`, 20, 120);
-      doc.text(`State: N/A`, 20, 130);
-    }
-  
-    // Add items table using jsPDF-AutoTable
-    const tableData = chalanItems.map(item => [item.product_name, item.quantity]);
-    
-    doc.autoTable({
-      head: [['Product Name', 'Quantity']],
-      body: tableData,
-      startY: 140,
-      theme: 'grid', // Add a grid theme to the table
-      styles: {
-        cellPadding: 5,
-        fontSize: 12,
-        overflow: 'linebreak',
-        tableWidth: 'auto',
-        halign: 'center',
-      },
-      headStyles: {
-        fillColor: [0, 0, 0], // Red header background
-        textColor: [255, 255, 255], // White text color
-        fontSize: 14,
-      },
-      margin: { top: 20 },
-    });
-  
-    // Add footer with page number
-    const pageCount = doc.internal.getNumberOfPages();
-    for (let i = 1; i <= pageCount; i++) {
-      doc.setPage(i);
-      doc.setFontSize(10);
-      doc.text(`Page ${i} of ${pageCount}`, 180, 290);
-    }
+    doc.text(orgName, x, 20);
+
+doc.setFontSize(12);
+doc.setTextColor(100); // Set grey color for subheadings
+
+// Add placeholder for client details
+doc.text(`Mobile Number:`, 20, 40);
+doc.text(`City:`, 20, 50);
+doc.text(`State:`, 20, 60);
+
+// Draw a red line to separate the header
+doc.setDrawColor(0, 0, 0); 
+doc.line(20, 65, 190, 65); // Adjusted position for a cleaner layout
+
+// Add mid-section for Challan information
+doc.setFontSize(16);
+doc.setFont("courier", "normal");
+doc.text(`Challan Number: ${selectedChalan.id}`, 20, 80);
+doc.text(`Challan Date: ${new Date(selectedChalan.date).toLocaleDateString()}`, 20, 90);
+
+// Add client information section
+doc.setFontSize(14);
+doc.setFont("courier", "bold");
+doc.text("Client Information:", 20, 110);
+
+doc.setFont("courier", "normal");
+doc.text(`Client Name: ${clientDetails.client_name || "N/A"}`, 20, 120);
+doc.text(`City: ${clientDetails.city || "N/A"}`, 20, 130);
+doc.text(`State: ${clientDetails.state || "N/A"}`, 20, 140);
+doc.text(`Mobile Number: ${clientDetails.mobile_number || "N/A"}`, 20, 150);
+
+// Prepare table for Chalan items
+const tableData = chalanItems.map(item => [item.product_name, item.quantity]);
+
+doc.autoTable({
+  head: [['Product Name', 'Quantity']],
+  body: tableData,
+  startY: 160, // Start the table below the client information
+  theme: 'grid', // Use grid theme for a cleaner layout
+  styles: {
+    cellPadding: 5,
+    fontSize: 12,
+    overflow: 'linebreak',
+    halign: 'center',
+  },
+  headStyles: {
+    fillColor: [0, 0, 0], // Black background for header
+    textColor: [255, 255, 255], // White text in header
+    fontSize: 14,
+  },
+  margin: { top: 20 }, // Keep space above the table
+});
+
+// Footer section with page number and centered thanks message
+const pageWidth = doc.internal.pageSize.getWidth(); // Get the width of the page
+const pageCount = doc.internal.getNumberOfPages();
+
+for (let i = 1; i <= pageCount; i++) {
+  doc.setPage(i); // Set the correct page
+
+  // Add page number on the right
+  // doc.setFontSize(10);
+  // doc.text(`Page ${i} of ${pageCount}`, pageWidth - 30, 290);
+
+  // Center the "Thanks for your business" text
+  doc.setFont("");
+  doc.setFontSize(10);
+  doc.text("Thanks for your business", pageWidth / 2, 290, { align: 'center' });
+
+  // Center the "Generated by stockzen" text in smaller font
+  doc.setFontSize(8);
+  doc.text("Generated by www.stockzen.in", pageWidth / 2, 295, { align: 'center' });
+}
+
   
     // Convert the PDF to a Blob URL for preview
     const pdfBlob = doc.output("blob");
@@ -258,8 +288,8 @@ const ChalanHistory = () => {
             marginTop: 30,
             borderBottom: "2px black solid"
           }}
-        ></div>
-      <h2 style={{ marginBottom: 30 }}>Challan History</h2>
+        >
+      <h2 style={{ marginBottom: 30 }}>Challan History</h2></div>
       {loading ? <p>Loading...</p> : (
         <Table dataSource={chalanHistory} rowKey="id" pagination={{ pageSize: 8 }}>
           <Column title="ID" dataIndex="id" key="id" />

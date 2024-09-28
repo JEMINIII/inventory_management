@@ -54,14 +54,31 @@ export const createChalanItems = async (req, res) => {
 
 export const getStockHistory = async (req, res) => {
   try {
-    const results = await db.query('SELECT * FROM chalan_history');
-    console.log(results)
+    // Retrieve orgId from JWT payload (req.user) or from query params
+    const { orgId } =  req.query;
+
+    // Ensure orgId is provided
+    if (!orgId) {
+      return res.status(400).json({ success: false, error: "Organization ID is required." });
+    }
+
+    // SQL query to fetch chalan history for the specific organization
+    const [results] = await db.query(`
+      SELECT chalan_history.*
+      FROM chalan_history
+      JOIN client ON chalan_history.client_id = client.client_id
+      WHERE client.org_id = ?
+    `, [orgId]);
+    // Send response with results
     res.status(200).json({ success: true, data: results });
   } catch (error) {
+    // Catch and handle errors
     console.error("Error fetching stock history:", error.message);
     res.status(500).json({ success: false, error: error.message });
   }
 };
+
+
 
 export const deleteChalan = async (req, res) => {
   try {

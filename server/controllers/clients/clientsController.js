@@ -4,15 +4,19 @@ import jwt from 'jsonwebtoken';
 // Get all clients
 export const getAllClients = async (req, res) => {
   try {
-    const q = "SELECT * FROM client";
-    const [rows] = await db.query(q);
+      const { orgId } = req.query; // Getting orgId from query parameters
 
-    res.json({ success: true, items: rows });
+      // Modify your SQL query to filter by orgId
+      const q = "SELECT * FROM client WHERE org_id = ?";
+      const [rows] = await db.query(q, [orgId]);
+
+      res.json({ success: true, items: rows });
   } catch (error) {
-    console.error("Error fetching clients:", error);
-    res.status(500).json({ error: "Internal server error" });
+      console.error("Error fetching clients:", error);
+      res.status(500).json({ error: "Internal server error" });
   }
 };
+
 
 // Create a new client
 export const createClient = async (req, res) => {

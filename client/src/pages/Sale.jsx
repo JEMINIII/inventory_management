@@ -41,7 +41,8 @@ const Sale = () => {
 
   const fetchClients = () => {
     const token = localStorage.getItem('token');
-    console.log(token)
+    // console.log(token)
+    const orgId = localStorage.getItem('orgId');
     
     if (!token) {
         console.error('Token not found in cookies');
@@ -50,11 +51,12 @@ const Sale = () => {
 
     axios.get(`${api_address}/api/clients`, {
         headers: { Authorization: `Bearer ${token}` },
+        params: { orgId },
         withCredentials: true,
     })
     .then((res) => {
         setClients(res.data.items); // Assuming res.data.items contains the correct data
-        console.log(res.data.items); // Log the fetched items
+        console.log(res.data); // Log the fetched items
     })
     .catch((error) => {
         console.error('Error fetching clients:', error.response ? error.response.data : error.message);
