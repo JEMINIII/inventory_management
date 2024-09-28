@@ -178,41 +178,47 @@ const ChalanHistory = () => {
     }
   
     const doc = new jsPDF();
-    const orgName = localStorage.getItem('orgName')
-    // Add header with custom styles
-    // Set font and add organization name in bold
-    const textWidth = doc.getTextWidth(orgName);
+const orgName = localStorage.getItem('orgName');
+const pageWidth = doc.internal.pageSize.getWidth();
+// Add header with custom styles
+// Set font and add organization name in bold and larger size
+// const textWidth = doc.getTextWidth(orgName);
+// Right align organization details
+const rightMargin = 20; // Margin from the right
+const rightX = doc.internal.pageSize.getWidth() - rightMargin;
+const x = 75
+doc.setFont("helvetica", "bold");
+doc.setFontSize(28); // Large font size for organization name
+doc.text(orgName, rightX, 30, { align: 'right' }); // Right-aligned organization name
 
-// Calculate x position to center the text
-    const x = (doc.internal.pageSize.getWidth() - textWidth) / 2;
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(24);
-    doc.text(orgName, x, 20);
+// Right align organization details
+doc.setFontSize(10); // Smaller font size for organization details
+doc.setTextColor(100); // Grey color for subheadings
 
-doc.setFontSize(12);
-doc.setTextColor(100); // Set grey color for subheadings
 
-// Add placeholder for client details
-doc.text(`Mobile Number:`, 20, 40);
-doc.text(`City:`, 20, 50);
-doc.text(`State:`, 20, 60);
 
-// Draw a red line to separate the header
-doc.setDrawColor(0, 0, 0); 
-doc.line(20, 65, 190, 65); // Adjusted position for a cleaner layout
+// Add organization details on the right side
+doc.text(`Mobile Number: 463788477`, rightX, 40, { align: 'right' });
+doc.text(`City: Ahamedabad`, rightX, 50, { align: 'right' });
+doc.text(`State: Gujarat`, rightX, 60, { align: 'right' });
+
+// Draw a black line to separate the header
+doc.line(20, 65, 190, 65); // Line across the page
 
 // Add mid-section for Challan information
-doc.setFontSize(16);
-doc.setFont("courier", "normal");
+doc.setFontSize(16); // Normal bold size for Challan information
+doc.setFont("helvetica", "bold"); // Bold font for Challan details
 doc.text(`Challan Number: ${selectedChalan.id}`, 20, 80);
 doc.text(`Challan Date: ${new Date(selectedChalan.date).toLocaleDateString()}`, 20, 90);
 
-// Add client information section
-doc.setFontSize(14);
-doc.setFont("courier", "bold");
+// Add client information section with proper styling
+doc.setFontSize(14); // Medium bold font for Client Information
+doc.setFont("helvetica", "bold");
 doc.text("Client Information:", 20, 110);
 
-doc.setFont("courier", "normal");
+// Set regular font for client details
+doc.setFont("helvetica", "normal");
+doc.setFontSize(12); // Small regular font for client details
 doc.text(`Client Name: ${clientDetails.client_name || "N/A"}`, 20, 120);
 doc.text(`City: ${clientDetails.city || "N/A"}`, 20, 130);
 doc.text(`State: ${clientDetails.state || "N/A"}`, 20, 140);
@@ -221,45 +227,40 @@ doc.text(`Mobile Number: ${clientDetails.mobile_number || "N/A"}`, 20, 150);
 // Prepare table for Chalan items
 const tableData = chalanItems.map(item => [item.product_name, item.quantity]);
 
+const startY = 160; // Start the table below the client information
 doc.autoTable({
-  head: [['Product Name', 'Quantity']],
-  body: tableData,
-  startY: 160, // Start the table below the client information
-  theme: 'grid', // Use grid theme for a cleaner layout
-  styles: {
-    cellPadding: 5,
-    fontSize: 12,
-    overflow: 'linebreak',
-    halign: 'center',
-  },
-  headStyles: {
-    fillColor: [0, 0, 0], // Black background for header
-    textColor: [255, 255, 255], // White text in header
-    fontSize: 14,
-  },
-  margin: { top: 20 }, // Keep space above the table
+    head: [['Product Name', 'Quantity']],
+    body: tableData,
+    startY: startY, // Start the table
+    theme: 'grid', // Use grid theme for a cleaner layout
+    styles: {
+        cellPadding: 5,
+        fontSize: 12,
+        overflow: 'linebreak',
+        halign: 'center',
+    },
+    headStyles: {
+        fillColor: [0, 0, 0], // Black background for header
+        textColor: [255, 255, 255], // White text in header
+        fontSize: 14,
+    },
+    margin: { top: 20 }, // Keep space above the table
 });
 
-// Footer section with page number and centered thanks message
-const pageWidth = doc.internal.pageSize.getWidth(); // Get the width of the page
-const pageCount = doc.internal.getNumberOfPages();
+// Calculate the position for the footer based on the table height
+const finalY = doc.lastAutoTable.finalY + 10; // Adding some space below the table
 
-for (let i = 1; i <= pageCount; i++) {
-  doc.setPage(i); // Set the correct page
+// Footer section with centered "Thanks for your business" message
+doc.setFont("helvetica", "normal");
+doc.setFontSize(10); // Small font size for footer
+doc.text("Thanks for your business", pageWidth / 1.092, finalY, { align: 'right' }); // Centered text
 
-  // Add page number on the right
-  // doc.setFontSize(10);
-  // doc.text(`Page ${i} of ${pageCount}`, pageWidth - 30, 290);
+// Center the "Generated by stockzen" text in smaller font
+const fixedYPosition = 290; // Fixed Y position for the "Generated by" text
+const leftX = 20; // Margin from the left side
+doc.setFontSize(8); // Smaller font size for generated by text
+doc.text("Generated by www.stockzen.in", leftX, fixedYPosition, { align: 'left' });
 
-  // Center the "Thanks for your business" text
-  doc.setFont("");
-  doc.setFontSize(10);
-  doc.text("Thanks for your business", pageWidth / 2, 290, { align: 'center' });
-
-  // Center the "Generated by stockzen" text in smaller font
-  doc.setFontSize(8);
-  doc.text("Generated by www.stockzen.in", pageWidth / 2, 295, { align: 'center' });
-}
 
   
     // Convert the PDF to a Blob URL for preview
