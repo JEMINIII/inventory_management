@@ -54,7 +54,7 @@ const AddItemModal = ({ isVisible, handleClose }) => {
   return (
     <Modal
       title="Add New Item"
-      visible={isVisible}
+      open={isVisible}
       onCancel={handleClose}
       footer={[
         <button key="cancel" onClick={handleClose}>
@@ -70,6 +70,7 @@ const AddItemModal = ({ isVisible, handleClose }) => {
           label="Product Name"
           validateStatus={formErrors.product_name ? "error" : ""}
           help={formErrors.product_name}
+          rules={[{ required: true, message: "Please enter an Product name" }]}
         >
           <Input
             name="product_name"
@@ -81,6 +82,7 @@ const AddItemModal = ({ isVisible, handleClose }) => {
           label="Category"
           validateStatus={formErrors.category ? "error" : ""}
           help={formErrors.category}
+          rules={[{ required: true, message: "Please enter an Product category" }]}
         >
           <Input
             name="category"
@@ -92,6 +94,7 @@ const AddItemModal = ({ isVisible, handleClose }) => {
           label="Price"
           validateStatus={formErrors.price ? "error" : ""}
           help={formErrors.price}
+          rules={[{ required: true, message: "Please enter an Product price" }]}
         >
           <Input
             name="price"
@@ -104,6 +107,7 @@ const AddItemModal = ({ isVisible, handleClose }) => {
           label="Quantity"
           validateStatus={formErrors.quantity ? "error" : ""}
           help={formErrors.quantity}
+          rules={[{ required: true, message: "Please enter an Product Quantity" }]}
         >
           <Input
             name="quantity"
@@ -116,6 +120,7 @@ const AddItemModal = ({ isVisible, handleClose }) => {
           label="Total Amount"
           validateStatus={formErrors.total_amount ? "error" : ""}
           help={formErrors.total_amount}
+          rules={[{ required: true, message: "Please enter an Total" }]}
         >
           <Input
             name="total_amount"

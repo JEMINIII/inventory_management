@@ -7,7 +7,7 @@ export const getAllTeam = async (req, res) => {
     // Extract orgId from the cookies
     const orgId = req.query.orgId;
     // Log the organization ID being used for the query
-    console.log(`Fetching teams for orgId: ${orgId}`);
+    // console.log(`Fetching teams for orgId: ${orgId}`);
 
     // Ensure orgId is provided and valid
     if (!orgId) {

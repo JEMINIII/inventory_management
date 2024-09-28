@@ -17,6 +17,8 @@ import SidebarRoute from './routes/sidebar/sidebarRoute.js';
 import MemberRoute from './routes/team/TeamRoute.js';
 import teamMembersRoutes from './routes/team_members/teamMembersRoutes.js';
 import userRoutes from './routes/user/UserRoute.js';
+import clientsRoutes from './routes/clients/clientsRoute.js'
+import chalanRoute from './routes/chalan/chalanRoute.js'
 
 dotenv.config();
 
@@ -71,7 +73,8 @@ app.use('/roles', roleRoutes);
 app.use('/api', inviteRoute);
 app.use('/', SidebarRoute);
 app.use('/', organizationRoutes);
-
+app.use('/api', clientsRoutes);
+app.use('/', chalanRoute);
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(authRoutes);
@@ -92,7 +95,7 @@ app.use(googleAuthRoute)
 //   res.header('Access-Control-Allow-Credentials', 'true');
 //   next(); // Don't forget to call next() to pass control to the next middleware
 // });
-// app.options('*', cors());
+app.options('*', cors());
 app.post('/send-email', (req, res) => {
   const { email } = req.body;
   console.log(email);

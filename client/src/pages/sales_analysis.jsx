@@ -103,7 +103,20 @@ const SaleAnalysis = () => {
   return (
     // <div style={{ padding: '20px', backgroundColor: '#f5f5f5' }}>
     <>
-      <Title level={2} style={{ textAlign: 'center' }}>Sales Analysis</Title>
+      <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginBottom: 30,
+                marginTop: 30,
+                // height: "calc(100vh - 64px)",
+                borderBottom: "2px black solid"
+              }}
+            >
+              <h2 style={{ marginBottom: 30 }}>Stock Analysis</h2>
+              
+            </div>
 
       
 

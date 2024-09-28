@@ -39,7 +39,7 @@ const CreateOrganization = ({ onCreate, onCancel }) => {
   return (
     <Modal
       title="Create Organization"
-      visible={true}
+      open={true}
       onCancel={onCancel}
       confirmLoading={loading}
       footer={[

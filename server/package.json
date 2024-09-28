@@ -94,6 +94,7 @@
     "type-is": "^1.6.18",
     "undefsafe": "^2.0.5",
     "unpipe": "^1.0.0",
+    "uuid": "^10.0.0",
     "yallist": "^4.0.0"
   },
   "scripts": {

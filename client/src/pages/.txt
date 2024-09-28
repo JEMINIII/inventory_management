@@ -1,0 +1,22 @@
+  const fetchChalanItems = async (id) => {
+    const token = localStorage.getItem('token');
+    try {
+      const res = await axios.get(`${api_address}/chalans/${id}/items`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      // Check if the API response is structured as expected
+      if (res.data.items) {
+        setChalanItems(res.data.items[0]); // Set the items in state
+        console.log("Fetched Chalan Items:", res.data.items); // Debug log
+        return res.data.items[0]; // Return the items for use elsewhere
+      } else {
+        console.error("Unexpected response structure:", res.data);
+        toast.error("Failed to load chalan items.");
+      }
+    } catch (error) {
+      console.error("Error fetching chalan items:", error);
+      toast.error("Failed to load chalan items.");
+    }
+    return []; // Return an empty array on failure
+  };
