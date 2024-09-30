@@ -34,11 +34,24 @@ const transporter = nodemailer.createTransport({
   },
 });
 const Api_cors = process.env.Api_cors;
+// Define allowed origins
+const allowedOrigins = [
+  'http://stockzen.in',      // Domain
+  'http://app.stockzen.in',  // Subdomain
+  `${Api_cors}` // IP address with port
+];
+
 
 app.use(express.json());
 
 const corsOptions = {
-  origin: `${Api_cors}`,
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials:true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
