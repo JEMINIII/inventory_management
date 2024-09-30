@@ -21,7 +21,6 @@ function StockIn() {
   const { teamId, setTeamId } = useContext(TeamContext);
   const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth <= 800);
    const MyVerticallyCenteredModal = ({ handleUpdateClick, ...props }) => (
-    
       <Modal
         {...props}
         size="lg"
@@ -53,26 +52,24 @@ function StockIn() {
   }, [setTeamId]);
 
   useEffect(() => {
-    if (teamId) {
-      axios.get(`${api_address}/products?team_id=${teamId}`)
-        .then((res) => {
-          if (res.data.success === true) {
-            setAuth(true);
-            const sortedInventory = Array.isArray(res.data.items)
-              ? res.data.items.sort((a, b) => a.product_name.localeCompare(b.product_name))
-              : [];
-            setData(sortedInventory);
-            setFilteredData(sortedInventory);
-          } else {
-            setAuth(false);
-            setMessage(res.data.error);
-          }
-        })
-        .catch((err) => {
-          console.error(err);
-        });
-    }
-  }, [teamId]);
+    axios.get(`${api_address}/products`, { withCredentials: true })
+      .then((res) => {
+        if (res.data.success === true) {
+          setAuth(true);
+          const sortedInventory = Array.isArray(res.data.items)
+            ? res.data.items.sort((a, b) => a.product_name.localeCompare(b.product_name))
+            : [];
+          setData(sortedInventory);
+          setFilteredData(sortedInventory);
+        } else {
+          setAuth(false);
+          setMessage(res.data.error);
+        }
+      })
+      .catch((err) => {
+        console.error(err.response?.data || err);
+      });
+  }, []);
 
   useEffect(() => {
     axios.defaults.withCredentials = true;
@@ -118,11 +115,13 @@ function StockIn() {
       const existingItem = Array.isArray(data) ? data.find(i => i.product_id === item.product_id) : null;
       const inventoryQuantity = existingItem ? existingItem.quantity : 0;
   
-      return axios.put(`${api_address}/products/updateQuantity`, { 
-          productId: item.product_id, 
-          quantity: inventoryQuantity - item.quantity 
-      });
+      return axios.put(
+        `${api_address}/products/updateQuantity`, 
+        { productId: item.product_id, quantity: inventoryQuantity - item.quantity },
+        { withCredentials: true } // Ensure withCredentials is explicitly set
+      );
     });
+  
   
     Promise.all(updateRequests)
       .then(() => {

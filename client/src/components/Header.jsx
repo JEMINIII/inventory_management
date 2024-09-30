@@ -8,11 +8,12 @@ import "./Header.css";
 import Cookies from "js-cookie";
 
 function Header({ toggleSidebar, isSidebarOpen }) {
-  const [auth, setAuth] = useState(false);
+  const [auth, setAuth] = useState(false); // Controls authentication status
   const [name, setName] = useState(localStorage.getItem("loggedInUser") || "");
   const [orgName, setOrgName] = useState(localStorage.getItem("orgName") || "");
   const [isCreateOrgModalVisible, setCreateOrgModalVisible] = useState(false);
   const api_address = process.env.REACT_APP_API_ADDRESS;
+  const [loading, setLoading] = useState(true); // Optional loading state
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -52,6 +53,8 @@ function Header({ toggleSidebar, isSidebarOpen }) {
         }
       } catch (userErr) {
         console.error("Error fetching user data:", userErr);
+      } finally {
+        setLoading(false); // Stop loading when the user data is fetched
       }
     };
 
@@ -77,9 +80,7 @@ function Header({ toggleSidebar, isSidebarOpen }) {
   const handleCreateOrg = (newOrgData) => {
     console.log("Organization created with data:", newOrgData);
     setCreateOrgModalVisible(false);
-    
   };
-  
 
   const showCreateOrgModal = () => {
     setCreateOrgModalVisible(true);
@@ -107,17 +108,22 @@ function Header({ toggleSidebar, isSidebarOpen }) {
 
   return (
     <>
-      <nav className="navbar">
-        <div className="logo">
-          <img src={logo22} alt="Logo" />
-        </div>
-        <div className="org-container">
-          <p style={{ fontFamily: "'Bungee Tint', sans-serif", fontSize: "26px" }}>
-            {orgName}
-          </p>
-        </div>
-        <ul className="links" style={{ marginLeft: "auto" }}>
-          {auth && (
+      {auth && ( // Show header only if user is authenticated
+        <nav className="navbar">
+          <div className="logo">
+            <img src={logo22} alt="Logo" />
+          </div>
+          <div className="org-container">
+            <p
+              style={{
+                fontFamily: "'Bungee Tint', sans-serif",
+                fontSize: "26px",
+              }}
+            >
+              {orgName}
+            </p>
+          </div>
+          <ul className="links" style={{ marginLeft: "auto" }}>
             <Dropdown overlay={menuItems} trigger={["click"]}>
               <Button
                 type="text"
@@ -125,9 +131,9 @@ function Header({ toggleSidebar, isSidebarOpen }) {
                 style={{ color: "white" }}
               />
             </Dropdown>
-          )}
-        </ul>
-      </nav>
+          </ul>
+        </nav>
+      )}
       {/* Create Organization Modal */}
       {isCreateOrgModalVisible && (
         <CreateOrganization
