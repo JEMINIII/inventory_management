@@ -38,6 +38,8 @@ const Api_cors = process.env.Api_cors;
 const allowedOrigins = [
   'http://stockzen.in',      // Domain
   'http://app.stockzen.in',  // Subdomain
+  'https://stockzen.in',
+  'https://www.stockzen.in'
   `${Api_cors}` // IP address with port
 ];
 
