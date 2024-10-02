@@ -26,6 +26,18 @@ initDatabase();
 // const cors = require('cors');
 const app = express();
 
+
+// Load SSL certificates from the Certbot directory
+const privateKey = fs.readFileSync('/etc/letsencrypt/live/stockzen.in/privkey.pem', 'utf8');
+const certificate = fs.readFileSync('/etc/letsencrypt/live/stockzen.in/fullchain.pem', 'utf8');
+const ca = fs.readFileSync('/etc/letsencrypt/live/stockzen.in/chain.pem', 'utf8');
+
+const credentials = {
+  key: privateKey,
+  cert: certificate,
+  ca: ca
+};
+
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
@@ -133,8 +145,7 @@ app.post('/send-email', (req, res) => {
   });
 });
 
-initDatabase().then(() => {
-  app.listen(8082, () => {
-    console.log('Server is running on port 8082');
-  });
+// Create an HTTPS server with the SSL credentials
+https.createServer(credentials, app).listen(443, () => {
+  console.log('HTTPS server is running on port 443');
 });
