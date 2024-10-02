@@ -40,6 +40,7 @@ const allowedOrigins = [
   'http://app.stockzen.in',  // Subdomain
   'https://stockzen.in',
   'https://www.stockzen.in',
+  'wss://stockzen.in',
   `${Api_cors}` // IP address with port
 ];
 
