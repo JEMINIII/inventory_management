@@ -148,6 +148,6 @@ app.post('/send-email', (req, res) => {
 });
 
 // Create an HTTPS server with the SSL credentials
-https.createServer(credentials, app).listen(8082, () => {
-  console.log('HTTPS server is running on port 8082');
+https.createServer(credentials, app).listen(443, () => {
+  console.log('HTTPS server is running on port 443');
 });
