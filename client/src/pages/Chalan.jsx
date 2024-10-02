@@ -7,6 +7,7 @@ import { TeamContext } from '../context/TeamContext';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 import 'jspdf-autotable';
+import {EyeOutlined } from '@ant-design/icons'
 
 const { Column } = Table;
 
@@ -22,6 +23,8 @@ const ChalanHistory = () => {
   const [loading, setLoading] = useState(false);
   const { teamId } = useContext(TeamContext);
   const api_address = process.env.REACT_APP_API_ADDRESS;
+  const [clientNamesMap, setClientNamesMap] = useState({});
+  const [isFetching, setIsFetching] = useState(false);
   
   useEffect(() => {
     fetchChalanHistory();
@@ -46,8 +49,16 @@ const ChalanHistory = () => {
 
         // Ensure data is an array and contains items before accessing the first element
         if (res.data.success && Array.isArray(res.data.data) && res.data.data.length > 0) {
+            const chalanData = res.data.data;
             setChalanHistory(res.data.data); // Set the entire array of chalan history
             console.log(res.data.data); // Log the entire data for debugging
+
+            chalanData.forEach(chalan => {
+              if (chalan.client_id) {
+                fetchClientName(chalan.client_id);
+              }
+            });
+
         } else {
             toast.error("No chalan history found.");
         }
@@ -74,27 +85,51 @@ const ChalanHistory = () => {
     }
   };
 
-  // Fetch Client Details by ID
-  const fetchClientDetails = async (clientId) => {
+
+
+  const fetchClientName = (clientId) => {
     const token = localStorage.getItem('token');
-    try {
-        // Fetch client details from the API
-        const response = await axios.get(`${api_address}/api/clients/read/${clientId}`, {
-            headers: { Authorization: `Bearer ${token}` },
-        });
+    
+    axios.get(`${api_address}/api/clients/read/${clientId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+      withCredentials: true,
+    })
+    .then(res => {
+      if (res.data) {
+        setClientNamesMap(prev => ({
+          ...prev,
+          [clientId]: res.data.client_name,
+        }));
+      }
+    })
+    .catch(error => {
+      console.error("Error fetching client details:", error);
+      toast.error("Failed to load client name.");
+    });
+  };
+  
 
-        // Log the entire response for debugging
+  const renderClientName = (text, record) => {
+    return clientNamesMap[record.client_id] || "Loading...";
+  };
+  // console.log(clientNamesMap)
 
-        console.log("Client details response:", response.data);
-        setClientDetails(response.data);
-        // Directly return the fetched client details
-        return response.data.client; 
-    } catch (error) {
-        console.error("Error fetching client details:", error);
-        toast.error("Failed to load client details.");
-        return {}; // Return empty object on error
-    }
-};
+  // Fetch Client Details by ID
+  const fetchClientDetails = (clientId) => {
+    const token = localStorage.getItem('token');
+    
+    axios.get(`${api_address}/api/clients/read/${clientId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    .then(response => {
+      setClientDetails(response.data);
+    })
+    .catch(error => {
+      console.error("Error fetching client details:", error);
+      toast.error("Failed to load client details.");
+    });
+  };
+  
 
 
 
@@ -104,7 +139,7 @@ const ChalanHistory = () => {
     const client = await fetchClientDetails(clientId);
     setChalanItems(items);
     setClientDetails(client);
-    console.log(fetchClientDetails(clientId))
+    // console.log(fetchClientDetails(clientId))
   };
 
   // Show Edit Modal
@@ -121,11 +156,30 @@ const ChalanHistory = () => {
   };
 
   // Show PDF Preview Modal
+  // Show PDF Preview Modal
   const showPreviewModal = async (id, clientId) => {
     setSelectedChalanId(id);
-    await fetchChalanItemsAndClient(id, clientId);
-    handlePreviewPdf(); // Generate PDF for preview
-  };
+    console.log(id)
+    setPdfPreviewSrc(null); // Clear previous PDF source properly
+    setChalanItems([]); // Clear previous Chalan items
+    setClientDetails({}); // Clear previous client details
+    setLoading(true); // Start loading state
+
+    try {
+        // Fetch new items and client details
+        await fetchChalanItemsAndClient(id, clientId);
+
+        // Generate PDF for preview
+        await handlePreviewPdf();
+    } catch (error) {
+        console.error("Error showing preview modal:", error);
+        toast.error("Failed to load chalan items or client details.");
+    } finally {
+        setLoading(false); // End loading state
+    }
+};
+
+  
 
   // Hide Preview Modal
   const hidePreviewModal = () => {
@@ -160,22 +214,17 @@ const ChalanHistory = () => {
 
   // Generate PDF and show in modal
   const handlePreviewPdf = async () => {
-    if (!selectedChalanId) {
-      toast.error("Chalan not found!");
-      return;
-    }
+    try {
+      if (!selectedChalanId) {
+        toast.error("No chalan selected for preview.");
+        return;
+      }
   
-    const selectedChalan = chalanHistory.find((chalan) => chalan.id === selectedChalanId);
-    if (!selectedChalan) {
-      toast.error("Chalan not found!");
-      return;
-    }
-  
-    // Ensure client details are fetched before generating the PDF
-    if (!clientDetails || Object.keys(clientDetails).length === 0) {
-      toast.error("Client details not found! Please try again.");
-      return;
-    }
+      const selectedChalan = chalanHistory.find((chalan) => chalan.id === selectedChalanId);
+      if (!selectedChalan) {
+        toast.error("Selected chalan not found in history.");
+        return;
+      }
   
     const doc = new jsPDF();
 const orgName = localStorage.getItem('orgName');
@@ -213,7 +262,7 @@ doc.text(`Challan Number:`, 20, 80); // Title for Challan Number
 
 doc.setFont("helvetica", "normal"); // Change font back to normal for details
 doc.setFontSize(14); // Slightly smaller font size for details
-doc.text(`  ${selectedChalan.id}`, 20 + doc.getTextWidth("Challan Number: ") + 5, 80); // Details for Challan Number
+doc.text(` ${selectedChalan.id}`, 20 + doc.getTextWidth("Challan Number: ") + 5, 80); // Details for Challan Number
 
 doc.setFont("helvetica", "bold"); // Set font to bold again for titles
 doc.setFontSize(16); // Set font size for the title
@@ -221,7 +270,7 @@ doc.text(`Challan Date:`, 20, 90); // Title for Challan Date
 
 doc.setFont("helvetica", "normal"); // Change font back to normal for details
 doc.setFontSize(14); // Slightly smaller font size for details
-doc.text(` ${new Date(selectedChalan.date).toLocaleDateString()}`, 20 + doc.getTextWidth("Challan Date: ") + 5, 90); // Details for Challan Date
+doc.text(`${new Date(selectedChalan.date).toLocaleDateString()}`, 20 + doc.getTextWidth("Challan Date: ") + 5, 90); // Details for Challan Date
 
 // Add client information section with proper styling
 doc.setFontSize(14); // Medium bold font for Client Information
@@ -280,7 +329,13 @@ doc.text("Generated by www.stockzen.in", leftX, fixedYPosition, { align: 'left' 
     const pdfUrl = URL.createObjectURL(pdfBlob);
     setPdfPreviewSrc(pdfUrl); // Set PDF URL in state
     setIsPreviewModalVisible(true); // Show the preview modal
-  };
+  } catch (error) {
+    console.error("Error generating PDF:", error);
+    toast.error("An error occurred while generating the PDF.");
+  }
+};
+
+
   
 
   return (
@@ -306,14 +361,17 @@ doc.text("Generated by www.stockzen.in", leftX, fixedYPosition, { align: 'left' 
       {loading ? <p>Loading...</p> : (
         <Table dataSource={chalanHistory} rowKey="id" pagination={{ pageSize: 8 }}>
           <Column title="ID" dataIndex="id" key="id" />
-          <Column title="Client ID" dataIndex="client_id" key="client_id" />
+          <Column title="Client Name" key="client_name" render={renderClientName} />
           <Column title="Date" dataIndex="date" key="date" />
           <Column
             title="Actions"
             key="actions"
             render={(text, record) => (
               <div>
-                <button onClick={() => showPreviewModal(record.id, record.client_id)}>View PDF</button>
+                <button onClick={() => {
+                  setSelectedChalanId(record.id); // Update the selected chalan id
+                  handlePreviewPdf(); // Then call the function to generate the PDF
+                }}>View PDF</button>
                 <button
                   type="info"
                   style={{ marginLeft: 8 }}
@@ -374,26 +432,35 @@ doc.text("Generated by www.stockzen.in", leftX, fixedYPosition, { align: 'left' 
       </Modal>
 
       {/* PDF Preview Modal */}
-      <Modal
-        title="Preview PDF"
-        open={isPreviewModalVisible}
-        onCancel={hidePreviewModal}
-        footer={[
-          <button key="back" onClick={hidePreviewModal}>
+      {/* PDF Preview Modal */}
+{/* PDF Preview Modal */}
+<Modal
+    title="Preview PDF"
+    key={selectedChalanId} // Change this to use selectedChalanId
+    open={isPreviewModalVisible}
+    onCancel={hidePreviewModal}
+    footer={[
+        <button key="back" onClick={hidePreviewModal}>
             Close
-          </button>,
-          <button key="submit" type="primary" onClick={() => {
+        </button>,
+        <button key="submit" type="primary" onClick={() => {
             const link = document.createElement('a');
             link.href = pdfPreviewSrc;
             link.download = `chalan_${selectedChalanId}.pdf`;
             link.click();
-          }}>
+        }}>
             Download PDF
-          </button>,
-        ]}
-      >
+        </button>,
+    ]}
+>
+    {pdfPreviewSrc ? (
         <iframe src={pdfPreviewSrc} width="100%" height="500px" title="PDF Preview" />
-      </Modal>
+    ) : (
+        <p>Loading PDF...</p> // Show loading state until the PDF is ready
+    )}
+</Modal>
+
+
     </div>
     </div>
   );

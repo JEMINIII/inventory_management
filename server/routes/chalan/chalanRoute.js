@@ -1,5 +1,5 @@
 import express from 'express';
-import { createChalan, createChalanItems, getStockHistory,deleteChalan,updateChalan, getChalanItems } from '../../controllers/chalan/chalanController.js';
+import { createChalan, createChalanItems, getStockHistory,deleteChalan,updateChalan, getChalanItems,updateChalanItems,deleteChalanItems } from '../../controllers/chalan/chalanController.js';
 import { verifyUser } from '../../controllers/auth/AuthController.js';
 
 const router = express.Router();
@@ -18,5 +18,10 @@ router.delete('/chalans/:chalanId',verifyUser, deleteChalan);
 router.put('/chalans/:chalanId',verifyUser, updateChalan)
 
 router.get('/chalans/:chalanId/items',verifyUser, getChalanItems);
+// Route to update a specific chalan item
+router.put('/chalans/:chalanId/items/:itemId', verifyUser, updateChalanItems);
+
+// Route to delete a specific chalan item
+router.delete('/chalans/:chalanId/items/:itemId', verifyUser, deleteChalanItems);
 
 export default router;

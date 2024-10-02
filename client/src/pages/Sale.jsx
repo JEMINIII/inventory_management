@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Card, InputNumber, Button, Select, Table, Modal, DatePicker } from "antd";
+import { InputNumber, Select, Button, Table, Modal } from "antd";
 import axios from "axios";
 import { TeamContext } from "../context/TeamContext";
 import { CloseOutlined } from "@ant-design/icons";
@@ -7,12 +7,9 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import moment from "moment";
 import "../pages/Login.css";
-import Cookies from "js-cookie";
 
 const api_address = process.env.REACT_APP_API_ADDRESS;
-
 const { Option } = Select;
-const { RangePicker } = DatePicker;
 
 const Sale = () => {
   const [inventory, setInventory] = useState([]);
@@ -20,13 +17,8 @@ const Sale = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [sales, setSales] = useState([]);
   const { teamId, setTeamId } = useContext(TeamContext);
-  const [filterDates, setFilterDates] = useState([]);
-  const [sortOrder, setSortOrder] = useState("ascend");
   const [clients, setClients] = useState([]);
-  const [selectedClient, setSelectedClient] = useState(null); // New state for the selected client
-  // console.log(localStorage.getItem()); // This will log all cookies
-  const token = localStorage.getItem('token');
-  console.log('Retrieved token:', token); // Log the retrieved token
+  const [selectedClient, setSelectedClient] = useState(null);
 
   useEffect(() => {
     const storedTeamId = localStorage.getItem("selectedTeamId");
@@ -40,31 +32,27 @@ const Sale = () => {
   }, [teamId]);
 
   const fetchClients = () => {
-    const token = localStorage.getItem('token');
-    // console.log(token)
-    const orgId = localStorage.getItem('orgId');
-    
+    const token = localStorage.getItem("token");
+    const orgId = localStorage.getItem("orgId");
+
     if (!token) {
-        console.error('Token not found in cookies');
-        return; // Early exit if token is not present
+      console.error("Token not found");
+      return;
     }
 
-    axios.get(`${api_address}/api/clients`, {
+    axios
+      .get(`${api_address}/api/clients`, {
         headers: { Authorization: `Bearer ${token}` },
         params: { orgId },
         withCredentials: true,
-    })
-    .then((res) => {
-        setClients(res.data.items); // Assuming res.data.items contains the correct data
-        console.log(res.data); // Log the fetched items
-    })
-    .catch((error) => {
-        console.error('Error fetching clients:', error.response ? error.response.data : error.message);
-    });
-};
-
-
-
+      })
+      .then((res) => {
+        setClients(res.data.items);
+      })
+      .catch((error) => {
+        console.error("Error fetching clients:", error.response?.data || error.message);
+      });
+  };
 
   const fetchInventory = () => {
     if (teamId) {
@@ -93,20 +81,17 @@ const Sale = () => {
   };
 
   const handleClientChange = (value) => {
-    const selected = clients.find(client => client.client_name === value);
+    const selected = clients.find((client) => client.client_name === value);
     if (selected) {
-      setSelectedClient(selected.client_id); // Store the client ID
+      setSelectedClient(selected.client_id);
     }
   };
-  
 
   const handleSelectChange = (value) => {
     const product = inventory.find((item) => item.product_id === value);
     if (product) {
       setSelectedItems((prevItems) => {
-        const existingItem = prevItems.find(
-          (item) => item.product_id === product.product_id
-        );
+        const existingItem = prevItems.find((item) => item.product_id === product.product_id);
         if (existingItem) {
           return prevItems.map((item) =>
             item.product_id === product.product_id
@@ -121,11 +106,27 @@ const Sale = () => {
   };
 
   const handleQuantityChange = (productId, quantity) => {
-    setSelectedItems((prevItems) =>
-      prevItems.map((item) =>
-        item.product_id === productId ? { ...item, quantity } : item
-      )
-    );
+    if (quantity !== undefined && quantity !== null) {
+      setSelectedItems((prevItems) =>
+        prevItems.map((item) =>
+          item.product_id === productId
+            ? { ...item, quantity: Math.max(1, quantity) }
+            : item
+        )
+      );
+    }
+  };
+
+  const handlePriceChange = (productId, price) => {
+    if (price !== undefined && price !== null) {
+      setSelectedItems((prevItems) =>
+        prevItems.map((item) =>
+          item.product_id === productId
+            ? { ...item, price: price }
+            : item
+        )
+      );
+    }
   };
 
   const handleRemoveItem = (productId) => {
@@ -144,62 +145,65 @@ const Sale = () => {
   const handleSale = () => {
     setIsModalVisible(true);
   };
+
   const handleModalOk = async () => {
     try {
-      // Validate selectedClient and selectedItems
       if (!selectedClient || selectedItems.length === 0) {
         toast.error("Please select a client and at least one item.");
         return;
       }
-  
-      // Prepare the items to send, ensuring that product_id is included
-      const itemsToSend = selectedItems.map(item => ({
+
+      const itemsToSend = selectedItems.map((item) => ({
         product_id: item.product_id,
         quantity: item.quantity,
-        price: item.price
+        price: item.price,
       }));
-  
-      // Step 1: Send sale data to the backend
-      const saleResponse = await axios.post(`${api_address}/products/sales`, {
-        items: itemsToSend, // Send items with product_id
-        teamId: teamId
-      }, {
-        withCredentials: true
-      });
-  
+
+      const saleResponse = await axios.post(
+        `${api_address}/products/sales`,
+        {
+          items: itemsToSend,
+          teamId: teamId,
+        },
+        {
+          withCredentials: true,
+        }
+      );
+
       if (saleResponse.data.success) {
         toast.success(`Sale processed successfully! Sale ID: ${saleResponse.data.saleId}`);
-  
-        // Step 2: Add to the chalan_history table
-        const chalanHistoryResponse = await axios.post(`${api_address}/chalan_history`, {
-          client_id: selectedClient,  // Client ID from the selected client
-          team_id: teamId,            // Team ID
 
-          items: selectedItems.map(item => ({
-            
-            product_id: item.product_id,  // Ensure product_id is included
-            quantity: item.quantity,
-          })),
-        }, {
-          withCredentials: true
-        });
+        const chalanHistoryResponse = await axios.post(
+          `${api_address}/chalan_history`,
+          {
+            client_id: selectedClient,
+            team_id: teamId,
+            items: itemsToSend,
+          },
+          {
+            withCredentials: true,
+          }
+        );
+
         if (chalanHistoryResponse.data.success) {
-          const chalanId = chalanHistoryResponse.data.chalanId; 
-        console.log(chalanHistoryResponse)
+          const chalanId = chalanHistoryResponse.data.chalanId;
 
-          // Step 3: Insert each item into chalan_items with chalan_id
           await Promise.all(
-            selectedItems.map(item => 
-              axios.post(`${api_address}/chalan_items`, {
-                chalan_id: chalanId,  // Use the chalan_id from chalan_history
-                product_id: item.product_id,
-                quantity: item.quantity
-              }, {
-                withCredentials: true
-              })
+            itemsToSend.map((item) =>
+              axios.post(
+                `${api_address}/chalan_items`,
+                {
+                  chalan_id: chalanId,
+                  product_id: item.product_id,
+                  quantity: item.quantity,
+                },
+                {
+                  withCredentials: true,
+                }
+              )
             )
           );
-  
+
           toast.success("Chalan history and items updated successfully!");
         } else {
           toast.error(`Failed to update chalan history: ${chalanHistoryResponse.data.message}`);
@@ -208,37 +212,18 @@ const Sale = () => {
         toast.error(`Failed to process sale: ${saleResponse.data.message}`);
       }
     } catch (error) {
-      console.error("Error:", error.response ? error.response.data : error.message);
+      console.error("Error:", error.response?.data || error.message);
       toast.error("An error occurred while processing the sale.");
     } finally {
       setSelectedItems([]);
-      setSelectedClient(null); // Reset the selected client
+      setSelectedClient(null);
       setIsModalVisible(false);
     }
   };
-  
-  
+
   const handleModalCancel = () => {
     setIsModalVisible(false);
   };
-
-  const handleFilterChange = (dates) => {
-    setFilterDates(dates);
-  };
-
-  const filteredSales = sales.filter((sale) => {
-    if (filterDates.length > 0) {
-      const saleDate = moment(sale.date);
-      return saleDate.isBetween(filterDates[0], filterDates[1], "day", "[]");
-    }
-    return true;
-  });
-
-  const sortedSales = [...filteredSales].sort((a, b) => {
-    const dateA = moment(a.date);
-    const dateB = moment(b.date);
-    return sortOrder === "ascend" ? dateA.diff(dateB) : dateB.diff(dateA);
-  });
 
   const productColumns = [
     {
@@ -258,9 +243,9 @@ const Sale = () => {
       render: (text, record) => (
         <InputNumber
           min={1}
-          max={record.quantity}
           value={record.quantity}
           onChange={(value) => handleQuantityChange(record.product_id, value)}
+          style={{ width: "100%" }}
         />
       ),
     },
@@ -268,14 +253,20 @@ const Sale = () => {
       title: "Price",
       dataIndex: "price",
       key: "price",
+      render: (text, record) => (
+        <InputNumber
+          min={0}
+          value={record.price}
+          onChange={(value) => handlePriceChange(record.product_id, value)}
+          style={{ width: "100%" }}
+        />
+      ),
     },
     {
       title: "Total",
       dataIndex: "total",
       key: "total",
-      render: (text, record) => (
-        <span>{record.price * record.quantity}</span>
-      ),
+      render: (text, record) => <span>{record.price * record.quantity}</span>,
     },
     {
       title: "Actions",
@@ -290,34 +281,6 @@ const Sale = () => {
     },
   ];
 
-  const salesColumns = [
-    {
-      title: "Invoice Date",
-      dataIndex: "date",
-      key: "date",
-    },
-    {
-      title: "Product Name",
-      dataIndex: "product_name",
-      key: "product_name",
-    },
-    {
-      title: "Quantity",
-      dataIndex: "quantity",
-      key: "quantity",
-    },
-    {
-      title: "Price",
-      dataIndex: "price",
-      key: "price",
-    },
-    {
-      title: "Total Amount",
-      dataIndex: "total_amount",
-      key: "total_amount",
-    },
-  ];
-
   return (
     <div>
       <div
@@ -327,16 +290,18 @@ const Sale = () => {
           justifyContent: "space-between",
           marginBottom: 30,
           marginTop: 30,
-          borderBottom: "2px black solid"
+          borderBottom: "2px black solid",
         }}
       >
         <h2 style={{ marginBottom: 30 }}>Sales / Challan</h2>
       </div>
 
       <Select
+        showSearch
         placeholder="Select Client"
-        style={{ width: "100%" }}
-        onChange={handleClientChange} // Changed to use new handler
+        style={{ width: "100%", marginBottom: 20 }}
+        onChange={handleClientChange}
+        optionFilterProp="children"
       >
         {clients.map((item) => (
           <Option key={item.client_id} value={item.client_name}>
@@ -346,9 +311,11 @@ const Sale = () => {
       </Select>
 
       <Select
+        showSearch
         placeholder="Select Product"
-        style={{ width: "100%" }}
+        style={{ width: "100%", marginBottom: 20 }}
         onChange={handleSelectChange}
+        optionFilterProp="children"
       >
         {inventory.map((item) => (
           <Option key={item.product_id} value={item.product_id}>
@@ -360,40 +327,41 @@ const Sale = () => {
       <Table
         dataSource={selectedItems}
         columns={productColumns}
-        rowKey="product_id"
-        scroll={{ x: 400 }}
         pagination={false}
-        footer={() => (
-          <div style={{ textAlign: "right" }}>
-            <strong>Total Amount: {calculateTotalAmount()}</strong>
-          </div>
-        )}
+        rowKey="product_id"
       />
-      <Button
-        type="primary"
-        style={{ marginTop: 20 }}
-        onClick={handleSale}
-        disabled={selectedItems.length === 0}
-      >
-        Process Sale
-      </Button>
-      <ToastContainer />
+
+      <div style={{ marginTop: 20 }}>
+        <button
+          type="primary"
+          onClick={handleSale}
+          style={{ marginRight: 10 }}
+        >
+          Confirm Sale
+        </button>
+        <span style={{ fontWeight: "bold" }}>
+          Total Amount: {calculateTotalAmount()} BDT
+        </span>
+      </div>
 
       <Modal
         title="Confirm Sale"
         open={isModalVisible}
-        onOk={handleModalOk}
-        onCancel={handleModalCancel}
+        footer={[
+          <button key="confirm" type="primary" onClick={handleModalOk}>
+            Confirm
+          </button>,
+          <button key="cancel" type="default" onClick={handleModalCancel}>
+            Cancel
+          </button>,
+        ]}
+        onCancel={handleModalCancel} // Still keep the onCancel to close the modal
       >
-        <p>Are you sure you want to process the following items?</p>
-        <ul>
-          {selectedItems.map(item => (
-            <li key={item.product_id}>
-              {item.product_name} - Quantity: {item.quantity}
-            </li>
-          ))}
-        </ul>
+        <p>Total Amount: {calculateTotalAmount()} BDT</p>
+        <p>Are you sure you want to confirm this sale?</p>
       </Modal>
+
+      <ToastContainer />
     </div>
   );
 };

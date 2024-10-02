@@ -165,3 +165,64 @@ export const getChalanItems = async (req, res) => {
     res.status(500).json({ success: false, error: error.message });
   }
 };
+
+export const updateChalanItems = async (req, res) => {
+  try {
+    const { chalanId, productId } = req.params; // Retrieve chalanId and productId from the request parameters
+    const { quantity } = req.body; // Retrieve the new quantity from the request body
+
+    // Validate input
+    if (!quantity) {
+      return res.status(400).json({ success: false, message: 'Quantity is required' });
+    }
+
+    // Check if the chalan exists
+    const [chalanExists] = await db.query('SELECT * FROM chalan_history WHERE id = ?', [chalanId]);
+    if (!chalanExists) {
+      return res.status(404).json({ success: false, message: 'Chalan not found' });
+    }
+
+    // Check if the item exists in the chalan
+    const [itemExists] = await db.query('SELECT * FROM chalan_items WHERE chalan_id = ? AND product_id = ?', [chalanId, productId]);
+    if (!itemExists) {
+      return res.status(404).json({ success: false, message: 'Item not found in this chalan' });
+    }
+
+    // Update the quantity of the item
+    await db.query(
+      'UPDATE chalan_items SET quantity = ? WHERE chalan_id = ? AND product_id = ?',
+      [quantity, chalanId, productId]
+    );
+
+    res.status(200).json({ success: true, message: 'Chalan item updated successfully' });
+  } catch (error) {
+    console.error("Error updating chalan item:", error.message);
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+export const deleteChalanItems = async (req, res) => {
+  try {
+    const { chalanId, productId } = req.params; // Retrieve chalanId and productId from the request parameters
+
+    // Check if the chalan exists
+    const [chalanExists] = await db.query('SELECT * FROM chalan_history WHERE id = ?', [chalanId]);
+    if (!chalanExists) {
+      return res.status(404).json({ success: false, message: 'Chalan not found' });
+    }
+
+    // Check if the item exists in the chalan
+    const [itemExists] = await db.query('SELECT * FROM chalan_items WHERE chalan_id = ? AND product_id = ?', [chalanId, productId]);
+    if (!itemExists) {
+      return res.status(404).json({ success: false, message: 'Item not found in this chalan' });
+    }
+
+    // Delete the item from the chalan
+    await db.query('DELETE FROM chalan_items WHERE chalan_id = ? AND product_id = ?', [chalanId, productId]);
+
+    res.status(200).json({ success: true, message: 'Chalan item deleted successfully' });
+  } catch (error) {
+    console.error("Error deleting chalan item:", error.message);
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
