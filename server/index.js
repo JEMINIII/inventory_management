@@ -3,6 +3,8 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import express from 'express';
 import session from 'express-session';
+import fs from 'fs';
+import https from 'https';
 import nodemailer from 'nodemailer';
 import passport from 'passport';
 
@@ -28,6 +30,18 @@ initDatabase();
 // const cors = require('cors');
 const app = express();
 
+
+// Load SSL certificates from the Certbot directory
+const privateKey = fs.readFileSync('/etc/letsencrypt/live/stockzen.in/privkey.pem', 'utf8');
+const certificate = fs.readFileSync('/etc/letsencrypt/live/stockzen.in/fullchain.pem', 'utf8');
+const ca = fs.readFileSync('/etc/letsencrypt/live/stockzen.in/chain.pem', 'utf8');
+
+const credentials = {
+  key: privateKey,
+  cert: certificate,
+  ca: ca
+};
+
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
@@ -36,11 +50,27 @@ const transporter = nodemailer.createTransport({
   },
 });
 const Api_cors = process.env.Api_cors;
+// Define allowed origins
+const allowedOrigins = [
+  'http://stockzen.in',      // Domain
+  'http://app.stockzen.in',  // Subdomain
+  'https://stockzen.in',
+  'https://www.stockzen.in',
+  'wss://stockzen.in',
+  `${Api_cors}` // IP address with port
+];
+
 
 app.use(express.json());
 
 const corsOptions = {
-  origin: `${Api_cors}`,
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials:true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
@@ -120,8 +150,7 @@ app.post('/send-email', (req, res) => {
   });
 });
 
-initDatabase().then(() => {
-  app.listen(8082, () => {
-    console.log('Server is running on port 8082');
-  });
+// Create an HTTPS server with the SSL credentials
+https.createServer(credentials, app).listen(8082, () => {
+  console.log('HTTPS server is running on port 8082');
 });
