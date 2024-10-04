@@ -22,7 +22,13 @@ import { TeamProvider } from "./context/TeamContext.js";
 import { OrganizationProvider } from "./context/OrgContext.js";
 import SaleAnalysis from "./pages/sales_analysis.jsx";
 // import Purchase from "./pages/Purchase.jsx";
+import Chalan from "./pages/Chalan.jsx";
+import Client_list from "./pages/Client_list.jsx";
+import Adjust from "./pages/adjust.jsx";
+import CreateOrganization from "./pages/CreateOrg.jsx";
 const { Content } = AntLayout;
+
+
 // require('dotenv').config();
 
 
@@ -89,8 +95,11 @@ function App() {
               <Route path="StockIn" element={<StockIn />} />
               <Route path="StockOut" element={<StockOut />} />
               <Route path='sale' element={<Sale/>} />
-              {/* <Route path='purchase' element={<Purchase/>} /> */}
+              <Route path='adjust' element={<Adjust/>} />
               <Route path='sales/analysis' element={<SaleAnalysis/>} />
+              <Route path='create-org' element={<CreateOrganization/>} />
+              <Route path='chalan' element={<Chalan/>} />
+              <Route path='/client_list' element={<Client_list/>} />
             </Route>
             <Route path="login" element={<Login />} />
             {/* <Route path="register" element={<Register />} /> */}

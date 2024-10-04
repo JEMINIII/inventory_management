@@ -6,7 +6,7 @@ import db from "../../models/db/DbModel.js";
 
 const pool = db;
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
+const Api_cors = process.env.Api_cors
 export const sendInviteEmail = async (req, res) => {
   const connection = await pool.getConnection();
   try {
@@ -33,7 +33,7 @@ export const sendInviteEmail = async (req, res) => {
     // If there's already an invite code, use it; otherwise, use the new inviteCode
     const codeToSend = existingInviteCode || inviteCode;
 
-    const signupUrl = `{api_cors}/login?inviteCode=${codeToSend}`;
+    const signupUrl = `{Api_cors}/login?inviteCode=${codeToSend}`;
 
     // Read the HTML template file
     const templatePath = path.join(__dirname, "invite-template.html");

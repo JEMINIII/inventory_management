@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Card, InputNumber, Button, Select, Table, Modal, DatePicker } from "antd";
+import { InputNumber, Select, Button, Table, Modal } from "antd";
 import axios from "axios";
 import { TeamContext } from "../context/TeamContext";
 import { CloseOutlined } from "@ant-design/icons";
@@ -7,10 +7,9 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import moment from "moment";
 import "../pages/Login.css";
-const api_address = process.env.REACT_APP_API_ADDRESS;
 
+const api_address = process.env.REACT_APP_API_ADDRESS;
 const { Option } = Select;
-const { RangePicker } = DatePicker;
 
 const Sale = () => {
   const [inventory, setInventory] = useState([]);
@@ -18,10 +17,8 @@ const Sale = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [sales, setSales] = useState([]);
   const { teamId, setTeamId } = useContext(TeamContext);
-  const [filterDates, setFilterDates] = useState([]);
-  const [sortOrder, setSortOrder] = useState("ascend");
-  const [auth, setAuth] = useState(false);
-  const [message, setMessage] = useState("");
+  const [clients, setClients] = useState([]);
+  const [selectedClient, setSelectedClient] = useState(null);
 
   useEffect(() => {
     const storedTeamId = localStorage.getItem("selectedTeamId");
@@ -29,9 +26,33 @@ const Sale = () => {
   }, [setTeamId]);
 
   useEffect(() => {
+    fetchClients();
     fetchInventory();
     fetchSales();
   }, [teamId]);
+
+  const fetchClients = () => {
+    const token = localStorage.getItem("token");
+    const orgId = localStorage.getItem("orgId");
+
+    if (!token) {
+      console.error("Token not found");
+      return;
+    }
+
+    axios
+      .get(`${api_address}/api/clients`, {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { orgId },
+        withCredentials: true,
+      })
+      .then((res) => {
+        setClients(res.data.items);
+      })
+      .catch((error) => {
+        console.error("Error fetching clients:", error.response?.data || error.message);
+      });
+  };
 
   const fetchInventory = () => {
     if (teamId) {
@@ -59,13 +80,18 @@ const Sale = () => {
     }
   };
 
+  const handleClientChange = (value) => {
+    const selected = clients.find((client) => client.client_name === value);
+    if (selected) {
+      setSelectedClient(selected.client_id);
+    }
+  };
+
   const handleSelectChange = (value) => {
     const product = inventory.find((item) => item.product_id === value);
     if (product) {
       setSelectedItems((prevItems) => {
-        const existingItem = prevItems.find(
-          (item) => item.product_id === product.product_id
-        );
+        const existingItem = prevItems.find((item) => item.product_id === product.product_id);
         if (existingItem) {
           return prevItems.map((item) =>
             item.product_id === product.product_id
@@ -79,33 +105,28 @@ const Sale = () => {
     }
   };
 
-  useEffect(() => {
-    axios.defaults.withCredentials = true;
-    axios
-      .get(`${api_address}/products`)
-      .then((res) => {
-        if (res.data.success === true) {
-          setAuth(true);
-          const sortedInventory = res.data.items.sort((a, b) =>
-            a.product_name.localeCompare(b.product_name)
-          );
-          
-        } else {
-          setAuth(false);
-          setMessage(res.data.error);
-        }
-      })
-      .catch((err) => {
-        console.error(err);
-      });
-  }, []);
-  
   const handleQuantityChange = (productId, quantity) => {
-    setSelectedItems((prevItems) =>
-      prevItems.map((item) =>
-        item.product_id === productId ? { ...item, quantity } : item
-      )
-    );
+    if (quantity !== undefined && quantity !== null) {
+      setSelectedItems((prevItems) =>
+        prevItems.map((item) =>
+          item.product_id === productId
+            ? { ...item, quantity: Math.max(1, quantity) }
+            : item
+        )
+      );
+    }
+  };
+
+  const handlePriceChange = (productId, price) => {
+    if (price !== undefined && price !== null) {
+      setSelectedItems((prevItems) =>
+        prevItems.map((item) =>
+          item.product_id === productId
+            ? { ...item, price: price }
+            : item
+        )
+      );
+    }
   };
 
   const handleRemoveItem = (productId) => {
@@ -127,57 +148,82 @@ const Sale = () => {
 
   const handleModalOk = async () => {
     try {
-      console.log("Sending data:", {
-        items: selectedItems,
-        teamId: teamId
-      });
-  
-      const response = await axios.post(`${api_address}/products/sales`, {
-        items: selectedItems,
-        teamId: teamId
-      }, {
-        withCredentials: true
-      });
-  
-      console.log("Response:", response.data);
-  
-      if (response.data.success) {
-        toast.success(`Sale processed successfully! Sale ID: ${response.data.saleId}`);
+      if (!selectedClient || selectedItems.length === 0) {
+        toast.error("Please select a client and at least one item.");
+        return;
+      }
+
+      const itemsToSend = selectedItems.map((item) => ({
+        product_id: item.product_id,
+        quantity: item.quantity,
+        price: item.price,
+      }));
+
+      const saleResponse = await axios.post(
+        `${api_address}/products/sales`,
+        {
+          items: itemsToSend,
+          teamId: teamId,
+        },
+        {
+          withCredentials: true,
+        }
+      );
+
+      if (saleResponse.data.success) {
+        toast.success(`Sale processed successfully! Sale ID: ${saleResponse.data.saleId}`);
+
+        const chalanHistoryResponse = await axios.post(
+          `${api_address}/chalan_history`,
+          {
+            client_id: selectedClient,
+            team_id: teamId,
+            items: itemsToSend,
+          },
+          {
+            withCredentials: true,
+          }
+        );
+
+        if (chalanHistoryResponse.data.success) {
+          const chalanId = chalanHistoryResponse.data.chalanId;
+
+          await Promise.all(
+            itemsToSend.map((item) =>
+              axios.post(
+                `${api_address}/chalan_items`,
+                {
+                  chalan_id: chalanId,
+                  product_id: item.product_id,
+                  quantity: item.quantity,
+                },
+                {
+                  withCredentials: true,
+                }
+              )
+            )
+          );
+
+          toast.success("Chalan history and items updated successfully!");
+        } else {
+          toast.error(`Failed to update chalan history: ${chalanHistoryResponse.data.message}`);
+        }
       } else {
-        toast.error(`Failed to process sale: ${response.data.message}`);
+        toast.error(`Failed to process sale: ${saleResponse.data.message}`);
       }
     } catch (error) {
-      console.error("Error:", error.response ? error.response.data : error.message);
+      console.error("Error:", error.response?.data || error.message);
       toast.error("An error occurred while processing the sale.");
     } finally {
       setSelectedItems([]);
+      setSelectedClient(null);
       setIsModalVisible(false);
     }
   };
-  
 
-  
   const handleModalCancel = () => {
     setIsModalVisible(false);
   };
-
-  const handleFilterChange = (dates) => {
-    setFilterDates(dates);
-  };
-
-  const filteredSales = sales.filter((sale) => {
-    if (filterDates.length > 0) {
-      const saleDate = moment(sale.date);
-      return saleDate.isBetween(filterDates[0], filterDates[1], "day", "[]");
-    }
-    return true;
-  });
-
-  const sortedSales = [...filteredSales].sort((a, b) => {
-    const dateA = moment(a.date);
-    const dateB = moment(b.date);
-    return sortOrder === "ascend" ? dateA.diff(dateB) : dateB.diff(dateA);
-  });
 
   const productColumns = [
     {
@@ -197,9 +243,9 @@ const Sale = () => {
       render: (text, record) => (
         <InputNumber
           min={1}
-          max={record.quantity}
           value={record.quantity}
           onChange={(value) => handleQuantityChange(record.product_id, value)}
+          style={{ width: "100%" }}
         />
       ),
     },
@@ -207,14 +253,20 @@ const Sale = () => {
       title: "Price",
       dataIndex: "price",
       key: "price",
+      render: (text, record) => (
+        <InputNumber
+          min={0}
+          value={record.price}
+          onChange={(value) => handlePriceChange(record.product_id, value)}
+          style={{ width: "100%" }}
+        />
+      ),
     },
     {
       title: "Total",
       dataIndex: "total",
       key: "total",
-      render: (text, record) => (
-        <span>{record.price * record.quantity}</span>
-      ),
+      render: (text, record) => <span>{record.price * record.quantity}</span>,
     },
     {
       title: "Actions",
@@ -229,100 +281,87 @@ const Sale = () => {
     },
   ];
 
-  const salesColumns = [
-    {
-      title: "Invoice Date",
-      dataIndex: "date",
-      key: "date",
-    },
-    {
-      title: "Product Name",
-      dataIndex: "product_name",
-      key: "product_name",
-    },
-    {
-      title: "Quantity",
-      dataIndex: "quantity",
-      key: "quantity",
-    },
-    {
-      title: "Price",
-      dataIndex: "price",
-      key: "price",
-    },
-    {
-      title: "Total Amount",
-      dataIndex: "total_amount",
-      key: "total_amount",
-    },
-  ];
-
   return (
-    <div >
+    <div>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: 30,
+          marginTop: 30,
+          borderBottom: "2px black solid",
+        }}
+      >
+        <h2 style={{ marginBottom: 30 }}>Sales / Challan</h2>
+      </div>
 
-      <Card title="Sales Management" className="square-form">
-        <Select
-          placeholder="Select Product"
-          style={{ width: "100%" }}
-          onChange={handleSelectChange}
-        >
-          {inventory.map((item) => (
-            <Option key={item.product_id} value={item.product_id}>
-              {item.product_name}
-            </Option>
-          ))}
-        </Select>
-        <Table
-          dataSource={selectedItems}
-          columns={productColumns}
-          rowKey="product_id"
-          scroll={{ x: 400 }}
-          pagination={false}
-          footer={() => (
-            <div style={{ textAlign: "right" }}>
-              <strong>Total Amount: {calculateTotalAmount()}</strong>
-            </div>
-          )}
-        />
-        <Button
-          type="primary"
-          style={{ marginTop: 20 }}
-          onClick={handleSale}
-          disabled={selectedItems.length === 0}
-        >
-          Process Sale
-        </Button>
-        <ToastContainer />
-      </Card>
-
-      {/* <Card title="Sales History" className="square-form" style={{ marginTop: 20 }}>
-        <RangePicker onChange={handleFilterChange} />
-        <Table
-          dataSource={sortedSales}
-          columns={salesColumns}
-          rowKey="id"
-          pagination={{ pageSize: 5 }}
-          onChange={(pagination, filters, sorter) =>
-            setSortOrder(sorter.order)
-          }
-        />
-      </Card> */}
-
-<Modal
-      title="Confirm Sale"
-      visible={isModalVisible}
-      onOk={handleModalOk}
-      onCancel={() => setIsModalVisible(false)}
-    >
-      <p>Are you sure you want to process the following items?</p>
-      <ul>
-        {selectedItems.map(item => (
-          <li key={item.product_id}>
-            {item.product_name} - Quantity: {item.quantity}
-          </li>
+      <Select
+        showSearch
+        placeholder="Select Client"
+        style={{ width: "100%", marginBottom: 20 }}
+        onChange={handleClientChange}
+        optionFilterProp="children"
+      >
+        {clients.map((item) => (
+          <Option key={item.client_id} value={item.client_name}>
+            {item.client_name}
+          </Option>
         ))}
-      </ul>
-    </Modal>
+      </Select>
+
+      <Select
+        showSearch
+        placeholder="Select Product"
+        style={{ width: "100%", marginBottom: 20 }}
+        onChange={handleSelectChange}
+        optionFilterProp="children"
+      >
+        {inventory.map((item) => (
+          <Option key={item.product_id} value={item.product_id}>
+            {item.product_name}
+          </Option>
+        ))}
+      </Select>
+
+      <Table
+        dataSource={selectedItems}
+        columns={productColumns}
+        pagination={false}
+        rowKey="product_id"
+      />
+
+      <div style={{ marginTop: 20 }}>
+        <button
+          type="primary"
+          onClick={handleSale}
+          style={{ marginRight: 10 }}
+        >
+          Confirm Sale
+        </button>
+        <span style={{ fontWeight: "bold" }}>
+          Total Amount: {calculateTotalAmount()} BDT
+        </span>
+      </div>
+
+      <Modal
+        title="Confirm Sale"
+        open={isModalVisible}
+        footer={[
+          <button key="confirm" type="primary" onClick={handleModalOk}>
+            Confirm
+          </button>,
+          <button key="cancel" type="default" onClick={handleModalCancel}>
+            Cancel
+          </button>,
+        ]}
+        onCancel={handleModalCancel} // Still keep the onCancel to close the modal
+      >
+        <p>Total Amount: {calculateTotalAmount()} BDT</p>
+        <p>Are you sure you want to confirm this sale?</p>
+      </Modal>
+
+      <ToastContainer />
     </div>
   );
 };

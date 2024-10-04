@@ -8,6 +8,7 @@ import { TeamContext } from "../context/TeamContext";
 import '../pages/Login.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css'; // Import CSS
+import { SearchOutlined } from '@ant-design/icons';
 
 const api_address = process.env.REACT_APP_API_ADDRESS;
 
@@ -20,6 +21,7 @@ function StockIn() {
   const [modalShow, setModalShow] = useState(false);
   const { teamId, setTeamId } = useContext(TeamContext);
   const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth <= 800);
+  const [searchQuery, setSearchQuery] = useState("");
    const MyVerticallyCenteredModal = ({ handleUpdateClick, ...props }) => (
       <Modal
         {...props}
@@ -138,7 +140,17 @@ function StockIn() {
       });
   };
   
-  
+  useEffect(() => {
+    if (searchQuery.trim() === "") {
+      setFilteredData(data);
+    } else {
+      const lowerCaseQuery = searchQuery.toLowerCase();
+      const filtered = data.filter(item => 
+        item.product_name.toLowerCase().includes(lowerCaseQuery)
+      );
+      setFilteredData(filtered);
+    }
+  }, [searchQuery, data]);
 
   const fetchUpdatedData = () => {
     axios.get(`${api_address}/products`)
@@ -221,6 +233,15 @@ function StockIn() {
           }}
         >
           <Card className="mb-3" style={{ width: "100%", padding: '10px', textAlign: 'left', overflowY: "auto" }}>
+          <div style={{ textAlign: "left" }}>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search products..."
+                prefix={<SearchOutlined />} 
+              />
+            </div>
             <Table
               columns={columns}
               dataSource={filteredData.filter(
