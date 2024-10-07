@@ -15,17 +15,17 @@ router.put("/edit/:id",verifyUser, updateProduct);
 
 router.delete("/delete/:id",verifyUser, deleteProduct);
 
-router.put('/updateQuantity',updateQuantity);
+router.put('/updateQuantity',verifyUser,updateQuantity);
 
-router.post('/sales', createSale);
+router.post('/sales',verifyUser, createSale);
 
-router.get('/sales', getSales);
+router.get('/sales',verifyUser, getSales);
 
-router.get('/inventory', getInventory);
+router.get('/inventory',verifyUser, getInventory);
 
-router.get('/sales/analysis', getSalesAnalysis);
+router.get('/sales/analysis',verifyUser, getSalesAnalysis);
 
-router.get('/stock-history', getStockHistory);
+router.get('/stock-history',verifyUser, getStockHistory);
 
 
 export default router;

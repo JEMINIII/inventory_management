@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { UserOutlined, LogoutOutlined } from "@ant-design/icons";
 import { Button, Dropdown, Menu, Modal } from "antd";
-import CreateOrganization from "../pages/create_org";  // Import CreateOrganization component
+// import CreateOrganization from "../pages/create_org";  // Import CreateOrganization component
 import logo22 from "../images/5-removebg-preview.png";
 import "./Header.css";
 import Cookies from "js-cookie";
@@ -100,9 +100,9 @@ function Header({ toggleSidebar, isSidebarOpen }) {
       <Menu.Item key="2" onClick={handleLogout}>
         <LogoutOutlined /> Logout
       </Menu.Item>
-      <Menu.Item key="3" onClick={showCreateOrgModal}>
+      {/* <Menu.Item key="3" onClick={showCreateOrgModal}>
         Create Organization
-      </Menu.Item>
+      </Menu.Item> */}
     </Menu>
   );
 
@@ -135,12 +135,12 @@ function Header({ toggleSidebar, isSidebarOpen }) {
         </nav>
       )}
       {/* Create Organization Modal */}
-      {isCreateOrgModalVisible && (
+      {/* {isCreateOrgModalVisible && (
         <CreateOrganization
           onCreate={handleCreateOrg}
           onCancel={hideCreateOrgModal}
         />
-      )}
+      )} */}
     </>
   );
 }

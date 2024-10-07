@@ -57,14 +57,16 @@ const ChalanHistory = () => {
                 fetchClientName(chalan.client_id);
               }
             });
-
-        } else {
-            toast.error("No chalan history found.");
-        }
-    } catch (error) {
-        console.error("Error fetching chalan history:", error);
-        toast.error("Failed to fetch chalan history.");
-    }
+            return chalanData; // Return the fetched data
+        }else {
+          console.error("Invalid response structure:", res.data);
+          return []; // Return an empty array if response structure is invalid
+      }
+  } catch (error) {
+      console.error("Error fetching chalan history:", error);
+      toast.error("Failed to fetch chalan history.");
+      return []; // Return an empty array in case of error
+  }
 };
 
 
@@ -194,21 +196,41 @@ const ChalanHistory = () => {
     setIsDeleteModalVisible(false);
   };
 
+  
+
+  // Handle Delete Chalan
   // Handle Delete Chalan
   const handleDelete = async () => {
     const token = localStorage.getItem('token');
     try {
-      await axios.delete(`${api_address}/chalans/${selectedChalanId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      hideDeleteModal(); // Close modal after deletion
-      fetchChalanHistory(); // Refresh chalan history
-      toast.success("Chalan deleted successfully!");
+        await axios.delete(`${api_address}/chalans/${selectedChalanId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+        hideDeleteModal(); // Close modal after deletion
+
+        // Re-fetch the chalan history
+        const updatedHistory = await fetchChalanHistory(); 
+
+        // Check if updatedHistory is defined and is an array
+        if (Array.isArray(updatedHistory)) {
+            // If no chalans are left, clear the state
+            if (updatedHistory.length === 0) {
+                setChalanHistory([]);  // This will update the state to an empty array and re-render the table
+            } else {
+                setChalanHistory(updatedHistory); // Update the state with the new history
+            }
+        } else {
+            console.error("Updated history is not an array:", updatedHistory);
+        }
+
+        toast.success("Chalan deleted successfully!");
     } catch (error) {
-      console.error("Error deleting chalan:", error);
-      toast.error("Failed to delete chalan.");
+        console.error("Error deleting chalan:", error);
+        toast.error("Failed to delete chalan.");
     }
-  };
+};
+
+
 
   // Generate PDF and show in modal
   const handlePreviewPdf = async () => {
@@ -224,126 +246,196 @@ const ChalanHistory = () => {
             return;
         }
 
-        // Ensure client details are fetched before generating the PDF
         if (!clientDetails || Object.keys(clientDetails).length === 0) {
             toast.error("Client details not found! Please try again.");
             return;
         }
 
-        // Ensure chalan items are fetched
         if (!chalanItems || chalanItems.length === 0) {
             toast.error("Chalan items not found! Please try again.");
             return;
         }
-  
-    const doc = new jsPDF();
-const orgName = localStorage.getItem('orgName');
-const pageWidth = doc.internal.pageSize.getWidth();
-// Add header with custom styles
-// Set font and add organization name in bold and larger size
-// const textWidth = doc.getTextWidth(orgName);
-// Right align organization details
-const rightMargin = 20; // Margin from the right
-const rightX = doc.internal.pageSize.getWidth() - rightMargin;
-const x = 75
-doc.setFont("helvetica", "bold");
-doc.setFontSize(28); // Large font size for organization name
-doc.text(orgName, rightX, 30, { align: 'right' }); // Right-aligned organization name
 
-// Right align organization details
-doc.setFontSize(10); // Smaller font size for organization details
-doc.setTextColor(100); // Grey color for subheadings
+        const org = localStorage.getItem('orgName') || 'Your Organization';
 
+        // Create a PDF document
+        const doc = new jsPDF({
+            unit: 'mm',
+            format: 'a4', // A4 page format
+        });
 
+        const pageHeight = doc.internal.pageSize.height;
+        const pageWidth = doc.internal.pageSize.width;
+        let yOffset = 15; // Initial offset for content
 
-// Add organization details on the right side
-doc.text(`Mobile Number: 463788477`, rightX, 40, { align: 'right' });
-doc.text(`City: Ahamedabad`, rightX, 50, { align: 'right' });
-doc.text(`State: Gujarat`, rightX, 60, { align: 'right' });
+        // Colors for better layout
+        const headerBgColor = 'black';  // 
+        const textColor = '#333'; // Standard text color
 
-// Draw a black line to separate the header
-doc.line(20, 65, 190, 65); // Line across the page
+        // Add organization header
+        const addHeader = () => {
+            doc.setFont("Arial", "bold");
+            doc.setFontSize(20);
+            doc.setTextColor(headerBgColor);
+            doc.text(org, pageWidth / 2, yOffset, { align: "center" });
 
-// Add mid-section for Challan information
-// Add mid-section for Challan information
-doc.setFontSize(16); // Set font size for the title
-doc.setFont("helvetica", "bold"); // Set font to bold for titles
-doc.text(`Challan Number:`, 20, 80); // Title for Challan Number
+            doc.setFontSize(10);
+            doc.setFont("Arial", "normal");
+            doc.setTextColor(textColor);
+            doc.text("Address Line 1, City, State, Zip Code", pageWidth / 2, yOffset + 6, { align: "center" });
+            doc.text("Phone: (123) 456-7890 | Email: contact@yourorganization.com", pageWidth / 2, yOffset + 12, { align: "center" });
 
-doc.setFont("helvetica", "normal"); // Change font back to normal for details
-doc.setFontSize(14); // Slightly smaller font size for details
-doc.text(` ${selectedChalan.id}`, 20 + doc.getTextWidth("Challan Number: ") + 5, 80); // Details for Challan Number
+            yOffset += 20; // Move down for the next section
+            doc.setDrawColor(0, 75, 135); // Line color
+            doc.line(10, yOffset, pageWidth - 10, yOffset); // Draw a line separator
+            yOffset += 10; // Space after line
+        };
 
-doc.setFont("helvetica", "bold"); // Set font to bold again for titles
-doc.setFontSize(16); // Set font size for the title
-doc.text(`Challan Date:`, 20, 90); // Title for Challan Date
+        // Add footer at the bottom of every page
+        const addFooter = () => {
+            const footerY = pageHeight - 15; // Adjust footer positioning higher to fit in page
+            doc.setFontSize(10);
+            doc.setTextColor(textColor);
+            doc.text("Thanks for your business!", pageWidth / 2, footerY, { align: "center" });
 
-doc.setFont("helvetica", "normal"); // Change font back to normal for details
-doc.setFontSize(14); // Slightly smaller font size for details
-doc.text(`${new Date(selectedChalan.date).toLocaleDateString()}`, 20 + doc.getTextWidth("Challan Date: ") + 5, 90); // Details for Challan Date
+            doc.setFontSize(8);
+            doc.text("Generated by www.stockzen.in", pageWidth / 2, footerY + 5, { align: "center" });
+        };
 
-// Add client information section with proper styling
-doc.setFontSize(14); // Medium bold font for Client Information
-doc.setFont("helvetica", "bold");
-doc.text("Client Information:", 20, 110);
+        // Add Challan number and date
+        const addChallanInfo = () => {
+          // Set font for the labels (bold)
+          doc.setFontSize(12);
+          doc.setFont("Arial", "bold");
+          doc.setTextColor(headerBgColor);
+      
+          // Add the bold "Challan Number" label
+          doc.text(`Challan Number:`, 10, yOffset);
+      
+          // Set font for the value (normal)
+          doc.setFont("Arial", "normal");
+          doc.setTextColor(textColor);  // Set text color for normal text
+      
+          // Add the normal value for Challan Number
+          doc.text(`${selectedChalan.id}`, 45, yOffset); // Adjusted X position to align after the label
+      
+          // Same process for the date
+          // Set font for the label (bold)
+          doc.setFont("Arial", "bold");
+          doc.setTextColor(headerBgColor);
+      
+          // Add the bold "Date" label
+          doc.text(`Date:`, pageWidth - 45, yOffset); // Adjusted X position to align to the right
+      
+          // Set font for the value (normal)
+          doc.setFont("Arial", "normal");
+          doc.setTextColor(textColor);
+      
+          // Add the normal value for Date
+          doc.text(`${new Date(selectedChalan.date).toLocaleDateString('en-GB')}`, pageWidth - 30, yOffset); // Adjusted X position to align after the label
+      
+          yOffset += 15; // Move down for the next section
+      };
+      
 
-// Set regular font for client details
-doc.setFont("helvetica", "normal");
-doc.setFontSize(12); // Small regular font for client details
-doc.text(`Client Name: ${clientDetails.client_name || "N/A"}`, 20, 120);
-doc.text(`City: ${clientDetails.city || "N/A"}`, 20, 130);
-doc.text(`State: ${clientDetails.state || "N/A"}`, 20, 140);
-doc.text(`Mobile Number: ${clientDetails.mobile_number || "N/A"}`, 20, 150);
+        // Add client details
+        const addClientDetails = () => {
+            doc.setFontSize(12);
+            doc.setFont("Arial", "bold");
+            doc.setTextColor(headerBgColor);
+            doc.text("Client Information:", 10, yOffset);
 
-// Prepare table for Chalan items
-const tableData = chalanItems.map(item => [item.product_name, item.quantity]);
+            yOffset += 10; // Move down for the details
 
-const startY = 160; // Start the table below the client information
-doc.autoTable({
-    head: [['Product Name', 'Quantity']],
-    body: tableData,
-    startY: startY, // Start the table
-    theme: 'grid', // Use grid theme for a cleaner layout
-    styles: {
-        cellPadding: 5,
-        fontSize: 12,
-        overflow: 'linebreak',
-        halign: 'center',
-    },
-    headStyles: {
-        fillColor: [0, 0, 0], // Black background for header
-        textColor: [255, 255, 255], // White text in header
-        fontSize: 14,
-    },
-    margin: { top: 20 }, // Keep space above the table
-});
+            doc.setFont("Arial", "normal");
+            doc.setFontSize(10);
+            doc.setTextColor(textColor);
+            doc.text(`${clientDetails.client_name || "N/A"}`, 10, yOffset);
+            doc.text(`${clientDetails.city || "N/A"}, ${clientDetails.state || "N/A"}`, 10, yOffset + 6);
+            doc.text(`Mobile Number: ${clientDetails.mobile_number || "N/A"}`, 10, yOffset + 12);
 
-// Calculate the position for the footer based on the table height
-const finalY = doc.lastAutoTable.finalY + 10; // Adding some space below the table
+            yOffset += 25; // Space after client details
+        };
 
-// Footer section with centered "Thanks for your business" message
-doc.setFont("helvetica", "normal");
-doc.setFontSize(10); // Small font size for footer
-doc.text("Thanks for your business", pageWidth / 1.092, finalY, { align: 'right' }); // Centered text
+        // Add table of challan items
+        const addChallanItems = () => {
+          const itemsPerPage = 15; // Adjust based on your layout
+          const rowHeight = 10; // Height of each item
+          let currentPageItems = 0; // Count of items on the current page
+      
+          doc.setFontSize(12);
+          doc.setFont("Arial", "bold");
+          doc.setTextColor(headerBgColor);
+          doc.text("Challan Items:", 10, yOffset);
+      
+          yOffset += 10; // Start below the title
+      
+          // Table Header
+          doc.setDrawColor(headerBgColor);
+          doc.setFillColor(headerBgColor);
+          doc.setTextColor('#fff'); // White text
+          doc.rect(10, yOffset, pageWidth - 20, rowHeight, 'F'); // Draw header background
+          doc.text("Product Name", 15, yOffset + 7);
+          doc.text("Quantity", pageWidth - 40, yOffset + 7);
+          
+          yOffset += rowHeight; // Move down after header
+      
+          // Render items, handling page overflow
+          chalanItems.forEach((item, index) => {
+              // Check if we need to add a new page
+              if (currentPageItems === itemsPerPage) {
+                  addFooter(); // Add footer to the current page
+                  doc.addPage(); // Create a new page
+                  yOffset = 20; // Reset Y offset for the new page
+                  currentPageItems = 0; // Reset item count for new page
+                  
+                  // Re-add the table header for the new page
+                  doc.setTextColor('#fff'); // White text
+                  doc.rect(10, yOffset, pageWidth - 20, rowHeight, 'F');
+                  doc.text("Product Name", 15, yOffset + 7);
+                  doc.text("Quantity", pageWidth - 40, yOffset + 7);
+                  yOffset += rowHeight; // Move down after header
+              }
+      
+              // Alternate row color for better readability
+              if (index % 2 === 0) {
+                  doc.setFillColor(242, 242, 242); // Light gray for alternate rows
+                  doc.rect(10, yOffset, pageWidth - 20, rowHeight, 'F');
+              }
+      
+              // Add product item
+              doc.setFont("Arial", "normal");
+              doc.setTextColor(textColor);
+              doc.text(item.product_name, 15, yOffset + 7);
+              doc.text(item.quantity.toString(), pageWidth - 40, yOffset + 7);
+              
+              yOffset += rowHeight; // Move down for the next item
+              currentPageItems++; // Increment current page item count
+          });
+      
+          yOffset += 5; // Add space before the footer
+      };
+      
 
-// Center the "Generated by stockzen" text in smaller font
-const fixedYPosition = 290; // Fixed Y position for the "Generated by" text
-const leftX = 20; // Margin from the left side
-doc.setFontSize(8); // Smaller font size for generated by text
-doc.text("Generated by www.stockzen.in", leftX, fixedYPosition, { align: 'left' });
+        // Start rendering the PDF
+        addHeader();
+        addChallanInfo();
+        addClientDetails();
+        addChallanItems();
+        addFooter(); // Add footer on the last page
 
+        // Create a Blob URL for the PDF
+        const pdfBlob = doc.output("blob");
+        const pdfUrl = URL.createObjectURL(pdfBlob);
+        setPdfPreviewSrc(pdfUrl);
+        setIsPreviewModalVisible(true);
 
-  
-    // Convert the PDF to a Blob URL for preview
-    const pdfBlob = doc.output("blob");
-    const pdfUrl = URL.createObjectURL(pdfBlob);
-    setPdfPreviewSrc(pdfUrl); // Set PDF URL in state
-    setIsPreviewModalVisible(true); // Show the preview modal
-  } catch (error) {
-    console.error("Error generating PDF:", error);
-    toast.error("An error occurred while generating the PDF.");
-  }
+    } catch (error) {
+        console.error("Error generating PDF:", error);
+        toast.error("An error occurred while generating the PDF. Check the console for details.");
+    }
 };
+
   
 
   return (
@@ -438,10 +530,9 @@ doc.text("Generated by www.stockzen.in", leftX, fixedYPosition, { align: 'left' 
 
       {/* PDF Preview Modal */}
       {/* PDF Preview Modal */}
-{/* PDF Preview Modal */}
 <Modal
     title="Preview PDF"
-    key={selectedChalanId} // Change this to use selectedChalanId
+    key={pdfPreviewSrc}
     open={isPreviewModalVisible}
     onCancel={hidePreviewModal}
     footer={[
@@ -464,7 +555,6 @@ doc.text("Generated by www.stockzen.in", leftX, fixedYPosition, { align: 'left' 
         <p>Loading PDF...</p> // Show loading state until the PDF is ready
     )}
 </Modal>
-
 
     </div>
     </div>

@@ -26,9 +26,9 @@ const Team = () => {
   const [editedItem, setEditedItem] = useState(null);
   const [editingTeamId, setEditingTeamId] = useState(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-
+  const orgId = localStorage.getItem("orgId");
   useEffect(() => {
-    const token = Cookies.get('token');
+    const token = localStorage.getItem('token');
     if (!token) {
       // Redirect or show unauthorized message
       return;
@@ -36,7 +36,13 @@ const Team = () => {
     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
   
     axios
-      .get(`${api_address}/team`)
+      .get(`${api_address}/team?orgId=${orgId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+  
+        withCredentials: true,
+      })
       .then((res) => {
         if (res.data.success) {
           setAuth(true);
@@ -62,13 +68,20 @@ const Team = () => {
   };
 
   const handleCreate = () => {
+    const token = localStorage.getItem('token');
     axios
-      .post(`${api_address}/team/create`, { name: teamName })
+      .post(`${api_address}/team/create`, { name: teamName }, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+  
+        withCredentials: true,
+      })
       .then((response) => {
         notification.success({ message: "Team created successfully" });
         closeCreateModal();
         axios
-          .get(`${api_address}/team`)
+          .get(`${api_address}/team?orgId=${orgId}`)
           .then((res) => {
             if (res.data.success) {
               setFilteredData(res.data.items);
@@ -87,22 +100,22 @@ const Team = () => {
       });
   };
 
-  useEffect(() => {
-    // axios.defaults.withCredentials = true;
-    axios
-      .get(`${api_address}/team`)
-      .then((res) => {
-        if (res.data.success === true) {
-          setAuth(true);
-          setName(res.data.name);
-          setFilteredData(res.data.items);
-        } else {
-          setAuth(false);
-          setMessage(res.data.error);
-        }
-      })
-      .catch((err) => console.log(err));
-  }, []);
+  // useEffect(() => {
+  //   // axios.defaults.withCredentials = true;
+  //   axios
+  //     .get(`${api_address}/team`)
+  //     .then((res) => {
+  //       if (res.data.success === true) {
+  //         setAuth(true);
+  //         setName(res.data.name);
+  //         setFilteredData(res.data.items);
+  //       } else {
+  //         setAuth(false);
+  //         setMessage(res.data.error);
+  //       }
+  //     })
+  //     .catch((err) => console.log(err));
+  // }, []);
 
   const handleItemClick = (team) => {
     setSelectedItem(team);
@@ -205,12 +218,12 @@ const Team = () => {
       render: (text, record) =>
         editingTeamId === record.id ? (
           <div style={{ display: "flex", gap: "10px" }}>
-            <Button onClick={handleUpdate} icon={<SaveOutlined />}>
+            <button onClick={handleUpdate} icon={<SaveOutlined />}>
               Save
-            </Button>
-            <Button onClick={handleCancelEdit} icon={<CloseOutlined />}>
+            </button>
+            <button onClick={handleCancelEdit} icon={<CloseOutlined />}>
               Cancel
-            </Button>
+            </button>
           </div>
         ) : (
           <div style={{ display: "flex", gap: "10px" }}>
@@ -291,12 +304,12 @@ const Team = () => {
               <p>Are you sure you want to delete this team?</p>
             </Modal.Body>
             <Modal.Footer>
-              <Button variant="secondary" onClick={handleCancelDelete}>
+              <button variant="secondary" onClick={handleCancelDelete}>
                 Cancel
-              </Button>
-              <Button variant="primary" onClick={handleConfirmDelete}>
+              </button>
+              <button variant="primary" onClick={handleConfirmDelete}>
                 Delete
-              </Button>
+              </button>
             </Modal.Footer>
           </Modal>
 
@@ -321,12 +334,12 @@ const Team = () => {
               </Form>
             </Modal.Body>
             <Modal.Footer>
-              <Button variant="secondary" onClick={closeCreateModal}>
+              <button variant="secondary" onClick={closeCreateModal}>
                 Cancel
-              </Button>
-              <Button variant="primary" onClick={handleCreate}>
+              </button>
+              <button variant="primary" onClick={handleCreate}>
                 Create
-              </Button>
+              </button>
             </Modal.Footer>
           </Modal>
         </Card>

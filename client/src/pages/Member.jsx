@@ -39,8 +39,8 @@ const Member = () => {
           withCredentials: true 
         }
       );
-      console.log("Fetched Team Members:", response.data.teamMembers);
-      setTeamMembers(response.data.teamMembers || []);
+      console.log("Fetched Team Members:", response.data.teamMembers[0]);
+      setTeamMembers(response.data.teamMembers[0] || []);
     } catch (error) {
       console.error("Error fetching team members:", error);
     }
@@ -124,7 +124,7 @@ const Member = () => {
 
   const fetchTeams = async () => {
     const token = localStorage.getItem('token');
-    const orgId = localStorage.getItem('org_id');
+    const orgId = localStorage.getItem('orgId');
     if (!orgId) {
       console.error("Organization ID is not available.");
       return []; // Early return if org_id is missing
@@ -135,10 +135,10 @@ const Member = () => {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-        params: { org_id: orgId }, // Include org_id as a query parameter
+        params: { orgId: orgId }, // Include org_id as a query parameter
         withCredentials: true,
       });
-      console.log("Fetched Teams:", response.data.items);
+      console.log("Fetched Teams:", response);
       return response.data.items || [];
     } catch (error) {
       console.error("Error fetching teams:", error);
@@ -170,33 +170,41 @@ const Member = () => {
     setIsInviteModalOpen(false);
   };
 
-  const handleAddMember = () => {
-    if (!selectedUser || !selectedRole || !teamId) {
-      toast.error("Please select a user, role, and team.");
-      return;
+  const handleAddMember = async () => {
+    if (!selectedUser || !selectedRole) {
+        toast.error("Please select a user, role, and team.");
+        return;
     }
 
-    axios
-      .post(`${api_address}/api/team_members`, {
-        user_id: selectedUser,
-        role_id: selectedRole,
-        team_id: teamId,
-      })
-      .then((response) => {
+    const token = localStorage.getItem('token'); // Fetching token from localStorage
+
+    try {
+        const response = await axios.post(`${api_address}/api/team_members`, {
+            user_id: selectedUser,
+            role_id: selectedRole,  
+            team_id: teamId,
+        }, {
+            headers: {
+                Authorization: `Bearer ${token}` // Set the authorization header
+            },
+            withCredentials:true
+        });
+
         toast.success("Member added successfully!");
         setAuth(true); // Assuming successful member addition means user is authenticated
-        fetchTeamMembers(teamId).then((data) => {
-          console.log("Updated teamMembers state after adding member:", data);
-          setTeamMembers(data);
-        });
+
+        // Fetch updated team members
+        const data = await fetchTeamMembers(teamId);
+        console.log("Updated teamMembers state after adding member:", data);
+        setTeamMembers(data);
         closeAddMemberModal();
-      })
-      .catch((error) => {
+    } catch (error) {
         setAuth(false); // Reset authentication state if there's an error
         console.error("Error adding member:", error);
         toast.error("Error adding member!");
-      });
-  };
+    }
+};
+
 
   const handleSendInvite = () => {
     // Example check: Ensure inviteEmail and inviteName are filled
@@ -330,7 +338,7 @@ const Member = () => {
                   {selectedTeam && (
                     <Table
                       columns={columns}
-                      dataSource={teamMembers[selectedTeam - 1]} // Assuming team IDs are 1-indexed
+                      dataSource={teamMembers} // Assuming team IDs are 1-indexed
                       rowKey="user_id"
                       pagination={{ pageSize: 5 }}
                     />
@@ -361,8 +369,8 @@ const Member = () => {
                 >
                   <option value="">Select User</option>
                   {users.map((user) => (
-                    <option key={user.user_id} value={user.user_id}>
-                      {user.user_name}
+                    <option key={user.id} value={user.id}>
+                      {user.name}
                     </option>
                   ))}
                 </Form.Control>
@@ -377,8 +385,8 @@ const Member = () => {
                 >
                   <option value="">Select Role</option>
                   {roles.map((role) => (
-                    <option key={role.role_id} value={role.role_id}>
-                      {role.role_name}
+                    <option key={role.id} value={role.id}>
+                      {role.name}
                     </option>
                   ))}
                 </Form.Control>
