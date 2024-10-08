@@ -18,7 +18,6 @@ const ChalanHistory = () => {
   const [selectedChalanId, setSelectedChalanId] = useState(null);
   const [chalanItems, setChalanItems] = useState([]);
   const [clientDetails, setClientDetails] = useState({});
-  console.log(clientDetails)
   const [organizationDetails, setOrganizationDetails] = useState({})
   const [pdfPreviewSrc, setPdfPreviewSrc] = useState(null);
   const [loading, setLoading] = useState(false);

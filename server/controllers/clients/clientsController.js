@@ -57,10 +57,10 @@ export const getClient = async (req, res) => {
 export const updateClient = async (req, res) => {
   try {
     const { id } = req.params;
-    const { client_name, city, state, org_id,mobile_number } = req.body;
+    const { client_name, city, state, org_id,mobile_number,address,email,zip } = req.body;
 
-    const q = "UPDATE client SET `client_name` = ?, `city` = ?, `state` = ?,`mobile_number` = ?, `org_id` = ? WHERE client_id = ?";
-    await db.query(q, [client_name, city, state,mobile_number, org_id, id]);
+    const q = "UPDATE client SET `client_name` = ?, `city` = ?, `state` = ?,`mobile_number` = ?, `org_id` = ?,`address` = ?,`email`=?,`zip`=? WHERE client_id = ?";
+    await db.query(q, [client_name, city, state,mobile_number, org_id,address,email,zip, id]);
 
     res.json({ message: "Client updated successfully" });
   } catch (error) {

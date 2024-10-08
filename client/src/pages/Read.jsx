@@ -63,9 +63,9 @@ const Read = () => {
             <div className="mb-3">
               <strong>Quantity:</strong> {stock?.quantity}
             </div>
-            <div className="mb-3">
+            {/* <div className="mb-3">
               <strong>Total Amount:</strong> {stock?.total_amount}
-            </div>
+            </div> */}
             <div className="mb-3">
               <strong>Image:</strong>
               {""}

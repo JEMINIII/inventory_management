@@ -6,7 +6,7 @@ import { SearchOutlined } from '@ant-design/icons';
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
-import { notification } from "antd";
+import { notification,Tooltip } from "antd";
 import Modal from "react-bootstrap/Modal";
 import Cookies from 'js-cookie';
 import {
@@ -14,6 +14,7 @@ import {
   EditOutlined,
   SaveOutlined,
   CloseOutlined,
+  InfoCircleOutlined
 } from "@ant-design/icons";
 // import TeamSelector from "../components/TeamSelector";
 import { TeamContext } from "../context/TeamContext";
@@ -459,7 +460,7 @@ export const Home = () => {
                     <p className="text-danger">{formErrors.quantity}</p>
                   )}
                 </div>
-                <div className="form-group">
+                {/* <div className="form-group">
                   <label htmlFor="total_amount" className="form-label">
                     Total Amount
                   </label>
@@ -472,7 +473,7 @@ export const Home = () => {
                     value={formValues.total_amount}
                     readOnly
                   />
-                </div>
+                </div> */}
                 <div className="form-group">
                   <label htmlFor="team_id" className="form-label">
                     Team
@@ -648,21 +649,25 @@ export const Home = () => {
                               </td>
                             </tr>
                             <tr>
-                              <td>
-                                <label>
-                                  <strong>Quantity:</strong>
-                                </label>
-                              </td>
-                              <td>
-                                <input
-                                  type="text"
-                                  style={{ border: "none" }}
-                                  name="quantity"
-                                  value={editedItem.quantity}
-                                  onChange={handleEditChange}
-                                />
-                              </td>
-                            </tr>
+  <td>
+    <label>
+      <strong>Quantity:</strong>
+    </label>
+  </td>
+  <td style={{ position: 'relative' }}>
+    <input
+      type="text"
+      style={{ border: "none", width: "90%" }}  // Adjust width to make space for icon
+      name="quantity"
+      value={editedItem.quantity}
+      onChange={handleEditChange}
+      readOnly
+    />
+    <Tooltip title="To change or update the quantity, go to the Stock In/Stock Out tab">
+      <InfoCircleOutlined style={{ marginLeft: 5, color: '#1890ff', cursor: 'pointer' }} />
+    </Tooltip>
+  </td>
+</tr>
                             <tr>
                               <td>
                                 <label>
@@ -679,7 +684,7 @@ export const Home = () => {
                                 />
                               </td>
                             </tr>
-                            <tr>
+                            {/* <tr>
                               <td>
                                 <label>
                                   <strong>Total Amount:</strong>
@@ -694,23 +699,24 @@ export const Home = () => {
                                   onChange={handleEditChange}
                                 />
                               </td>
-                            </tr>
-                            <tr>
+                            </tr> */}
+                            {/* <tr>
                               <td>
                                 <label>
-                                  <strong>Team Id:</strong>
+                                  <strong>Team Name:</strong>
                                 </label>
                               </td>
                               <td>
                                 <input
                                   type="text"
                                   style={{ border: "none" }}
-                                  name="total_amount"
+                                  name="team_id"
                                   value={editedItem.team_id}
                                   onChange={handleEditChange}
+                                  readOnly
                                 />
                               </td>
-                            </tr>
+                            </tr> */}
                           </tbody>
                         </table>
                       </div>
@@ -806,12 +812,12 @@ export const Home = () => {
                             </td>
                             <td>{selectedItem.quantity}</td>
                           </tr>
-                          <tr>
+                          {/* <tr>
                             <td>
                               <strong>Total Amount</strong>{" "}
                             </td>
                             <td>{selectedItem.total_amount}</td>
-                          </tr>
+                          </tr> */}
                           <tr>
                             <td>
                               <strong>Image</strong>

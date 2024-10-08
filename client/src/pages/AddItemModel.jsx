@@ -27,8 +27,8 @@ const AddItemModal = ({ isVisible, handleClose }) => {
     if (!formValues.category) errors.category = "Category is required";
     if (!formValues.price) errors.price = "Price is required";
     if (!formValues.quantity) errors.quantity = "Quantity is required";
-    if (!formValues.total_amount)
-      errors.total_amount = "Total amount is required";
+    // if (!formValues.total_amount)
+    //   errors.total_amount = "Total amount is required";
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -116,7 +116,7 @@ const AddItemModal = ({ isVisible, handleClose }) => {
             onChange={handleInputChange}
           />
         </Form.Item>
-        <Form.Item
+        {/* <Form.Item
           label="Total Amount"
           validateStatus={formErrors.total_amount ? "error" : ""}
           help={formErrors.total_amount}
@@ -128,7 +128,7 @@ const AddItemModal = ({ isVisible, handleClose }) => {
             value={formValues.total_amount}
             onChange={handleInputChange}
           />
-        </Form.Item>
+        </Form.Item> */}
       </Form>
     </Modal>
   );
