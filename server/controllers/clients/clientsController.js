@@ -19,12 +19,13 @@ export const getAllClients = async (req, res) => {
 
 
 // Create a new client
+// Assuming you're using a 'createClient' function in your controller
 export const createClient = async (req, res) => {
   try {
-    const { client_name, city, state, org_id,mobile_number } = req.body;
+    const { client_name, city, state, org_id,mobile_number,address,email,zip } = req.body;
 
-    const q = "INSERT INTO client (`client_name`, `city`, `state`,`mobile_number`, `org_id`) VALUES (?,?, ?, ?, ?)";
-    await db.query(q, [client_name, city, state,mobile_number, org_id]);
+    const q = "INSERT INTO client (`client_name`, `city`, `state`,`mobile_number`, `org_id`,`address`,`email`,`zip`) VALUES (?,?,?,?,?, ?, ?, ?)";
+    await db.query(q, [client_name, city, state,mobile_number, org_id,address,email,zip]);
 
     res.json({ message: "Client created successfully" });
   } catch (error) {
@@ -33,11 +34,12 @@ export const createClient = async (req, res) => {
   }
 };
 
+
 // Get a specific client by ID
 export const getClient = async (req, res) => {
   try {
     const { id } = req.params;
-    const q = "SELECT client_name, city, state, org_id,mobile_number FROM client WHERE client_id = ?";
+    const q = "SELECT client_name, city, state, org_id,mobile_number,address,email,zip FROM client WHERE client_id = ?";
     const [rows] = await db.query(q, [id]);
 
     if (rows.length === 0) {

@@ -27,7 +27,7 @@ export const firstPage = async (req, res) => {
   try {
     const q = "SELECT * FROM organization";
     const [rows] = await db.query(q);
-
+    console.log(rows)
     const token = jwt.sign(
       { id: rows },
       process.env.JWT_SECRET,
@@ -39,5 +39,24 @@ export const firstPage = async (req, res) => {
   } catch (error) {
     console.error("Error fetching data:", error);
     res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+
+export const getOrganizationById = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const query = "SELECT * FROM organization WHERE id = ?";
+    const [rows] = await db.query(query, [id]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ success: false, error: "Organization not found" });
+    }
+
+    res.json({ success: true, organization: rows[0] });
+  } catch (error) {
+    console.error("Error fetching organization:", error);
+    res.status(500).json({ success: false, error: "Internal server error" });
   }
 };

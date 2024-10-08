@@ -18,7 +18,10 @@ const ClientList = () => {
     city: '',
     state: '',
     mobile_number: '',
-    org_id: '', // This will be set from localStorage
+    org_id: '', 
+    zip:'',
+    address:'',
+    email:'',
   });
   const [searchQuery, setSearchQuery] = useState('');
   const [modalShow, setModalShow] = useState(false);
@@ -48,7 +51,10 @@ const ClientList = () => {
         state: client.state || '',
         org_id: client.org_id || '',
         mobile_number: client.mobile_number || '',
-        client_id: client.client_id || ''
+        client_id: client.client_id || '',
+        zip:client.zip || '',
+        address:client.address || '',
+        email:client.email || '',
       })));
       console.log(res.data.items);
     } catch (error) {
@@ -70,32 +76,41 @@ const ClientList = () => {
     e.preventDefault();
     const token = localStorage.getItem('token');
     const orgId = localStorage.getItem('orgId');
-
+  
     if (!orgId) {
       toast.error("Organization ID is required.");
       return;
     }
-
+  
     const clientData = {
       ...formValues,
-      org_id: orgId, // Include org_id in client data
+      org_id: orgId, // Ensure org_id is included in client data
     };
-
+  
+    console.log(clientData); // Ensure org_id is logged correctly
+  
     try {
-      const response = await axios.post(`${api_address}/api/clients/create`, clientData, {
+      const response = await 
+      axios.post(`${api_address}/api/clients/create`, clientData, {
         headers: { Authorization: `Bearer ${token}` },
+        withCredentials:true
       });
 
+      console.log(response)
+  
       fetchClients(); // Refresh the client list after creation
       toast.success('Client created successfully!');
       setCreateModalShow(false); // Close the modal
-      // Reset form values
-      setFormValues({ client_name: '', city: '', state: '', mobile_number: '', org_id: orgId });
+      // Reset form values but keep org_id from localStorage
+      setFormValues({
+        client_name: '', city: '', state: '', mobile_number: '', orgId, address: '', zip: '', email: ''
+      });
     } catch (error) {
       console.error('Error creating client:', error);
       toast.error('Error creating client!');
     }
   };
+  
 
   const handleEditChange = (e) => {
     const { name, value } = e.target;
@@ -238,6 +253,9 @@ const ClientList = () => {
               <Column title="City" dataIndex="city" key="city" />
               <Column title="State" dataIndex="state" key="state" />
               <Column title="Mobile Number" dataIndex="mobile_number" key="mobile_number" />
+              <Column title="Address" dataIndex="address" key="address" />
+              <Column title="Zip" dataIndex="zip" key="zip" />
+              <Column title="Email" dataIndex="email" key="email" />
             </Table>
           </Card>
 
@@ -326,6 +344,18 @@ const ClientList = () => {
                         <tr>
                           <td><strong>Id</strong></td>
                           <td>{selectedClient.client_id}</td>
+                        </tr>
+                        <tr>
+                          <td><strong>Address</strong></td>
+                          <td>{selectedClient.address}</td>
+                        </tr>
+                        <tr>
+                          <td><strong>zip</strong></td>
+                          <td>{selectedClient.zip}</td>
+                        </tr>
+                        <tr>
+                          <td><strong>email</strong></td>
+                          <td>{selectedClient.email}</td>
                         </tr>
                       </tbody>
                     </table>

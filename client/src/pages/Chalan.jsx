@@ -18,13 +18,16 @@ const ChalanHistory = () => {
   const [selectedChalanId, setSelectedChalanId] = useState(null);
   const [chalanItems, setChalanItems] = useState([]);
   const [clientDetails, setClientDetails] = useState({});
+  console.log(clientDetails)
+  const [organizationDetails, setOrganizationDetails] = useState({})
   const [pdfPreviewSrc, setPdfPreviewSrc] = useState(null);
   const [loading, setLoading] = useState(false);
   const { teamId } = useContext(TeamContext);
   const api_address = process.env.REACT_APP_API_ADDRESS;
   const [clientNamesMap, setClientNamesMap] = useState({});
   const [isFetching, setIsFetching] = useState(false);
-  
+
+
   useEffect(() => {
     fetchChalanHistory();
   }, [api_address, teamId]);
@@ -50,7 +53,7 @@ const ChalanHistory = () => {
         if (res.data.success && Array.isArray(res.data.data) && res.data.data.length > 0) {
             const chalanData = res.data.data;
             setChalanHistory(res.data.data); // Set the entire array of chalan history
-            console.log(res.data.data); // Log the entire data for debugging
+            // console.log(res.data.data); // Log the entire data for debugging
 
             chalanData.forEach(chalan => {
               if (chalan.client_id) {
@@ -123,6 +126,9 @@ const ChalanHistory = () => {
       headers: { Authorization: `Bearer ${token}` },
     })
     .then(response => {
+      /* The above code appears to be a comment block in JavaScript React. It is not performing any
+      specific action in the code, but it is likely intended to provide information or context about
+      the following code. */
       setClientDetails(response.data);
     })
     .catch(error => {
@@ -130,16 +136,37 @@ const ChalanHistory = () => {
       toast.error("Failed to load client details.");
     });
   };
+  const orgId = localStorage.getItem('orgId')
+  const fetchOrganizationDetails = () => {
+    const token = localStorage.getItem('token');
+    
+    axios.get(`${api_address}/org/${orgId}`, {  
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    .then(response => {
+      if (response.data && response.data.organization) {
+        setOrganizationDetails(response.data.organization);  
+      } else {
+        console.error("Invalid response data:", response.data);
+        toast.error("Failed to load organization details.");
+      }
+    })
+    .catch(error => {
+      console.error("Error fetching organization details:", error);
+      toast.error("Failed to load organization details.");
+    });
+  };
   
 
 
-
   // Fetch Chalan Items and Client Details
-  const fetchChalanItemsAndClient = async (id, clientId) => {
+  const fetchChalanItemsAndClient = async (id, clientId,orgId) => {
     const items = await fetchChalanItems(id);
     const client = await fetchClientDetails(clientId);
+    const org = await fetchOrganizationDetails(orgId)
     setChalanItems(items);
     setClientDetails(client);
+    setOrganizationDetails(org)
     // console.log(fetchClientDetails(clientId))
   };
 
@@ -274,16 +301,16 @@ const ChalanHistory = () => {
 
         // Add organization header
         const addHeader = () => {
-            doc.setFont("Arial", "bold");
+            doc.setFont("helvetica", "bold");
             doc.setFontSize(20);
             doc.setTextColor(headerBgColor);
             doc.text(org, pageWidth / 2, yOffset, { align: "center" });
 
             doc.setFontSize(10);
-            doc.setFont("Arial", "normal");
+            doc.setFont("helvetica", "normal");
             doc.setTextColor(textColor);
-            doc.text("Address Line 1, City, State, Zip Code", pageWidth / 2, yOffset + 6, { align: "center" });
-            doc.text("Phone: (123) 456-7890 | Email: contact@yourorganization.com", pageWidth / 2, yOffset + 12, { align: "center" });
+            doc.text(`${organizationDetails.address},${organizationDetails.City},${organizationDetails.State}-${organizationDetails.Zip}`, pageWidth / 2, yOffset + 6, { align: "center" });
+            doc.text(`${organizationDetails.phone} | ${organizationDetails.email}`, pageWidth / 2, yOffset + 12, { align: "center" });
 
             yOffset += 20; // Move down for the next section
             doc.setDrawColor(0, 75, 135); // Line color
@@ -306,14 +333,14 @@ const ChalanHistory = () => {
         const addChallanInfo = () => {
           // Set font for the labels (bold)
           doc.setFontSize(12);
-          doc.setFont("Arial", "bold");
+          doc.setFont("helvetica", "bold");
           doc.setTextColor(headerBgColor);
       
           // Add the bold "Challan Number" label
           doc.text(`Challan Number:`, 10, yOffset);
       
           // Set font for the value (normal)
-          doc.setFont("Arial", "normal");
+          doc.setFont("helvetica", "normal");
           doc.setTextColor(textColor);  // Set text color for normal text
       
           // Add the normal value for Challan Number
@@ -321,14 +348,14 @@ const ChalanHistory = () => {
       
           // Same process for the date
           // Set font for the label (bold)
-          doc.setFont("Arial", "bold");
+          doc.setFont("helvetica", "bold");
           doc.setTextColor(headerBgColor);
       
           // Add the bold "Date" label
           doc.text(`Date:`, pageWidth - 45, yOffset); // Adjusted X position to align to the right
       
           // Set font for the value (normal)
-          doc.setFont("Arial", "normal");
+          doc.setFont("helvetica", "bold");
           doc.setTextColor(textColor);
       
           // Add the normal value for Date
@@ -338,24 +365,26 @@ const ChalanHistory = () => {
       };
       
 
-        // Add client details
-        const addClientDetails = () => {
-            doc.setFontSize(12);
-            doc.setFont("Arial", "bold");
-            doc.setTextColor(headerBgColor);
-            doc.text("Client Information:", 10, yOffset);
-
-            yOffset += 10; // Move down for the details
-
-            doc.setFont("Arial", "normal");
-            doc.setFontSize(10);
-            doc.setTextColor(textColor);
-            doc.text(`${clientDetails.client_name || "N/A"}`, 10, yOffset);
-            doc.text(`${clientDetails.city || "N/A"}, ${clientDetails.state || "N/A"}`, 10, yOffset + 6);
-            doc.text(`Mobile Number: ${clientDetails.mobile_number || "N/A"}`, 10, yOffset + 12);
-
-            yOffset += 25; // Space after client details
-        };
+      const addClientDetails = () => {
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");  // Use default font helvetica instead of Arial
+        doc.setTextColor(headerBgColor);
+        doc.text("Client Information:", 10, yOffset);
+    
+        yOffset += 7; // Move down for the details
+    
+        doc.setFont("helvetica", "normal"); // Use normal weight
+        doc.setFontSize(10);
+        doc.setTextColor(textColor);
+    
+        doc.text(`${clientDetails.client_name || "N/A"}`, 10, yOffset);
+        doc.text(`${clientDetails.address || "N/A"}, ${clientDetails.city || "N/A"}`, 10, yOffset + 6)
+        doc.text(`${clientDetails.state || "N/A"}, ${clientDetails.zip || "N/A"}`, 10, yOffset + 12);
+        doc.text(`Mobile Number: ${clientDetails.mobile_number || "N/A"}`, 10, yOffset + 18);
+    
+        yOffset += 30; // Space after client details
+    };
+    
 
         // Add table of challan items
         const addChallanItems = () => {
@@ -364,11 +393,11 @@ const ChalanHistory = () => {
           let currentPageItems = 0; // Count of items on the current page
       
           doc.setFontSize(12);
-          doc.setFont("Arial", "bold");
+          doc.setFont("helvetica", "bold");
           doc.setTextColor(headerBgColor);
           doc.text("Challan Items:", 10, yOffset);
       
-          yOffset += 10; // Start below the title
+          yOffset += 4; // Start below the title
       
           // Table Header
           doc.setDrawColor(headerBgColor);
@@ -404,7 +433,7 @@ const ChalanHistory = () => {
               }
       
               // Add product item
-              doc.setFont("Arial", "normal");
+              doc.setFont("helvetica", "bold");
               doc.setTextColor(textColor);
               doc.text(item.product_name, 15, yOffset + 7);
               doc.text(item.quantity.toString(), pageWidth - 40, yOffset + 7);
